@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import OTPInput from 'react-otp-input'
 import { useDispatch, useSelector } from 'react-redux'
 import { FaClockRotateLeft } from "react-icons/fa6";
 import { sendOtp, signUp } from '../services/operations/authAPI';
 import { Link, useNavigate } from 'react-router-dom';
 import { IoIosArrowRoundBack } from "react-icons/io";
+import { ThemeContext } from '../provider/themeContext';
 
-export const VerifyEmail = ({ darkTheme }) => {
+export const VerifyEmail = () => {
     const { loading, signupData } = useSelector((state) => state.auth);
+    const { darkTheme } = useContext(ThemeContext);
     const [otp, setOtp] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();

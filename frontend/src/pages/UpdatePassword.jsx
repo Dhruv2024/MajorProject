@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { resetPassword } from '../services/operations/authAPI';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -6,8 +6,9 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { IoIosArrowRoundBack } from "react-icons/io";
+import { ThemeContext } from '../provider/themeContext';
 
-export const UpdatePassword = ({ darkTheme }) => {
+export const UpdatePassword = () => {
     const [formData, setFormData] = useState({
         password: "",
         confirmPassword: "",
@@ -19,6 +20,8 @@ export const UpdatePassword = ({ darkTheme }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { password, confirmPassword } = formData;
+    const { darkTheme } = useContext(ThemeContext);
+
     function handleOnChange(e) {
         setFormData((prevData) => (
             {

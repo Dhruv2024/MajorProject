@@ -7,22 +7,22 @@ import { NavbarLinks } from '../../data/navbar-links'
 import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { IoCart } from "react-icons/io5";
-// import { apiConnector } from '../services/apiConnector'
-// import { categories } from '../services/apis'
+import { apiConnector } from '../../services/apiConnector'
+import { categories } from '../../services/apis'
 import ProfileDropdown from '../core/Auth/ProfileDropDown'
 import { IoIosArrowDown } from "react-icons/io";
 
 
-const subLinks = [
-    {
-        name: "python",
-        link: "/catalog/python"
-    },
-    {
-        name: "web dev",
-        link: "/catalog/web-development"
-    }
-];
+// const subLinks = [
+//     {
+//         name: "python",
+//         link: "/catalog/python"
+//     },
+//     {
+//         name: "web dev",
+//         link: "/catalog/web-development"
+//     }
+// ];
 
 const Navbar = ({ darkTheme }) => {
     const { token } = useSelector((state) => state.auth);
@@ -31,15 +31,15 @@ const Navbar = ({ darkTheme }) => {
     const location = useLocation();
     const [loading, setLoading] = useState(false);
 
-    // const [subLinks, setSubLinks] = useState([]);
+    const [subLinks, setSubLinks] = useState([]);
 
     async function fetchSublinks() {
         // console.log(subLinks)
         try {
             setLoading(true);
-            // const result = await apiConnector("GET", categories.CATEGORIES_API);
+            const result = await apiConnector("GET", categories.CATEGORIES_API);
             // console.log("Printing Sublinks result ", result);
-            // setSubLinks(result.data.data);
+            setSubLinks(result.data.data);
             // setSubLinks(subLinks);
             setLoading(false);
         }

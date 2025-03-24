@@ -1,7 +1,10 @@
+import { useContext } from "react"
 import loginImg from "../assets/Images/login.webp"
 import Template from "../components/core/Auth/Template"
+import { ThemeContext } from "../provider/themeContext"
 
-function Login({ darkTheme }) {
+function Login() {
+    const { darkTheme } = useContext(ThemeContext);
     return (
         <Template
             title="Welcome Back"

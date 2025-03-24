@@ -28,7 +28,7 @@ function LoginForm({ darkTheme }) {
         e.preventDefault()
         dispatch(login(email, password, navigate))
     }
-    console.log(darkTheme)
+    // console.log(darkTheme)
     return (
         <form
             onSubmit={handleOnSubmit}

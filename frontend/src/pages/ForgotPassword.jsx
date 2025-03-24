@@ -1,14 +1,16 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom';
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { getPasswordResetToken } from '../services/operations/authAPI';
+import { ThemeContext } from '../provider/themeContext';
 
-export const ForgotPassword = ({ darkTheme }) => {
+export const ForgotPassword = () => {
     const { loading } = useSelector((state) => state.auth);
     const [emailSent, setEmailSent] = useState(false);
     const [email, setEmail] = useState("");
     const dispatch = useDispatch();
+    const { darkTheme } = useContext(ThemeContext);
 
     function handleOnSubmit(e) {
         e.preventDefault();

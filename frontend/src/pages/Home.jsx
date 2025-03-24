@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa6";
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import { HighlightText } from "../components/core/HomePage/HighlightText";
 import { HomeButton } from "../components/core/HomePage/HomeButton";
 import Banner from "../assets/Images/banner.mp4"
@@ -10,9 +10,14 @@ import { LearningLanguageSection } from "../components/core/HomePage/LearningLan
 import { InstructorSection } from "../components/core/HomePage/InstructorSection";
 import { ExploreMore } from "../components/core/HomePage/ExploreMore";
 import Footer from "../components/common/Footer";
+import { ThemeContext } from "../provider/themeContext";
 // import ReviewSlider from "../components/common/ReviewSlider";
 
-const Home = ({ darkTheme }) => {
+const Home = () => {
+    const { darkTheme } = useContext(ThemeContext);
+    // useEffect(() => {
+    //     console.log("hello");
+    // }, [])
     return (
         <div>
             {/* Section 1 */}
@@ -20,7 +25,7 @@ const Home = ({ darkTheme }) => {
                 <Link to={"/signup"}>
                     <div className={`group mt-16 p-1 mx-auto rounded-full font-bold transition-all duration-200 hover:scale-95 w-fit ${darkTheme ? "bg-richblack-800 text-richblack-200" : "bg-blue-25"}`}>
                         <div className={`flex items-center gap-2 rounded-full px-10 py-[5px] transition-all duration-200 ${darkTheme ? "group-hover:bg-richblack-900" : "group-hover:bg-blue-100"}`}>
-                            <p>Become an Instrcutor</p>
+                            <p>Become an Instructor</p>
                             <FaArrowRight />
                         </div>
                     </div>
