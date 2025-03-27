@@ -10,7 +10,7 @@ import { AiOutlineMenu } from "react-icons/ai";
 import { RxDropdownMenu } from "react-icons/rx";
 
 export const Sidebar = ({ darkTheme }) => {
-
+    // console.log(darkTheme);
     const { user, loading: profileLoading } = useSelector((state) => state.profile);
     const { loading: authLoading } = useSelector((state) => state.auth);
     const [confirmationModal, setConfirmationModal] = useState(null);
@@ -48,6 +48,7 @@ export const Sidebar = ({ darkTheme }) => {
                             path: "dashboard/settings"
                         }}
                         iconName="VscSettingsGear"
+                        darkTheme={darkTheme}
                     />
 
                     <button
@@ -110,6 +111,7 @@ export const Sidebar = ({ darkTheme }) => {
                                 path: "dashboard/settings"
                             }}
                             iconName="VscSettingsGear"
+                            darkTheme={darkTheme}
                         />
 
                         <button

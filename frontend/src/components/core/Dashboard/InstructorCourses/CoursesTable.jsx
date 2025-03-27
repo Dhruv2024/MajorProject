@@ -3,7 +3,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from "react-super-responsive-table"
 
 import { setCourse, setEditCourse } from "../../../../slices/courseSlice"
 import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { FaCheck } from "react-icons/fa"
 import { FiEdit2 } from "react-icons/fi"
 import { HiClock } from "react-icons/hi"
@@ -18,6 +18,7 @@ import {
 } from "../../../../services/operations/courseDetailsAPI"
 import { COURSE_STATUS } from "../../../../utils/constants"
 import { ConfirmationModal } from "../../../common/ConfirmationModal"
+import { ThemeContext } from "../../../../provider/themeContext"
 
 export default function CoursesTable({ courses, setCourses, courseLoading }) {
     console.log("Current Courses are .................");
@@ -39,23 +40,23 @@ export default function CoursesTable({ courses, setCourses, courseLoading }) {
         setConfirmationModal(null)
         setLoading(false)
     }
-
+    const { darkTheme } = useContext(ThemeContext);
     // console.log("All Course ", courses)
     return (
         <>
-            <Table className="rounded-xl border border-richblack-800 ">
+            <Table className={`rounded-xl border ${darkTheme ? "border-richblack-800" : " border-richblack-25"}`}>
                 <Thead>
-                    <Tr className="flex gap-x-10 rounded-t-md border-b border-b-richblack-800 px-6 py-2">
-                        <Th className="flex-1 text-left text-sm font-medium uppercase text-richblack-100">
+                    <Tr className={`flex gap-x-10 rounded-t-md px-6 py-2 ${darkTheme ? "border-b border-b-richblack-800" : "border-b border-b-richblack-25"}`}>
+                        <Th className={`flex-1 text-left text-sm font-medium uppercase ${darkTheme ? "text-richblack-100" : " text-richblack-600"}`}>
                             Courses
                         </Th>
-                        <Th className="text-left text-sm font-medium uppercase text-richblack-100">
+                        <Th className={`text-left text-sm font-medium uppercase ${darkTheme ? "text-richblack-100" : " text-richblack-600"}`}>
                             Duration
                         </Th>
-                        <Th className="text-left text-sm font-medium uppercase text-richblack-100">
+                        <Th className={`text-left text-sm font-medium uppercase ${darkTheme ? "text-richblack-100" : " text-richblack-600"}`}>
                             Price
                         </Th>
-                        <Th className="text-left text-sm font-medium uppercase text-richblack-100">
+                        <Th className={`text-left text-sm font-medium uppercase ${darkTheme ? "text-richblack-100" : " text-richblack-600"}`}>
                             Actions
                         </Th>
                     </Tr>
@@ -67,7 +68,7 @@ export default function CoursesTable({ courses, setCourses, courseLoading }) {
                         <Tbody>
                             {courses?.length === 0 ? (
                                 <Tr>
-                                    <Td className="py-10 text-center text-2xl font-medium text-richblack-100">
+                                    <Td className={`py-10 text-center text-2xl font-medium  ${darkTheme ? "text-richblack-100" : " text-blue-100"}`}>
                                         No courses found
                                     </Td>
                                 </Tr>
@@ -84,10 +85,10 @@ export default function CoursesTable({ courses, setCourses, courseLoading }) {
                                                 className="h-[148px] w-[220px] rounded-lg object-cover"
                                             />
                                             <div className="flex flex-col justify-between">
-                                                <p className="text-lg font-semibold text-richblack-5">
+                                                <p className={`text-lg font-semibold ${darkTheme ? "text-richblack-5" : "text-blue-300"}`}>
                                                     {course.courseName}
                                                 </p>
-                                                <p className="text-xs text-richblack-300">
+                                                <p className={`text-xs ${darkTheme ? "text-richblack-300 " : "text-richblack-600"}`}>
                                                     {course.courseDescription.split(" ").length >
                                                         TRUNCATE_LENGTH
                                                         ? course.courseDescription
@@ -96,7 +97,7 @@ export default function CoursesTable({ courses, setCourses, courseLoading }) {
                                                             .join(" ") + "..."
                                                         : course.courseDescription}
                                                 </p>
-                                                <p className="text-[12px] text-white">
+                                                <p className={`text-[12px] ${darkTheme ? "text-white" : "text-black"}`}>
                                                     Created: {formatDate(course.createdAt)}
                                                 </p>
                                                 {course.status === COURSE_STATUS.DRAFT ? (
@@ -114,10 +115,10 @@ export default function CoursesTable({ courses, setCourses, courseLoading }) {
                                                 )}
                                             </div>
                                         </Td>
-                                        <Td className="text-sm font-medium text-richblack-100">
+                                        <Td className={`text-sm font-medium ${darkTheme ? "text-richblack-100 " : "text-black"}`}>
                                             {course.totalDuration}
                                         </Td>
-                                        <Td className="text-sm font-medium text-richblack-100">
+                                        <Td className={`text-sm font-medium ${darkTheme ? "text-richblack-100 " : "text-black"}`}>
                                             ₹{course.price}
                                         </Td>
                                         <Td className="text-sm font-medium text-richblack-100 ">
@@ -153,7 +154,7 @@ export default function CoursesTable({ courses, setCourses, courseLoading }) {
                                             >
                                                 <RiDeleteBin6Line size={20} />
                                             </button>
-                                            <CiChat1 size={40} className=" hover:text-caribbeangreen-100 outline-2 cursor-pointer" onClick={() => {
+                                            <CiChat1 size={30} className=" hover:text-caribbeangreen-100 outline-2 cursor-pointer" onClick={() => {
                                                 navigate(`/dashboard/chat/${course.room}`)
                                             }} />
                                         </Td>

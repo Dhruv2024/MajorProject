@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "react-hot-toast"
 import { IoAddCircleOutline } from "react-icons/io5"
@@ -17,6 +17,7 @@ import {
 
 import NestedView from "./NestedView"
 import { IconBtn } from "../../../../common/IconBtn"
+import { ThemeContext } from "../../../../../provider/themeContext"
 
 export default function CourseBuilderForm() {
     const {
@@ -99,13 +100,13 @@ export default function CourseBuilderForm() {
         dispatch(setStep(1))
         dispatch(setEditCourse(true))
     }
-
+    const { darkTheme } = useContext(ThemeContext);
     return (
-        <div className="space-y-8 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6">
-            <p className="text-2xl font-semibold text-richblack-5">Course Builder</p>
+        <div className={`space-y-8 rounded-md border-[1px] p-6 ${darkTheme ? "border-richblack-700 bg-richblack-800" : "bg-white border-richblack-5"}`}>
+            <p className={`text-2xl font-semibold ${darkTheme ? "text-richblack-5" : "text-blue-500"}`}>Course Builder</p>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="flex flex-col space-y-2">
-                    <label className="text-sm text-richblack-5" htmlFor="sectionName">
+                    <label className={`text-sm ${darkTheme ? "text-richblack-5" : " text-richblack-500"}`} htmlFor="sectionName">
                         Section Name <sup className="text-pink-200">*</sup>
                     </label>
                     <input
@@ -113,7 +114,7 @@ export default function CourseBuilderForm() {
                         disabled={loading}
                         placeholder="Add a section to build your course"
                         {...register("sectionName", { required: true })}
-                        className="form-style w-full"
+                        className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
                     />
                     {errors.sectionName && (
                         <span className="ml-2 text-xs tracking-wide text-pink-200">
@@ -148,7 +149,7 @@ export default function CourseBuilderForm() {
             <div className="flex justify-end gap-x-3">
                 <button
                     onClick={goBack}
-                    className={`flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900`}
+                    className={`flex cursor-pointer items-center gap-x-2 rounded-md py-[8px] px-[20px] font-semibold ${darkTheme ? "text-richblack-900 bg-richblack-300" : "bg-white border-richblack-25 border-2"}`}
                 >
                     Back
                 </button>

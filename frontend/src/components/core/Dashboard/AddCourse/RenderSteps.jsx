@@ -1,14 +1,15 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { FaCheck } from 'react-icons/fa';
 import { useSelector } from 'react-redux'
 import CourseInformationForm from './CourseInformation/CourseInformationForm';
 import CourseBuilderForm from './CourseBuilder/CourseBuilderForm';
 import PublishCourse from './PublishCourse';
+import { ThemeContext } from '../../../../provider/themeContext';
 
 const RenderSteps = () => {
 
-    const { step } = useSelector((state) => state.course)
-
+    const { step } = useSelector((state) => state.course);
+    const { darkTheme } = useContext(ThemeContext);
     const steps = [
         {
             id: 1,
@@ -35,8 +36,8 @@ const RenderSteps = () => {
                         >
                             <button
                                 className={`grid cursor-default aspect-square w-[34px] place-items-center rounded-full border-[1px] ${step === item.id
-                                    ? "border-yellow-50 bg-yellow-900 text-yellow-50"
-                                    : "border-richblack-700 bg-richblack-800 text-richblack-300"
+                                    ? `${darkTheme ? "border-yellow-50 bg-yellow-900 text-yellow-50" : "border-blue-200 bg-blue-5 text-blue-700"}`
+                                    : `${darkTheme ? "border-richblack-700 bg-richblack-800 text-richblack-300" : "border-blue-800 bg-blue-500 text-richblack-300"}`
                                     } ${step > item.id && "bg-yellow-50 text-yellow-50"}} `}
                             >
                                 {step > item.id ? (
@@ -57,7 +58,7 @@ const RenderSteps = () => {
                         )}
                     </>
                 ))}
-            </div>
+            </div >
 
             <div className="relative mb-16 flex w-full select-none justify-between">
                 {steps.map((item) => (
@@ -68,7 +69,7 @@ const RenderSteps = () => {
                         >
 
                             <p
-                                className={`text-sm ${step >= item.id ? "text-richblack-5" : "text-richblack-500"
+                                className={`text-sm ${step >= item.id ? `${darkTheme ? "text-richblack-5" : "text-blue-100"}` : "text-richblack-500"
                                     }`}
                             >
                                 {item.title}

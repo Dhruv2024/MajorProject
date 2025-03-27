@@ -7,7 +7,7 @@ import { IconBtn } from "../../../common/IconBtn"
 
 const genders = ["Male", "Female", "Non-Binary", "Prefer not to say", "Other"]
 
-export default function EditProfile() {
+export default function EditProfile({ darkTheme }) {
   const { user } = useSelector((state) => state.profile)
   const { token } = useSelector((state) => state.auth)
   const navigate = useNavigate()
@@ -31,13 +31,13 @@ export default function EditProfile() {
     <>
       <form onSubmit={handleSubmit(submitProfileForm)}>
         {/* Profile Information */}
-        <div className="my-10 flex flex-col gap-y-6 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-8 px-12">
-          <h2 className="text-lg font-semibold text-richblack-5">
+        <div className={`my-10 flex flex-col gap-y-6 rounded-md border-[1px] p-8 px-12 ${darkTheme ? "border-richblack-700 bg-richblack-800 text-white" : "bg-white text-richblack-600 border-richblack-5"}`}>
+          <h2 className={`text-lg font-semibold ${darkTheme ? "text-richblack-5" : "text-black"}`}>
             Profile Information
           </h2>
           <div className="flex flex-col gap-5 lg:flex-row">
             <div className="flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="firstName" className="lable-style">
+              <label htmlFor="firstName" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 First Name
               </label>
               <input
@@ -45,7 +45,7 @@ export default function EditProfile() {
                 name="firstName"
                 id="firstName"
                 placeholder="Enter first name"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("firstName", { required: true })}
                 defaultValue={user?.firstName}
               />
@@ -56,7 +56,7 @@ export default function EditProfile() {
               )}
             </div>
             <div className="flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="lastName" className="lable-style">
+              <label htmlFor="lastName" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 Last Name
               </label>
               <input
@@ -64,7 +64,7 @@ export default function EditProfile() {
                 name="lastName"
                 id="lastName"
                 placeholder="Enter first name"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("lastName", { required: true })}
                 defaultValue={user?.lastName}
               />
@@ -78,14 +78,14 @@ export default function EditProfile() {
 
           <div className="flex flex-col gap-5 lg:flex-row">
             <div className="flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="dateOfBirth" className="lable-style">
+              <label htmlFor="dateOfBirth" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 Date of Birth
               </label>
               <input
                 type="date"
                 name="dateOfBirth"
                 id="dateOfBirth"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("dateOfBirth", {
                   required: {
                     value: true,
@@ -105,14 +105,14 @@ export default function EditProfile() {
               )}
             </div>
             <div className="flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="gender" className="lable-style">
+              <label htmlFor="gender" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 Gender
               </label>
               <select
                 type="text"
                 name="gender"
                 id="gender"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("gender", { required: true })}
                 defaultValue={user?.additionalDetails?.gender}
               >
@@ -134,7 +134,7 @@ export default function EditProfile() {
 
           <div className="flex flex-col gap-5 lg:flex-row">
             <div className="flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="contactNumber" className="lable-style">
+              <label htmlFor="contactNumber" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 Contact Number
               </label>
               <input
@@ -142,7 +142,7 @@ export default function EditProfile() {
                 name="contactNumber"
                 id="contactNumber"
                 placeholder="Enter Contact Number"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("contactNumber", {
                   required: {
                     value: true,
@@ -160,7 +160,7 @@ export default function EditProfile() {
               )}
             </div>
             <div className="flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="about" className="lable-style">
+              <label htmlFor="about" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 About
               </label>
               <input
@@ -168,7 +168,7 @@ export default function EditProfile() {
                 name="about"
                 id="about"
                 placeholder="Enter Bio Details"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("about", { required: true })}
                 defaultValue={user?.additionalDetails?.about}
               />
@@ -186,7 +186,7 @@ export default function EditProfile() {
             onClick={() => {
               navigate("/dashboard/my-profile")
             }}
-            className="cursor-pointer rounded-md bg-richblack-700 py-2 px-5 font-semibold text-richblack-50"
+            className={`cursor-pointer rounded-md py-2 px-5 font-semibold  ${darkTheme ? "bg-richblack-700 text-richblack-50" : " bg-blue-50 text-richblack-600"}`}
           >
             Cancel
           </button>

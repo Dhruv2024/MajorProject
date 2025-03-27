@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import {
     TiStarFullOutline,
     TiStarHalfOutline,
     TiStarOutline,
 } from "react-icons/ti"
+import { ThemeContext } from "../../provider/themeContext";
 
 function RatingStars({ Review_Count, Star_Size }) {
     const [starCount, SetStarCount] = useState({
@@ -19,9 +20,10 @@ function RatingStars({ Review_Count, Star_Size }) {
             half: Number.isInteger(Review_Count) ? 0 : 1,
             empty: Number.isInteger(Review_Count) ? 5 - wholeStars : 4 - wholeStars,
         })
-    }, [Review_Count])
+    }, [Review_Count]);
+    const { darkTheme } = useContext(ThemeContext);
     return (
-        <div className="flex gap-1 text-yellow-100">
+        <div className={`flex gap-1 ${darkTheme ? "text-yellow-100" : "text-blue-100"}`}>
             {[...new Array(starCount.full)].map((_, i) => {
                 return <TiStarFullOutline key={i} size={Star_Size || 20} />
             })}

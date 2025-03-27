@@ -83,7 +83,8 @@ const PORT = process.env.PORT || 4000;
 
 //connecting with database
 dbConnect();
-
+//connect cloudinary
+cloudinaryConnect();
 
 app.use(express.json());
 app.use(cookieParser());

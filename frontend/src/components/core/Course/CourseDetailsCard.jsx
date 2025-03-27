@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import copy from 'copy-to-clipboard';
@@ -7,6 +7,7 @@ import { ACCOUNT_TYPE } from '../../../utils/constants';
 import { addToCart } from '../../../slices/cartSlice';
 import { FaShareSquare } from "react-icons/fa"
 import { BsFillCaretRightFill } from "react-icons/bs"
+import { ThemeContext } from '../../../provider/themeContext';
 
 function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
 
@@ -20,8 +21,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
         price: CurrentPrice,
 
     } = course;
-
-
+    const { darkTheme } = useContext(ThemeContext);
     const handleAddToCart = () => {
         if (user && user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
             toast.error("You are an Instructor, you cant buy a course");
@@ -48,7 +48,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
     }
 
     return (
-        <div className='text-white'>
+        <div className={`${darkTheme ? "text-white" : "text-richblack-700"}`}>
             <img
                 src={ThumbnailImage}
                 alt='Thumbnail Image'
@@ -83,7 +83,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
 
             <div>
                 <div>
-                    <p className="pb-3 pt-6 text-center text-sm text-richblack-25">
+                    <p className={`pb-3 pt-6 text-center text-sm ${darkTheme ? "text-richblack-25" : "text-richblack-700"}`}>
                         30-Day Money-Back Guarantee
                     </p>
                 </div>
@@ -105,7 +105,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
             </div>
             <div className="text-center">
                 <button
-                    className="mx-auto flex items-center text-yellow-100 "
+                    className={`mx-auto flex items-center ${darkTheme ? "text-yellow-100" : "text-red"}`}
                     onClick={handleShare}
                 >
                     <FaShareSquare size={15} /> Share

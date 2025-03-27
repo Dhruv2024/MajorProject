@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useSelector } from "react-redux"
+import { ThemeContext } from "../../../../../provider/themeContext"
 
 export default function RequirementsField({
     name,
@@ -38,10 +39,10 @@ export default function RequirementsField({
         updatedRequirements.splice(index, 1)
         setRequirementsList(updatedRequirements)
     }
-
+    const { darkTheme } = useContext(ThemeContext);
     return (
         <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor={name}>
+            <label className={`text-sm  ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor={name}>
                 {label} <sup className="text-pink-200">*</sup>
             </label>
             <div className="flex flex-col items-start space-y-2">
@@ -50,12 +51,12 @@ export default function RequirementsField({
                     id={name}
                     value={requirement}
                     onChange={(e) => setRequirement(e.target.value)}
-                    className="form-style w-full"
+                    className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
                 />
                 <button
                     type="button"
                     onClick={handleAddRequirement}
-                    className="font-semibold text-yellow-50"
+                    className={`font-semibold ${darkTheme ? "text-yellow-50" : "text-blue-500"}`}
                 >
                     Add
                 </button>
@@ -63,7 +64,7 @@ export default function RequirementsField({
             {requirementsList.length > 0 && (
                 <ul className="mt-2 list-inside list-disc">
                     {requirementsList.map((requirement, index) => (
-                        <li key={index} className="flex items-center text-richblack-5">
+                        <li key={index} className={`flex items-center ${darkTheme ? "text-richblack-5" : "text-black"}`}>
                             <span>{requirement}</span>
                             <button
                                 type="button"

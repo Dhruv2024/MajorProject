@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import { Link } from "react-router-dom"
 
 import { fetchInstructorCourses } from "../../../services/operations/courseDetailsAPI"
 import { getInstructorData } from "../../../services/operations/profileAPI"
 import InstructorChart from "./InstructorDashboard/InstructorChart"
+import { ThemeContext } from "../../../provider/themeContext"
 
 export default function Instructor() {
     const { token } = useSelector((state) => state.auth)
@@ -12,7 +13,7 @@ export default function Instructor() {
     const [loading, setLoading] = useState(false)
     const [instructorData, setInstructorData] = useState(null)
     const [courses, setCourses] = useState([])
-
+    const { darkTheme } = useContext(ThemeContext);
     useEffect(() => {
         async function fetchInstructorCoursesAndData() {
             setLoading(true)
@@ -40,7 +41,7 @@ export default function Instructor() {
     return (
         <div>
             <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-richblack-5">
+                <h1 className={`text-2xl font-bold ${darkTheme ? "text-richblack-5" : " text-blue-50"}`}>
                     Hi {user?.firstName} 👋
                 </h1>
                 <p className="font-medium text-richblack-200">
@@ -126,12 +127,12 @@ export default function Instructor() {
                     </div>
                 </div>
             ) : (
-                <div className="mt-20 rounded-md bg-richblack-800 p-6 py-20">
-                    <p className="text-center text-2xl font-bold text-richblack-5">
+                <div className={`mt-20 rounded-md p-6 py-20 ${darkTheme ? "bg-richblack-800" : " bg-richblack-5"}`}>
+                    <p className={`text-center text-2xl font-bold ${darkTheme ? "text-richblack-5" : " text-black"}`}>
                         You have not created any courses yet
                     </p>
                     <Link to="/dashboard/add-course">
-                        <p className="mt-1 text-center text-lg font-semibold text-yellow-50">
+                        <p className={`mt-1 text-center text-lg font-semibold ${darkTheme ? "text-yellow-50" : " text-blue-100"}`}>
                             Create a course
                         </p>
                     </Link>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Footer from '../components/common/Footer'
 import { useParams } from 'react-router-dom'
 import { categories } from '../services/apis';
@@ -8,9 +8,10 @@ import CourseSlider from '../components/core/Catalog/CourseSlider';
 import { useSelector } from "react-redux"
 import { apiConnector } from '../services/apiConnector';
 import { Error } from './Error';
+import { ThemeContext } from '../provider/themeContext';
 
 const Catalog = () => {
-
+    const { darkTheme } = useContext(ThemeContext);
     const { loading } = useSelector((state) => state.profile)
     const { catalogName } = useParams()
     const [active, setActive] = useState(1)
@@ -80,11 +81,11 @@ const Catalog = () => {
 
             {/* Section 1 */}
             <div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
-                <div className="section_heading">Courses to get you started</div>
+                <div className={`${darkTheme ? "section_heading" : "light_section_heading"}`}>Courses to get you started</div>
                 <div className="my-4 flex border-b border-b-richblack-600 text-sm">
                     <p
                         className={`px-4 py-2 ${active === 1
-                            ? "border-b border-b-yellow-25 text-yellow-25"
+                            ? `border-b ${darkTheme ? "border-b-yellow-25 text-yellow-25" : "text-blue-100 border-blue-300"}`
                             : "text-richblack-50"
                             } cursor-pointer`}
                         onClick={() => setActive(1)}
@@ -93,7 +94,7 @@ const Catalog = () => {
                     </p>
                     <p
                         className={`px-4 py-2 ${active === 2
-                            ? "border-b border-b-yellow-25 text-yellow-25"
+                            ? `border-b ${darkTheme ? "border-b-yellow-25 text-yellow-25" : "text-blue-100 border-blue-300"}`
                             : "text-richblack-50"
                             } cursor-pointer`}
                         onClick={() => setActive(2)}
@@ -109,7 +110,7 @@ const Catalog = () => {
             </div>
             {/* Section 2 */}
             <div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
-                <div className="section_heading">
+                <div className={`${darkTheme ? "section_heading" : "light_section_heading"}`}>
                     Top courses in {catalogPageData?.data?.differentCategory?.name}
                 </div>
                 <div className="py-8">
@@ -117,11 +118,11 @@ const Catalog = () => {
                         Courses={catalogPageData?.data?.differentCategory?.courses}
                     />
                 </div>
-            </div>
+            </div >
 
             {/* Section 3 */}
-            <div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
-                <div className="section_heading">Frequently Bought</div>
+            <div div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent" >
+                <div className={`${darkTheme ? "section_heading" : "light_section_heading"}`}>Frequently Bought</div>
                 <div className="py-8">
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         {catalogPageData?.data?.mostSellingCourses
@@ -131,7 +132,7 @@ const Catalog = () => {
                             ))}
                     </div>
                 </div>
-            </div>
+            </div >
 
             <Footer />
         </>

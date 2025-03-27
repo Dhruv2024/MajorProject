@@ -9,15 +9,15 @@ export default function Settings() {
   const { darkTheme } = useContext(ThemeContext);
   return (
     <>
-      <h1 className={`mb-14 text-3xl font-medium ${darkTheme ? "text-richblack-5" : " text-black"}`}>
+      <h1 className={`mb-14 text-3xl font-medium ${darkTheme ? "text-richblack-5" : "text-black"}`}>
         Edit Profile
       </h1>
       {/* Change Profile Picture */}
       <ChangeProfilePicture darkTheme={darkTheme} />
       {/* Profile */}
-      <EditProfile />
+      <EditProfile darkTheme={darkTheme} />
       {/* Password */}
-      <UpdatePassword />
+      <UpdatePassword darkTheme={darkTheme} />
       {/* Delete Account */}
       <DeleteAccount />
     </>

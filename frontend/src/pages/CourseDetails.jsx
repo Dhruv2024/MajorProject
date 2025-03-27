@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { BiInfoCircle } from "react-icons/bi"
 import { HiOutlineGlobeAlt } from "react-icons/hi"
 // import { ReactMarkdown } from "react-markdown"
@@ -14,6 +14,7 @@ import Footer from "../components/common/Footer"
 import CourseDetailsCard from '../components/core/Course/CourseDetailsCard';
 import { Error } from './Error';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
+import { ThemeContext } from '../provider/themeContext';
 
 const CourseDetails = () => {
 
@@ -124,7 +125,7 @@ const CourseDetails = () => {
             </div>
         )
     }
-
+    const { darkTheme } = useContext(ThemeContext);
     return (
         <>
             <div className={`relative w-full bg-richblack-800`}>
@@ -149,7 +150,7 @@ const CourseDetails = () => {
                             </div>
                             <p className={`text-richblack-200`}>{courseDescription}</p>
                             <div className="text-md flex flex-wrap items-center gap-2">
-                                <span className="text-yellow-25">{avgReviewCount}</span>
+                                <span className={`${darkTheme ? "text-yellow-25" : "text-caribbeangreen-50"}`}>{avgReviewCount}</span>
                                 <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
                                 <span>{`(${ratingAndReviews.length} reviews)`}</span>
                                 <span>{`${studentsEnrolled.length} students enrolled`}</span>
@@ -190,14 +191,14 @@ const CourseDetails = () => {
                     </div>
                 </div>
             </div>
-            <div className="mx-auto box-content px-4 text-start text-richblack-5 lg:w-[1260px]">
+            <div className={`mx-auto box-content px-4 text-start lg:w-[1260px] ${darkTheme ? "text-richblack-5" : "text-black"}`}>
                 <div className="mx-auto max-w-maxContentTab lg:mx-0 xl:max-w-[810px]">
                     {/* What will you learn section */}
                     <div className="my-8 border border-richblack-600 p-8">
                         <p className="text-3xl font-semibold">What you'll learn</p>
                         <div className="mt-5">
                             {/* <ReactMarkdown>{whatYouWillLearn}</ReactMarkdown> */}
-                            whatYouWillLearn
+                            {whatYouWillLearn}
                         </div>
                     </div>
 
@@ -217,7 +218,7 @@ const CourseDetails = () => {
                                 </div>
                                 <div>
                                     <button
-                                        className="text-yellow-25"
+                                        className={`${darkTheme ? "text-yellow-25" : "text-blue-100"}`}
                                         onClick={() => setIsActive([])}
                                     >
                                         Collapse all sections

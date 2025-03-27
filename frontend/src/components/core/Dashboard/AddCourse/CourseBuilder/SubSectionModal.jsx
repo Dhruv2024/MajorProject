@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "react-hot-toast"
 import { RxCross2 } from "react-icons/rx"
@@ -12,6 +12,7 @@ import { setCourse } from "../../../../../slices/courseSlice"
 
 import Upload from "../Upload"
 import { IconBtn } from "../../../../common/IconBtn"
+import { ThemeContext } from "../../../../../provider/themeContext"
 
 export default function SubSectionModal({
     modalData,
@@ -32,6 +33,7 @@ export default function SubSectionModal({
     // console.log("edit", edit)
     // console.log("add", add)
 
+    const { darkTheme } = useContext(ThemeContext);
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(false)
     const { token } = useSelector((state) => state.auth)
@@ -131,15 +133,15 @@ export default function SubSectionModal({
     }
 
     return (
-        <div className="fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
-            <div className="my-10 w-11/12 max-w-[700px] rounded-lg border border-richblack-400 bg-richblack-800">
+        <div className={`fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-opacity-10 backdrop-blur-sm ${darkTheme ? "bg-white" : "bg-black"}`}>
+            <div className={`my-10 w-11/12 max-w-[700px] rounded-lg border ${darkTheme ? "border-richblack-400 bg-richblack-800" : "border-richblack-25 bg-white"}`}>
                 {/* Modal Header */}
-                <div className="flex items-center justify-between rounded-t-lg bg-richblack-700 p-5">
-                    <p className="text-xl font-semibold text-richblack-5">
+                <div className="flex items-center justify-between rounded-t-lg p-5">
+                    <p className={`text-xl font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-700"}`}>
                         {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Lecture
                     </p>
                     <button onClick={() => (!loading ? setModalData(null) : {})}>
-                        <RxCross2 className="text-2xl text-richblack-5" />
+                        <RxCross2 className={`text-2xl ${darkTheme ? "text-richblack-5" : "text-black"}`} />
                     </button>
                 </div>
                 {/* Modal Form */}
@@ -160,7 +162,7 @@ export default function SubSectionModal({
                     />
                     {/* Lecture Title */}
                     <div className="flex flex-col space-y-2">
-                        <label className="text-sm text-richblack-5" htmlFor="lectureTitle">
+                        <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureTitle">
                             Lecture Title {!view && <sup className="text-pink-200">*</sup>}
                         </label>
                         <input
@@ -168,7 +170,7 @@ export default function SubSectionModal({
                             id="lectureTitle"
                             placeholder="Enter Lecture Title"
                             {...register("lectureTitle", { required: true })}
-                            className="form-style w-full"
+                            className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
                         />
                         {errors.lectureTitle && (
                             <span className="ml-2 text-xs tracking-wide text-pink-200">
@@ -178,7 +180,7 @@ export default function SubSectionModal({
                     </div>
                     {/* Lecture Description */}
                     <div className="flex flex-col space-y-2">
-                        <label className="text-sm text-richblack-5" htmlFor="lectureDesc">
+                        <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
                             Lecture Description{" "}
                             {!view && <sup className="text-pink-200">*</sup>}
                         </label>
@@ -187,7 +189,7 @@ export default function SubSectionModal({
                             id="lectureDesc"
                             placeholder="Enter Lecture Description"
                             {...register("lectureDesc", { required: true })}
-                            className="form-style resize-x-none min-h-[130px] w-full"
+                            className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
                         />
                         {errors.lectureDesc && (
                             <span className="ml-2 text-xs tracking-wide text-pink-200">
@@ -197,7 +199,7 @@ export default function SubSectionModal({
                     </div>
                     {/* Lecture resource */}
                     <div className="flex flex-col space-y-2">
-                        <label className="text-sm text-richblack-5" htmlFor="lectureDesc">
+                        <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
                             Lecture Resource{" "}
                         </label>
                         <textarea
@@ -205,7 +207,7 @@ export default function SubSectionModal({
                             id="lectureResource"
                             placeholder="Enter Lecture Resource"
                             {...register("lectureResource")}
-                            className="form-style resize-x-none min-h-[130px] w-full"
+                            className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
                         />
                     </div>
                     {!view && (

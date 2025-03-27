@@ -1,11 +1,14 @@
+import { useContext } from "react"
 import RenderSteps from "./RenderSteps"
+import { ThemeContext } from "../../../../provider/themeContext"
 
 export default function AddCourse() {
+    const { darkTheme } = useContext(ThemeContext);
     return (
         <>
             <div className="flex w-full items-start gap-x-6">
                 <div className="flex flex-1 flex-col">
-                    <h1 className="mb-14 text-3xl font-medium text-richblack-5">
+                    <h1 className={`mb-14 text-3xl font-medium ${darkTheme ? "text-richblack-5" : "text-black"}`}>
                         Add Course
                     </h1>
                     <div className="flex-1">
@@ -13,9 +16,9 @@ export default function AddCourse() {
                     </div>
                 </div>
                 {/* Course Upload Tips */}
-                <div className="sticky top-10 hidden max-w-[400px] flex-1 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6 xl:block">
-                    <p className="mb-8 text-lg text-richblack-5">⚡ Course Upload Tips</p>
-                    <ul className="ml-5 list-item list-disc space-y-4 text-xs text-richblack-5">
+                <div className={`sticky top-10 hidden max-w-[400px] flex-1 rounded-md border-[1px] p-6 xl:block ${darkTheme ? "border-richblack-700 bg-richblack-800" : "border-blue-25 bg-blue-50"}`}>
+                    <p className={`mb-8 text-lg ${darkTheme ? "text-richblack-5" : "text-white"}`}>⚡ Course Upload Tips</p>
+                    <ul className={`ml-5 list-item list-disc space-y-4 text-xs ${darkTheme ? "text-richblack-5" : " text-blue-600"}`}>
                         <li>Set the Course Price option or make it free.</li>
                         <li>Standard size for the course thumbnail is 1024x576.</li>
                         <li>Video section controls the course overview video.</li>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { AiFillCaretDown } from "react-icons/ai"
 import { FaPlus } from "react-icons/fa"
 import { MdEdit } from "react-icons/md"
@@ -13,10 +13,12 @@ import {
 import { setCourse } from "../../../../../slices/courseSlice"
 import SubSectionModal from "./SubSectionModal"
 import { ConfirmationModal } from "../../../../common/ConfirmationModal"
+import { ThemeContext } from "../../../../../provider/themeContext"
 
 export default function NestedView({ handleChangeEditSectionName }) {
     const { course } = useSelector((state) => state.course)
-    const { token } = useSelector((state) => state.auth)
+    const { token } = useSelector((state) => state.auth);
+    const { darkTheme } = useContext(ThemeContext);
     const dispatch = useDispatch()
     // States to keep track of mode of modal [add, view, edit]
     const [addSubSection, setAddSubsection] = useState(null)
@@ -53,17 +55,17 @@ export default function NestedView({ handleChangeEditSectionName }) {
     return (
         <>
             <div
-                className="rounded-lg bg-richblack-700 p-6 px-8"
+                className={`rounded-lg p-6 px-8 ${darkTheme ? "bg-richblack-700" : "bg-blue-5"}`}
                 id="nestedViewContainer"
             >
                 {course?.courseContent?.map((section) => (
                     // Section Dropdown
                     <details key={section._id} open>
                         {/* Section Dropdown Content */}
-                        <summary className="flex cursor-pointer items-center justify-between border-b-2 border-b-richblack-600 py-2">
+                        <summary className={`flex cursor-pointer items-center justify-between border-b-2 ${darkTheme ? "border-b-richblack-600" : "border-b-richblack-25"} py-2`}>
                             <div className="flex items-center gap-x-3">
-                                <RxDropdownMenu className="text-2xl text-richblack-50" />
-                                <p className="font-semibold text-richblack-50">
+                                <RxDropdownMenu className={`text-2xl ${darkTheme ? "text-richblack-50" : "text-richblack-800"}`} />
+                                <p className={`font-semibold ${darkTheme ? "text-richblack-50" : "text-richblack-800"}`}>
                                     {section.sectionName}
                                 </p>
                             </div>
@@ -76,7 +78,7 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                         )
                                     }
                                 >
-                                    <MdEdit className="text-xl text-richblack-300" />
+                                    <MdEdit className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
                                 </button>
                                 <button
                                     onClick={() =>
@@ -90,10 +92,10 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                         })
                                     }
                                 >
-                                    <RiDeleteBin6Line className="text-xl text-richblack-300" />
+                                    <RiDeleteBin6Line className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
                                 </button>
                                 <span className="font-medium text-richblack-300">|</span>
-                                <AiFillCaretDown className={`text-xl text-richblack-300`} />
+                                <AiFillCaretDown className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
                             </div>
                         </summary>
                         <div className="px-6 pb-4">
@@ -102,11 +104,11 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                 <div
                                     key={data?._id}
                                     onClick={() => setViewSubSection(data)}
-                                    className="flex cursor-pointer items-center justify-between gap-x-3 border-b-2 border-b-richblack-600 py-2"
+                                    className={`flex cursor-pointer items-center justify-between gap-x-3 py-2 ${darkTheme ? "border-b-2 border-b-richblack-600" : "border-b-2 border-b-richblack-5"}`}
                                 >
                                     <div className="flex items-center gap-x-3 py-2 ">
                                         <RxDropdownMenu className="text-2xl text-richblack-50" />
-                                        <p className="font-semibold text-richblack-50">
+                                        <p className={`font-semibold ${darkTheme ? "text-richblack-50" : "text-richblack-400"}`}>
                                             {data.title}
                                         </p>
                                     </div>
@@ -142,7 +144,7 @@ export default function NestedView({ handleChangeEditSectionName }) {
                             {/* Add New Lecture to Section */}
                             <button
                                 onClick={() => setAddSubsection(section._id)}
-                                className="mt-3 flex items-center gap-x-1 text-yellow-50"
+                                className={`mt-3 flex items-center gap-x-1 ${darkTheme ? "text-yellow-50" : "text-blue-300"}`}
                             >
                                 <FaPlus className="text-lg" />
                                 <p>Add Lecture</p>

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom"
 import { changePassword } from "../../../../services/operations/Settings"
 import { IconBtn } from "../../../common/IconBtn"
 
-export default function UpdatePassword() {
+export default function UpdatePassword({ darkTheme }) {
   const { token } = useSelector((state) => state.auth)
   const navigate = useNavigate()
 
@@ -32,11 +32,11 @@ export default function UpdatePassword() {
   return (
     <>
       <form onSubmit={handleSubmit(submitPasswordForm)}>
-        <div className="my-10 flex flex-col gap-y-6 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-8 px-12">
-          <h2 className="text-lg font-semibold text-richblack-5">Password</h2>
+        <div className={`my-10 flex flex-col gap-y-6 rounded-md border-[1px] p-8 px-12 ${darkTheme ? "border-richblack-700 bg-richblack-800" : "bg-white text-richblack-600 border-richblack-5"}`}>
+          <h2 className={`text-lg font-semibold ${darkTheme ? "text-richblack-5" : "text-black"}`}>Password</h2>
           <div className="flex flex-col gap-5 lg:flex-row">
             <div className="relative flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="oldPassword" className="lable-style">
+              <label htmlFor="oldPassword" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 Current Password
               </label>
               <input
@@ -44,7 +44,7 @@ export default function UpdatePassword() {
                 name="oldPassword"
                 id="oldPassword"
                 placeholder="Enter Current Password"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("oldPassword", { required: true })}
               />
               <span
@@ -64,7 +64,7 @@ export default function UpdatePassword() {
               )}
             </div>
             <div className="relative flex flex-col gap-2 lg:w-[48%]">
-              <label htmlFor="newPassword" className="lable-style">
+              <label htmlFor="newPassword" className={`${darkTheme ? "lable-style" : "light-lable-style"}`}>
                 New Password
               </label>
               <input
@@ -72,7 +72,7 @@ export default function UpdatePassword() {
                 name="newPassword"
                 id="newPassword"
                 placeholder="Enter New Password"
-                className="form-style"
+                className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("newPassword", { required: true })}
               />
               <span
@@ -98,7 +98,7 @@ export default function UpdatePassword() {
             onClick={() => {
               navigate("/dashboard/my-profile")
             }}
-            className="cursor-pointer rounded-md bg-richblack-700 py-2 px-5 font-semibold text-richblack-50"
+            className={`cursor-pointer rounded-md py-2 px-5 font-semibold  ${darkTheme ? "bg-richblack-700 text-richblack-50" : " bg-blue-50 text-richblack-600"}`}
           >
             Cancel
           </button>

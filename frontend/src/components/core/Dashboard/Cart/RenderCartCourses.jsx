@@ -1,15 +1,17 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { GiNinjaStar } from "react-icons/gi"
 import { RiDeleteBin6Line } from "react-icons/ri"
 import { removeFromCart } from '../../../../slices/cartSlice'
 import ReactStars from "react-rating-stars-component";
+import { ThemeContext } from '../../../../provider/themeContext'
 
 const RenderCartCourses = () => {
     const { cart } = useSelector((state) => state.cart);
     const dispatch = useDispatch();
     console.log("Printing cart items...")
-    console.log(cart)
+    console.log(cart);
+    const { darkTheme } = useContext(ThemeContext);
     return (
         <div className="flex flex-1 flex-col">
             {cart.map((course, indx) => (
@@ -32,7 +34,8 @@ const RenderCartCourses = () => {
                                 {course?.category?.name}
                             </p>
                             <div className="flex items-center gap-2">
-                                <span className="text-yellow-5">4.5</span>
+                                {/* to be update */}
+                                <span className={darkTheme ? "text-yellow-5" : "text-blue-100"}>0</span>
                                 <ReactStars
                                     count={5}
                                     value={course?.ratingAndReviews?.length}
@@ -51,12 +54,12 @@ const RenderCartCourses = () => {
                     <div className="flex flex-col items-end space-y-2">
                         <button
                             onClick={() => dispatch(removeFromCart(course._id))}
-                            className="flex items-center gap-x-1 rounded-md border border-richblack-600 bg-richblack-700 py-3 px-[12px] text-pink-200"
+                            className={`flex items-center gap-x-1 rounded-md border py-3 px-[12px] text-pink-200 ${darkTheme ? "border-richblack-600 bg-richblack-700 " : " border-none"}`}
                         >
                             <RiDeleteBin6Line />
                             <span>Remove</span>
                         </button>
-                        <p className="mb-6 text-3xl font-medium text-yellow-100">
+                        <p className={`mb-6 text-3xl font-medium ${darkTheme ? "text-yellow-100" : "text-blue-50"}`}>
                             ₹ {course?.price}
                         </p>
                     </div>

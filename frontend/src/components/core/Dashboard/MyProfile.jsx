@@ -50,7 +50,7 @@ export const MyProfile = () => {
                 </div>
                 <p
                     className={`${user?.additionalDetails?.about
-                        ? "text-richblack-5"
+                        ? `${darkTheme ? "text-richblack-5" : "text-black"}`
                         : "text-richblack-400"
                         } text-sm font-medium`}> {user?.additionalDetails?.about ?? "Write Something about Yourself"}</p>
             </div>

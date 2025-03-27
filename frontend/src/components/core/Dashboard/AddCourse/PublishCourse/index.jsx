@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
@@ -7,10 +7,11 @@ import { editCourseDetails } from "../../../../../services/operations/courseDeta
 import { resetCourseState, setStep } from "../../../../../slices/courseSlice"
 import { COURSE_STATUS } from "../../../../../utils/constants"
 import { IconBtn } from "../../../../common/IconBtn"
+import { ThemeContext } from "../../../../../provider/themeContext"
 
 export default function PublishCourse() {
-    const { register, handleSubmit, setValue, getValues } = useForm()
-
+    const { register, handleSubmit, setValue, getValues } = useForm();
+    const { darkTheme } = useContext(ThemeContext);
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { token } = useSelector((state) => state.auth)
@@ -64,8 +65,8 @@ export default function PublishCourse() {
     }
 
     return (
-        <div className="rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6">
-            <p className="text-2xl font-semibold text-richblack-5">
+        <div className={`rounded-md border-[1px] p-6 ${darkTheme ? "border-richblack-700 bg-richblack-800" : "border-richblack-5 bg-white"}`}>
+            <p className={`text-2xl font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-800"}`}>
                 Publish Settings
             </p>
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -90,7 +91,7 @@ export default function PublishCourse() {
                         disabled={loading}
                         type="button"
                         onClick={goBack}
-                        className="flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900"
+                        className={`flex cursor-pointer items-center gap-x-2 rounded-md py-[8px] px-[20px] font-semibold ${darkTheme ? "bg-richblack-300 text-richblack-900" : "bg-white border-2 border-richblack-25"}`}
                     >
                         Back
                     </button>

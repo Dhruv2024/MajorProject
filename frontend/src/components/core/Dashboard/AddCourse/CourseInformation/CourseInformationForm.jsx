@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "react-hot-toast"
 import { HiOutlineCurrencyRupee } from "react-icons/hi"
@@ -16,6 +16,7 @@ import Upload from "../Upload"
 import ChipInput from "./ChipInput"
 import RequirementsField from "./RequirementField"
 import { IconBtn } from "../../../../common/IconBtn"
+import { ThemeContext } from "../../../../../provider/themeContext"
 
 export default function CourseInformationForm() {
   const {
@@ -31,7 +32,7 @@ export default function CourseInformationForm() {
   const { course, editCourse } = useSelector((state) => state.course)
   const [loading, setLoading] = useState(false)
   const [courseCategories, setCourseCategories] = useState([])
-
+  const { darkTheme } = useContext(ThemeContext);
   useEffect(() => {
     const getCategories = async () => {
       setLoading(true)
@@ -156,18 +157,18 @@ export default function CourseInformationForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-8 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6"
+      className={`space-y-8 rounded-md border-[1px] p-6 ${darkTheme ? "border-richblack-700 bg-richblack-800" : "bg-white border-richblack-5"}`}
     >
       {/* Course Title */}
       <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseTitle">
+        <label className={`text-sm  ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="courseTitle">
           Course Title <sup className="text-pink-200">*</sup>
         </label>
         <input
           id="courseTitle"
           placeholder="Enter Course Title"
           {...register("courseTitle", { required: true })}
-          className="form-style w-full"
+          className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
         />
         {errors.courseTitle && (
           <span className="ml-2 text-xs tracking-wide text-pink-200">
@@ -177,14 +178,14 @@ export default function CourseInformationForm() {
       </div>
       {/* Course Short Description */}
       <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseShortDesc">
+        <label className={`text-sm  ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="courseShortDesc">
           Course Short Description <sup className="text-pink-200">*</sup>
         </label>
         <textarea
           id="courseShortDesc"
           placeholder="Enter Description"
           {...register("courseShortDesc", { required: true })}
-          className="form-style resize-x-none min-h-[130px] w-full"
+          className={` resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
         />
         {errors.courseShortDesc && (
           <span className="ml-2 text-xs tracking-wide text-pink-200">
@@ -194,7 +195,7 @@ export default function CourseInformationForm() {
       </div>
       {/* Course Price */}
       <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="coursePrice">
+        <label className={`text-sm  ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="coursePrice">
           Course Price <sup className="text-pink-200">*</sup>
         </label>
         <div className="relative">
@@ -208,7 +209,7 @@ export default function CourseInformationForm() {
                 value: /^(0|[1-9]\d*)(\.\d+)?$/,
               },
             })}
-            className="form-style w-full !pl-12"
+            className={`w-full !pl-12 ${darkTheme ? "form-style" : "light-form-style"}`}
           />
           <HiOutlineCurrencyRupee className="absolute left-3 top-1/2 inline-block -translate-y-1/2 text-2xl text-richblack-400" />
         </div>
@@ -220,14 +221,14 @@ export default function CourseInformationForm() {
       </div>
       {/* Course Category */}
       <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseCategory">
+        <label className={`text-sm  ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="courseCategory">
           Course Category <sup className="text-pink-200">*</sup>
         </label>
         <select
           {...register("courseCategory", { required: true })}
           defaultValue=""
           id="courseCategory"
-          className="form-style w-full"
+          className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
         >
           <option value="" disabled>
             Choose a Category
@@ -266,14 +267,14 @@ export default function CourseInformationForm() {
       />
       {/* Benefits of the course */}
       <div className="flex flex-col space-y-2">
-        <label className="text-sm text-richblack-5" htmlFor="courseBenefits">
+        <label className={`text-sm  ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="courseBenefits">
           Benefits of the course <sup className="text-pink-200">*</sup>
         </label>
         <textarea
           id="courseBenefits"
           placeholder="Enter benefits of the course"
           {...register("courseBenefits", { required: true })}
-          className="form-style resize-x-none min-h-[130px] w-full"
+          className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
         />
         {errors.courseBenefits && (
           <span className="ml-2 text-xs tracking-wide text-pink-200">

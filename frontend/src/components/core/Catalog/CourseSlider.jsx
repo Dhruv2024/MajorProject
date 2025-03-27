@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 
 import { Swiper, SwiperSlide } from "swiper/react"
 import "swiper/css"
@@ -7,8 +7,10 @@ import "swiper/css/pagination"
 import { Autoplay, FreeMode, Navigation, Pagination } from 'swiper/modules'
 
 import Course_Card from './Course_Card'
+import { ThemeContext } from '../../../provider/themeContext'
 
 const CourseSlider = ({ Courses }) => {
+    const { darkTheme } = useContext(ThemeContext);
     return (
         <>
             {Courses?.length ? (

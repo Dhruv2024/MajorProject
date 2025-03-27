@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { ThemeContext } from '../../../provider/themeContext';
 
 const Messages = ({ messages }) => {
     const { user } = useSelector((state) => state.profile);
@@ -8,7 +9,7 @@ const Messages = ({ messages }) => {
     // Reference to the message container
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
-
+    const { darkTheme } = useContext(ThemeContext);
     // Track whether the user is at the bottom of the chat
     const [isAtBottom, setIsAtBottom] = useState(true);
 
@@ -57,7 +58,7 @@ const Messages = ({ messages }) => {
     return (
         <div
             ref={messagesContainerRef}
-            className="p-4 space-y-4 h-[70vh] overflow-y-auto custom-scrollbar"
+            className={`p-4 space-y-4 h-[70vh] overflow-y-auto `}
         >
             {messages.length > 0 ? (
                 messages.map((message) => {
@@ -67,10 +68,10 @@ const Messages = ({ messages }) => {
                     return (
                         <div
                             key={message._id}
-                            className={`p-3 rounded-lg shadow-md max-w-lg ${isSentByUser ? ' bg-richblack-700 ml-auto' : ' bg-richblack-800 text-richblack-600'} text-white`}
+                            className={`p-3 rounded-lg shadow-md max-w-lg ${isSentByUser ? `${darkTheme ? "bg-richblack-700" : "bg-blue-25"} ml-auto` : ` ${darkTheme ? "bg-richblack-800 text-richblack-600" : "bg-blue-5 text-richblack-700"}`} ${darkTheme ? "text-white" : "text-richblack-700"}`}
                         >
 
-                            <div className='flex items-center justify-between text-xs'>
+                            <div className='flex items-center justify-between text-xs font-semibold'>
 
                                 {
                                     !isSentByUser ? (
@@ -84,7 +85,7 @@ const Messages = ({ messages }) => {
                                             }
                                         </div>
                                     ) : (
-                                        <div className='text-blue-25'>
+                                        <div className={`${darkTheme ? 'text-blue-25' : 'text-richblack-600'}`}>
                                             You
                                         </div>
                                     )
