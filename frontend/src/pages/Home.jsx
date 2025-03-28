@@ -41,10 +41,10 @@ const Home = () => {
 
                 <div className="flex gap-7 mt-8 lg:flex-row flex-col">
                     <HomeButton active={true} linkTo={"/signup"}>
-                        Learn More
+                        Discover Our Courses
                     </HomeButton>
                     <HomeButton active={false} linkTo={"/login"}>
-                        Book a Demo
+                        Start Your Journey
                     </HomeButton>
                 </div>
 

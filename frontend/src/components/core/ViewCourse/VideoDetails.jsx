@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useContext, useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
 
@@ -10,9 +10,12 @@ import { markLectureAsComplete } from "../../../services/operations/courseDetail
 import { updateCompletedLectures } from "../../../slices/viewCourseSlice"
 import { IconBtn } from "../../common/IconBtn"
 import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
+import { ThemeContext } from "../../../provider/themeContext"
+import { generateSummary } from "../../../services/operations/summaryAPI"
 
 const VideoDetails = () => {
-    const { courseId, sectionId, subSectionId } = useParams()
+    const { courseId, sectionId, subSectionId } = useParams();
+    const { darkTheme } = useContext(ThemeContext);
     const navigate = useNavigate()
     const location = useLocation()
     const playerRef = useRef(null)
@@ -173,6 +176,7 @@ const VideoDetails = () => {
         }
         setLoading(false)
     }
+    // console.log(videoData);
     // console.log(videoResource);
     // const videoResource = JSON.stringify(videoData?.resource)
     // console.log(videoResource);
@@ -189,71 +193,80 @@ const VideoDetails = () => {
                     className="h-full w-full rounded-md object-cover"
                 />
             ) : (
-                <Player
-                    ref={playerRef}
-                    aspectRatio="16:9"
-                    playsInline
-                    onEnded={() => setVideoEnded(true)}
-                    src={videoData?.videoUrl}
-                >
-                    <BigPlayButton position="center" />
-                    {/* Render When Video Ends */}
-                    {videoEnded && (
-                        <div
-                            style={{
-                                backgroundImage:
-                                    "linear-gradient(to top, rgb(0, 0, 0), rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.1)",
-                            }}
-                            className="full absolute inset-0 z-[100] grid h-full place-content-center font-inter"
-                        >
-                            {!completedLectures.includes(subSectionId) && (
+                <div>
+                    <Player
+                        ref={playerRef}
+                        aspectRatio="16:9"
+                        playsInline
+                        onEnded={() => setVideoEnded(true)}
+                        src={videoData?.videoUrl}
+                    >
+                        <BigPlayButton position="center" />
+                        {/* Render When Video Ends */}
+                        {videoEnded && (
+                            <div
+                                style={{
+                                    backgroundImage:
+                                        "linear-gradient(to top, rgb(0, 0, 0), rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.1)",
+                                }}
+                                className="full absolute inset-0 z-[100] grid h-full place-content-center font-inter"
+                            >
+                                {!completedLectures.includes(subSectionId) && (
+                                    <IconBtn
+                                        disabled={loading}
+                                        onclick={() => handleLectureCompletion()}
+                                        text={!loading ? "Mark As Completed" : "Loading..."}
+                                        customClasses="text-xl max-w-max px-4 mx-auto"
+                                    />
+                                )}
                                 <IconBtn
                                     disabled={loading}
-                                    onclick={() => handleLectureCompletion()}
-                                    text={!loading ? "Mark As Completed" : "Loading..."}
-                                    customClasses="text-xl max-w-max px-4 mx-auto"
+                                    onclick={() => {
+                                        if (playerRef?.current) {
+                                            // set the current time of the video to 0
+                                            playerRef?.current?.seek(0)
+                                            playerRef?.current?.play()
+                                            setVideoEnded(false)
+                                        }
+                                    }}
+                                    text="Rewatch"
+                                    customClasses="text-xl max-w-max px-4 mx-auto mt-2"
                                 />
-                            )}
-                            <IconBtn
-                                disabled={loading}
-                                onclick={() => {
-                                    if (playerRef?.current) {
-                                        // set the current time of the video to 0
-                                        playerRef?.current?.seek(0)
-                                        playerRef?.current?.play()
-                                        setVideoEnded(false)
-                                    }
-                                }}
-                                text="Rewatch"
-                                customClasses="text-xl max-w-max px-4 mx-auto mt-2"
-                            />
-                            <div className="mt-10 flex min-w-[250px] justify-center gap-x-4 text-xl">
-                                {!isFirstVideo() && (
-                                    <button
-                                        disabled={loading}
-                                        onClick={goToPrevVideo}
-                                        className="blackButton"
-                                    >
-                                        Prev
-                                    </button>
-                                )}
-                                {!isLastVideo() && (
-                                    <button
-                                        disabled={loading}
-                                        onClick={goToNextVideo}
-                                        className="blackButton"
-                                    >
-                                        Next
-                                    </button>
-                                )}
+                                <div className="mt-10 flex min-w-[250px] justify-center gap-x-4 text-xl">
+                                    {!isFirstVideo() && (
+                                        <button
+                                            disabled={loading}
+                                            onClick={goToPrevVideo}
+                                            className="blackButton"
+                                        >
+                                            Prev
+                                        </button>
+                                    )}
+                                    {!isLastVideo() && (
+                                        <button
+                                            disabled={loading}
+                                            onClick={goToNextVideo}
+                                            className="blackButton"
+                                        >
+                                            Next
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </Player>
-            )}
+                        )}
+                    </Player>
 
-            <h1 className="mt-4 text-3xl font-semibold">{videoData?.title}</h1>
-            <p className="pt-1 pb-3 font-inter">{videoData?.description}</p>
+                </div>
+
+            )}
+            <div className="flex justify-between items-center">
+                <h1 className={`mt-4 text-3xl font-semibold ${!darkTheme && "text-richblack-800"}`}>{videoData?.title}</h1>
+                <button className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`} onClick={async () => {
+                    await dispatch(generateSummary(videoData?.videoUrl, token));
+                    console.log("called ");
+                }}>Generate Summary</button>
+            </div>
+            <p className={`pt-1 pb-3 font-inter ${!darkTheme && "text-richblack-400"}`}>{videoData?.description}</p>
             {
                 (videoResourceItems.length > 1 || (videoResourceItems.length === 1 && videoResourceItems[0] !== "")) && (
                     <div className="flex flex-col pb-10">

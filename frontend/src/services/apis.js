@@ -77,3 +77,7 @@ export const messageEndpoints = {
     FETCH_MESSAGES: BASE_URL + "/message/fetchMessages",
     FETCH_COURSE_DETAILS: BASE_URL + "/message/fetchCourseDetails"
 }
+
+export const summaryEndpoints = {
+    GENERATE_SUMMARY: BASE_URL + "/summary/generate-summary",
+}
