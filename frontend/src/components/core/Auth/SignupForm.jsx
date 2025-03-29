@@ -111,10 +111,9 @@ function SignupForm({ darkTheme }) {
                     </label>
                     <label>
                         <p className={`mb-1 text-[0.875rem] leading-[1.375rem] ${darkTheme ? "text-richblack-5" : "text-richblack-600"}`}>
-                            Last Name <sup className="text-pink-200">*</sup>
+                            Last Name
                         </p>
                         <input
-                            required
                             type="text"
                             name="lastName"
                             value={lastName}

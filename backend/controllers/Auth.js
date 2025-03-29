@@ -14,7 +14,7 @@ exports.signup = async (req, res) => {
         // Destructure fields from the request body
         const {
             firstName,
-            lastName,
+            lastName,  // lastName is now optional
             email,
             password,
             confirmPassword,
@@ -22,10 +22,10 @@ exports.signup = async (req, res) => {
             contactNumber,
             otp,
         } = req.body;
-        // Check if All Details are there or not
+
+        // Check if required details are there or not (excluding lastName)
         if (
             !firstName ||
-            !lastName ||
             !email ||
             !password ||
             !confirmPassword ||
@@ -33,9 +33,10 @@ exports.signup = async (req, res) => {
         ) {
             return res.status(403).send({
                 success: false,
-                message: "All Fields are required",
+                message: "First Name, Email, Password, Confirm Password, and OTP are required.",
             });
         }
+
         // Check if password and confirm password match
         if (password !== confirmPassword) {
             return res.status(400).json({
@@ -74,9 +75,13 @@ exports.signup = async (req, res) => {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create the user
-        let approved = "";
-        approved === "Instructor" ? (approved = false) : (approved = true);
+        // Default the lastName to an empty string if not provided
+        let userLastName = lastName || null;  // Optional, defaults to an empty string
+        if (lastName === "") {
+            userLastName = null;
+        }
+        // Determine approval status
+        let approved = accountType === "Instructor" ? false : true;
 
         // Create the Additional Profile For User
         const profileDetails = await Profile.create({
@@ -85,16 +90,18 @@ exports.signup = async (req, res) => {
             about: null,
             contactNumber: null,
         });
+
+        // Create the user
         const user = await User.create({
             firstName,
-            lastName,
+            lastName: userLastName,
             email,
             contactNumber,
             password: hashedPassword,
             accountType: accountType,
             approved: approved,
             additionalDetails: profileDetails._id,
-            image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
+            image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}`,  // Default image
         });
 
         return res.status(200).json({
@@ -110,6 +117,7 @@ exports.signup = async (req, res) => {
         });
     }
 };
+
 
 // Login controller for authenticating users
 exports.login = async (req, res) => {

@@ -54,7 +54,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
                 alt='Thumbnail Image'
                 className='max-h-[300px] min-h-[180px] w-[400px] rounded-xl'
             />
-            <div className="space-x-3 pb-4 text-3xl font-semibold">
+            <div className="space-x-3 pb-4 text-3xl font-semibold text-white">
                 Rs. {CurrentPrice}
             </div>
             <div className='flex flex-col gap-y-6'>

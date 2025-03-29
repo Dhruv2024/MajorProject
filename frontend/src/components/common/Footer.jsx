@@ -3,7 +3,10 @@ import { FooterLink2 } from "../../data/footer-links";
 import { Link, useNavigate } from "react-router-dom";
 
 // Images
-import Logo from "../../assets/Logo/Logo-Full-Light.png";
+// import Logo from "../../assets/Logo/Logo-Full-Light.png";
+import lightLogo from "../../assets/Logo/edusphereLight.png";
+import darkLogo from "../../assets/Logo/edusphere.png";
+
 
 // Icons
 import { FaInstagram, FaGoogle, FaYoutube } from "react-icons/fa";
@@ -32,7 +35,7 @@ const Footer = ({ darkTheme }) => {
                     {/* Section 1 */}
                     <div className={`lg:w-[50%] flex flex-wrap flex-row justify-between pl-3 lg:pr-5 gap-3 ${darkTheme ? "lg:border-r lg:border-richblack-700" : ""}`}>
                         <div className="w-[30%] flex flex-col gap-3 lg:w-[30%] mb-7 lg:pl-0">
-                            <img src={Logo} alt="" className="object-contain" />
+                            <img src={darkTheme ? darkLogo : lightLogo} alt="" className="object-contain" />
                             <h1 className="text-richblack-50 font-semibold text-[16px]">
                                 Company
                             </h1>

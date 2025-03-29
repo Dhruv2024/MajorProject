@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useParams } from "react-router-dom"
 
@@ -8,6 +8,7 @@ import {
 } from "../../../../services/operations/courseDetailsAPI"
 import { setCourse, setEditCourse } from "../../../../slices/courseSlice"
 import RenderSteps from "../AddCourse/RenderSteps"
+import { ThemeContext } from "../../../../provider/themeContext"
 
 export default function EditCourse() {
     const dispatch = useDispatch()
@@ -15,11 +16,12 @@ export default function EditCourse() {
     const { course } = useSelector((state) => state.course)
     const [loading, setLoading] = useState(false)
     const { token } = useSelector((state) => state.auth)
-
+    const { darkTheme } = useContext(ThemeContext);
     useEffect(() => {
         async function getFullCourseDetails() {
             setLoading(true)
-            const result = await getFullDetailsOfCourse(courseId, token)
+            const result = await getFullDetailsOfCourse(courseId, token);
+            // console.log(result?.courseDetails);
             if (result?.courseDetails) {
                 dispatch(setEditCourse(true))
                 dispatch(setCourse(result?.courseDetails))
@@ -39,7 +41,7 @@ export default function EditCourse() {
 
     return (
         <div>
-            <h1 className="mb-14 text-3xl font-medium text-richblack-5">
+            <h1 className={`mb-14 text-3xl font-medium ${darkTheme ? "text-richblack-5" : "text-richblack-500"}`}>
                 Edit Course
             </h1>
             <div className="mx-auto max-w-[600px]">

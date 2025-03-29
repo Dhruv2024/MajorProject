@@ -1,17 +1,16 @@
 import React, { useContext, useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
-
 import "video-react/dist/video-react.css"
 import { useLocation } from "react-router-dom"
 import { BigPlayButton, Player } from "video-react"
-
 import { markLectureAsComplete } from "../../../services/operations/courseDetailsAPI"
 import { updateCompletedLectures } from "../../../slices/viewCourseSlice"
 import { IconBtn } from "../../common/IconBtn"
-import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io"
 import { ThemeContext } from "../../../provider/themeContext"
 import { generateSummary } from "../../../services/operations/summaryAPI"
+import { FaRegClosedCaptioning } from "react-icons/fa";
 
 const VideoDetails = () => {
     const { courseId, sectionId, subSectionId } = useParams();
@@ -30,6 +29,24 @@ const VideoDetails = () => {
     const [loading, setLoading] = useState(false)
     const [videoResource, setVideoResource] = useState("");
     const [open, setOpen] = useState(false);
+    const [captionsEnabled, setCaptionsEnabled] = useState(true);  // Track captions state
+
+    // Detect full-screen state change
+    useEffect(() => {
+        const handleFullScreenChange = () => {
+            if (document.fullscreenElement) {
+                setIsFullScreen(true);
+            } else {
+                setIsFullScreen(false);
+            }
+        };
+
+        document.addEventListener("fullscreenchange", handleFullScreenChange);
+
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullScreenChange);
+        };
+    }, []);
 
     useEffect(() => {
         async function getVideoDetails() {
@@ -37,15 +54,12 @@ const VideoDetails = () => {
             if (!courseId && !sectionId && !subSectionId) {
                 navigate(`/dashboard/enrolled-courses`)
             } else {
-                // console.log("courseSectionData", courseSectionData)
                 const filteredData = courseSectionData.filter(
                     (course) => course._id === sectionId
                 )
-                // console.log("filteredData", filteredData)
                 const filteredVideoData = filteredData?.[0]?.subSection.filter(
                     (data) => data._id === subSectionId
                 )
-                // console.log("filteredVideoData", filteredVideoData)
                 setVideoData(filteredVideoData[0])
                 setPreviewSource(courseEntireData.thumbnail)
                 setVideoEnded(false)
@@ -55,7 +69,11 @@ const VideoDetails = () => {
         getVideoDetails();
     }, [courseSectionData, courseEntireData, location.pathname])
 
-    // check if the lecture is the first video of the course
+    // Toggle captions on and off
+    const toggleCaptions = () => {
+        setCaptionsEnabled(!captionsEnabled);
+    }
+
     const isFirstVideo = () => {
         const currentSectionIndx = courseSectionData.findIndex(
             (data) => data._id === sectionId
@@ -65,17 +83,10 @@ const VideoDetails = () => {
             currentSectionIndx
         ].subSection.findIndex((data) => data._id === subSectionId)
 
-        if (currentSectionIndx === 0 && currentSubSectionIndx === 0) {
-            return true
-        } else {
-            return false
-        }
+        return currentSectionIndx === 0 && currentSubSectionIndx === 0
     }
 
-    // go to the next video
     const goToNextVideo = () => {
-        // console.log(courseSectionData)
-
         const currentSectionIndx = courseSectionData.findIndex(
             (data) => data._id === sectionId
         )
@@ -86,8 +97,6 @@ const VideoDetails = () => {
         const currentSubSectionIndx = courseSectionData[
             currentSectionIndx
         ].subSection.findIndex((data) => data._id === subSectionId)
-
-        // console.log("no of subsections", noOfSubsections)
 
         if (currentSubSectionIndx !== noOfSubsections - 1) {
             const nextSubSectionId =
@@ -107,7 +116,6 @@ const VideoDetails = () => {
         }
     }
 
-    // check if the lecture is the last video of the course
     const isLastVideo = () => {
         const currentSectionIndx = courseSectionData.findIndex(
             (data) => data._id === sectionId
@@ -120,20 +128,13 @@ const VideoDetails = () => {
             currentSectionIndx
         ].subSection.findIndex((data) => data._id === subSectionId)
 
-        if (
+        return (
             currentSectionIndx === courseSectionData.length - 1 &&
             currentSubSectionIndx === noOfSubsections - 1
-        ) {
-            return true
-        } else {
-            return false
-        }
+        )
     }
 
-    // go to the previous video
     const goToPrevVideo = () => {
-        // console.log(courseSectionData)
-
         const currentSectionIndx = courseSectionData.findIndex(
             (data) => data._id === sectionId
         )
@@ -166,7 +167,6 @@ const VideoDetails = () => {
 
     const handleLectureCompletion = async () => {
         setLoading(true)
-        console.log("Subsection id is :", subSectionId);
         const res = await markLectureAsComplete(
             { courseId: courseId, subSectionId: subSectionId },
             token
@@ -176,14 +176,11 @@ const VideoDetails = () => {
         }
         setLoading(false)
     }
-    // console.log(videoData);
-    // console.log(videoResource);
-    // const videoResource = JSON.stringify(videoData?.resource)
-    // console.log(videoResource);
+
     let temp = JSON.stringify(videoResource)
     temp = temp.slice(1, -1).replace(/\\r\\n/g, '\r\n');
     const videoResourceItems = temp.split(/\r?\n/);
-    // console.log(videoResourceItems)
+
     return (
         <div className="flex flex-col gap-5 text-white">
             {!videoData ? (
@@ -193,21 +190,34 @@ const VideoDetails = () => {
                     className="h-full w-full rounded-md object-cover"
                 />
             ) : (
-                <div>
+                <div className="relative">
                     <Player
                         ref={playerRef}
                         aspectRatio="16:9"
                         playsInline
                         onEnded={() => setVideoEnded(true)}
                         src={videoData?.videoUrl}
+                        crossOrigin='anonymous'
                     >
+                        {
+                            captionsEnabled && videoData?.vttFileUrl && (
+                                <track
+                                    label="English"
+                                    kind="subtitles"
+                                    srcLang="en"
+                                    src={videoData.vttFileUrl}
+                                    default
+                                    crossOrigin="anonymous" // Allow cross-origin subtitles
+                                />
+                            )
+                        }
                         <BigPlayButton position="center" />
                         {/* Render When Video Ends */}
                         {videoEnded && (
                             <div
                                 style={{
                                     backgroundImage:
-                                        "linear-gradient(to top, rgb(0, 0, 0), rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.1)",
+                                        "linear-gradient(to top, rgb(0, 0, 0), rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.1) ",
                                 }}
                                 className="full absolute inset-0 z-[100] grid h-full place-content-center font-inter"
                             >
@@ -223,7 +233,6 @@ const VideoDetails = () => {
                                     disabled={loading}
                                     onclick={() => {
                                         if (playerRef?.current) {
-                                            // set the current time of the video to 0
                                             playerRef?.current?.seek(0)
                                             playerRef?.current?.play()
                                             setVideoEnded(false)
@@ -256,50 +265,56 @@ const VideoDetails = () => {
                         )}
                     </Player>
 
+                    {/* Overlapping icon for captions toggle */}
+                    {
+                        videoData?.vttFileUrl && (
+                            <div
+                                className="absolute top-4 left-4 z-50 cursor-pointer"
+                                onClick={toggleCaptions}
+                            >
+                                <FaRegClosedCaptioning className={`text-2xl ${captionsEnabled ? "text-blue-100" : "text-white"}`} />
+                            </div>
+                        )
+                    }
                 </div>
-
             )}
             <div className="flex justify-between items-center">
                 <h1 className={`mt-4 text-3xl font-semibold ${!darkTheme && "text-richblack-800"}`}>{videoData?.title}</h1>
-                <button className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`} onClick={async () => {
-                    await dispatch(generateSummary(videoData?.videoUrl, token));
-                    console.log("called ");
-                }}>Generate Summary</button>
+                <button
+                    className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`}
+                    onClick={async () => {
+                        await dispatch(generateSummary(videoData?.videoUrl, token));
+                        console.log("called ");
+                    }}
+                >
+                    Generate Summary
+                </button>
             </div>
             <p className={`pt-1 pb-3 font-inter ${!darkTheme && "text-richblack-400"}`}>{videoData?.description}</p>
-            {
-                (videoResourceItems.length > 1 || (videoResourceItems.length === 1 && videoResourceItems[0] !== "")) && (
-                    <div className="flex flex-col pb-10">
-                        <div className="flex items-center gap-1 font-semibold text-red text-2xl mb-2 cursor-pointer" onClick={() => {
+
+            {/* Video Resources */}
+            {videoResourceItems.length > 1 || (videoResourceItems.length === 1 && videoResourceItems[0] !== "") && (
+                <div className="flex flex-col pb-10">
+                    <div
+                        className="flex items-center gap-1 font-semibold text-red text-2xl mb-2 cursor-pointer"
+                        onClick={() => {
                             setOpen(!open);
-                        }}>
-                            {
-                                open ? (
-                                    <IoIosArrowDown />
-                                ) : (
-                                    <IoIosArrowForward />
-                                )
-                            }
-                            <h1>Video Resources</h1>
-                        </div>
-                        {
-                            open &&
-                            <ul className="list-disc">
-                                {
-                                    videoResourceItems.map((ele, index) => (
-                                        <li key={index} className="ml-10 font-normal">
-                                            {ele}
-                                        </li>
-                                    ))
-                                }
-                            </ul>
-                        }
+                        }}
+                    >
+                        {open ? <IoIosArrowDown /> : <IoIosArrowForward />}
+                        <h1>Video Resources</h1>
                     </div>
-                )
-            }
+                    {open && (
+                        <ul className="list-disc">
+                            {videoResourceItems.map((ele, index) => (
+                                <li key={index} className="ml-10 font-normal">{ele}</li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
 
-export default VideoDetails
-// video
+export default VideoDetails;

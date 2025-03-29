@@ -63,7 +63,7 @@ export default function EditProfile({ darkTheme }) {
                 type="text"
                 name="lastName"
                 id="lastName"
-                placeholder="Enter first name"
+                placeholder="Enter last name"
                 className={` ${darkTheme ? "form-style" : "light-form-style"}`}
                 {...register("lastName", { required: true })}
                 defaultValue={user?.lastName}
@@ -126,7 +126,7 @@ export default function EditProfile({ darkTheme }) {
               </select>
               {errors.gender && (
                 <span className="-mt-1 text-[12px] text-yellow-100">
-                  Please enter your Date of Birth.
+                  Please enter your Gender.
                 </span>
               )}
             </div>

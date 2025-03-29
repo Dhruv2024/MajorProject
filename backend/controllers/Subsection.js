@@ -2,60 +2,117 @@
 const Section = require("../models/Section");
 const SubSection = require("../models/SubSection");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
+const cloudinary = require('cloudinary').v2
 
 // Create a new sub-section for a given section
 exports.createSubSection = async (req, res) => {
     try {
-        // Extract necessary information from the request body
-        const { sectionId, title, description } = req.body
+        const { sectionId, title, description } = req.body;
         let { resource } = req.body;
-        const video = req.files.video
+        const video = req.files.video;
 
-        // Check if all necessary fields are provided
         if (!sectionId || !title || !description || !video) {
-            return res
-                .status(404)
-                .json({ success: false, message: "All Fields are Required" })
+            return res.status(404).json({ success: false, message: "All Fields are Required" });
         }
-        console.log(video)
+        const includeSubtitles = true;
+        // Upload the video to Cloudinary, optionally requesting subtitles (VTT file), height, and quality
+        const uploadResult = await uploadImageToCloudinary(video, process.env.FOLDER_NAME, includeSubtitles);
 
-        // Upload the video file to Cloudinary
-        const uploadDetails = await uploadImageToCloudinary(
-            video,
-            process.env.FOLDER_NAME
-        )
-        console.log(uploadDetails)
+        console.log("Uploaded video details:", uploadResult);
+
         if (!resource) {
-            resource = "";
+            resource = "";  // Ensure resource is defined
         }
-        // Create a new sub-section with the necessary information
-        const SubSectionDetails = await SubSection.create({
-            title: title,
-            timeDuration: `${uploadDetails.duration}`,
-            description: description,
-            videoUrl: uploadDetails.secure_url,
-            resource: resource
-        })
 
-        // Update the corresponding section with the newly created sub-section
+        let transcriptUrl = null;
+
+        // If subtitles are requested, poll for transcription status
+        if (includeSubtitles) {
+            let transcriptionStatus = 'pending';
+            let retryCount = 0;
+            const maxRetries = 10;
+            const delay = 5000; // 5 seconds
+
+            while (transcriptionStatus === 'pending' && retryCount < maxRetries) {
+                console.log(`Checking transcription status... Attempt ${retryCount + 1}`);
+
+                try {
+                    // Fetch video details from Cloudinary to check transcription status
+                    const videoDetails = await cloudinary.api.resource(uploadResult.public_id, {
+                        resource_type: 'video',
+                    });
+
+                    transcriptionStatus = videoDetails.info.raw_convert?.google_speech?.status;
+                    console.log("Transcription Status:", transcriptionStatus);
+
+                    if (transcriptionStatus === 'complete') {
+                        // Transcription completed, fetch subtitles URL (VTT file)
+                        console.log("Transcription completed. Subtitles are ready.");
+
+                        try {
+                            // Check for the VTT file
+                            const transcriptDetails = await cloudinary.api.resource(`${uploadResult.public_id}.vtt`, {
+                                resource_type: 'raw',  // The transcript is stored as raw text
+                            });
+                            console.log("Transcript file details:", transcriptDetails);
+                            transcriptUrl = transcriptDetails.secure_url;  // URL to access the VTT file
+                            console.log("Transcript URL:", transcriptUrl);
+                        } catch (err) {
+                            console.error("Error fetching transcript:", err);
+                            return res.status(500).json({ success: false, message: "Error fetching transcript", error: err.message });
+                        }
+                        break; // Exit loop once transcript is found
+                    } else {
+                        console.log("Transcription still pending...");
+                    }
+                } catch (err) {
+                    console.error("Error fetching video details:", err);
+                    return res.status(500).json({ success: false, message: "Error fetching video details", error: err.message });
+                }
+
+                // Wait before retrying
+                retryCount++;
+                await new Promise(resolve => setTimeout(resolve, delay)); // Wait 5 seconds before retrying
+            }
+
+            if (retryCount >= maxRetries) {
+                console.log("Max retries reached. The transcription is still pending.");
+                return res.status(500).json({
+                    success: false,
+                    message: "Max retries reached. The transcription is still pending."
+                });
+            }
+        }
+
+        // Create a new SubSection
+        const SubSectionDetails = await SubSection.create({
+            title,
+            timeDuration: `${uploadResult.duration}`,
+            description,
+            videoUrl: uploadResult.secure_url,
+            resource,
+            vttFileUrl: transcriptUrl,  // Include the VTT URL if available
+        });
+
+        // Update the section with the new sub-section
         const updatedSection = await Section.findByIdAndUpdate(
             { _id: sectionId },
             { $push: { subSection: SubSectionDetails._id } },
             { new: true }
-        ).populate("subSection")
+        ).populate("subSection");
 
-        // Return the updated section in the response
-        return res.status(200).json({ success: true, data: updatedSection })
+        return res.status(200).json({ success: true, data: updatedSection });
+
     } catch (error) {
-        // Handle any errors that may occur during the process
-        console.error("Error creating new sub-section:", error)
+        console.error("Error creating new sub-section:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
             error: error.message,
-        })
+        });
     }
-}
+};
+
 
 exports.updateSubSection = async (req, res) => {
     try {

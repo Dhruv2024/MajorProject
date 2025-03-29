@@ -21,7 +21,7 @@ export const MyProfile = () => {
                     <img src={`${user?.image}`} alt={`profile of ${user.firstName}`}
                         className="aspect-square w-[78px] rounded-full object-cover" />
                     <div className="space-y-1">
-                        <p className={`text-lg font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-600"}`}>{user.firstName + " " + user.lastName}</p>
+                        <p className={`text-lg font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-600"}`}>{user.firstName + " " + (user?.lastName ? (user.lastName) : "")}</p>
                         <p className="text-sm text-richblack-300">{user.email}</p>
                     </div>
                 </div>
@@ -98,7 +98,11 @@ export const MyProfile = () => {
                         <div>
                             <p className="mb-2 text-sm text-richblack-300">Last Name</p>
                             <p className={`text-sm font-medium ${darkTheme ? "text-richblack-5 " : "text-richblack-600"}`}>
-                                {user?.lastName}
+                                {user?.lastName ?? (
+                                    <div className='text-richblack-400'>
+                                        Add LastName
+                                    </div>
+                                )}
                             </p>
                         </div>
                         <div>

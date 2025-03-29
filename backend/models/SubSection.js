@@ -9,6 +9,7 @@ const SubSectionSchema = new mongoose.Schema({
     classFinished: { type: Boolean },
     public: { type: Boolean },
     videoUrl: { type: String },
+    vttFileUrl: { type: String },
     resource: { type: String }
 });
 
