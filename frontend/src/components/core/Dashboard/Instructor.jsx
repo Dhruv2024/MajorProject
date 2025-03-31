@@ -55,7 +55,7 @@ export default function Instructor() {
                     <div className="my-4 flex lg:h-[450px] space-x-4 lg:flex-row flex-col">
                         {/* Render chart / graph */}
                         {totalAmount > 0 || totalStudents > 0 ? (
-                            <InstructorChart courses={instructorData} />
+                            <InstructorChart courses={instructorData} darkTheme={darkTheme} />
                         ) : (
                             <div className="flex-1 rounded-md bg-richblack-800 p-6">
                                 <p className="text-lg font-bold text-richblack-5">Visualize</p>
@@ -65,36 +65,36 @@ export default function Instructor() {
                             </div>
                         )}
                         {/* Total Statistics */}
-                        <div className="flex min-w-[250px] flex-col rounded-md bg-richblack-800 p-6">
-                            <p className="text-lg font-bold text-richblack-5">Statistics</p>
+                        <div className={`flex min-w-[250px] flex-col rounded-md p-6 ${darkTheme ? "bg-richblack-800" : "bg-white"}`}>
+                            <p className={`text-lg font-bold ${darkTheme ? "text-richblack-5" : "text-richblack-600"}`}>Statistics</p>
                             <div className="mt-4 space-y-4">
                                 <div>
-                                    <p className="text-lg text-richblack-200">Total Courses</p>
-                                    <p className="text-3xl font-semibold text-richblack-50">
+                                    <p className={`text-lg ${darkTheme ? "text-richblack-200" : "text-richblack-800"}`}>Total Courses</p>
+                                    <p className={`text-3xl font-semibold ${darkTheme ? "text-richblack-50" : "text-richblack-400"}`}>
                                         {courses.length}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-lg text-richblack-200">Total Students</p>
-                                    <p className="text-3xl font-semibold text-richblack-50">
+                                    <p className={`text-lg ${darkTheme ? "text-richblack-200" : "text-richblack-800"}`}>Total Students</p>
+                                    <p className={`text-3xl font-semibold ${darkTheme ? "text-richblack-50" : "text-richblack-400"}`}>
                                         {totalStudents}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-lg text-richblack-200">Total Income</p>
-                                    <p className="text-3xl font-semibold text-richblack-50">
+                                    <p className={`text-lg ${darkTheme ? "text-richblack-200" : "text-richblack-800"}`}>Total Income</p>
+                                    <p className={`text-3xl font-semibold ${darkTheme ? "text-richblack-50" : "text-richblack-400"}`}>
                                         Rs. {totalAmount}
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="rounded-md bg-richblack-800 p-6">
+                    <div className={`rounded-md p-6 ${darkTheme ? "bg-richblack-800" : "bg-white"}`}>
                         {/* Render 3 courses */}
                         <div className="flex items-center justify-between">
-                            <p className="text-lg font-bold text-richblack-5">Your Courses</p>
+                            <p className={`text-lg font-bold ${darkTheme ? "text-richblack-5" : "text-richblack-600"}`}>Your Courses</p>
                             <Link to="/dashboard/my-courses">
-                                <p className="text-xs font-semibold text-yellow-50">View All</p>
+                                <p className={`text-xs font-semibold ${darkTheme ? "text-yellow-50" : "text-blue-50"}`}>View All</p>
                             </Link>
                         </div>
                         <div className="my-4 flex items-start space-x-6">
@@ -106,7 +106,7 @@ export default function Instructor() {
                                         className="h-[201px] w-full rounded-md object-cover"
                                     />
                                     <div className="mt-3 w-full">
-                                        <p className="text-sm font-medium text-richblack-50">
+                                        <p className={`text-sm font-medium ${darkTheme ? "text-richblack-50" : "text-black"}`}>
                                             {course.courseName}
                                         </p>
                                         <div className="mt-1 flex items-center space-x-2">
