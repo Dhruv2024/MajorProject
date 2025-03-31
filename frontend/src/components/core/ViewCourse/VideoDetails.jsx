@@ -30,6 +30,12 @@ const VideoDetails = () => {
     const [videoResource, setVideoResource] = useState("");
     const [open, setOpen] = useState(false);
     const [captionsEnabled, setCaptionsEnabled] = useState(true);  // Track captions state
+    const [summary, setSummary] = useState(null); // Changed to store summary data
+    const [isSummaryPopupOpen, setSummaryPopupOpen] = useState(false); // Track summary popup visibility
+
+    useEffect(() => {
+        setSummary(false);
+    }, [courseId, sectionId, subSectionId])
 
     // Detect full-screen state change
     useEffect(() => {
@@ -181,6 +187,17 @@ const VideoDetails = () => {
     temp = temp.slice(1, -1).replace(/\\r\\n/g, '\r\n');
     const videoResourceItems = temp.split(/\r?\n/);
 
+    const handleGenerateSummary = async () => {
+        const res = await dispatch(generateSummary(videoData?.videoUrl, token));
+        setSummary(res);
+        setSummaryPopupOpen(true); // Open the summary popup once it's generated
+    }
+
+    const handleShowSummary = () => {
+        setSummaryPopupOpen(true);
+    }
+    // console.log(summary);
+    // console.log(isSummaryPopupOpen);
     return (
         <div className="flex flex-col gap-5 text-white">
             {!videoData ? (
@@ -280,15 +297,26 @@ const VideoDetails = () => {
             )}
             <div className="flex justify-between items-center">
                 <h1 className={`mt-4 text-3xl font-semibold ${!darkTheme && "text-richblack-800"}`}>{videoData?.title}</h1>
-                <button
-                    className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`}
-                    onClick={async () => {
-                        await dispatch(generateSummary(videoData?.videoUrl, token));
-                        console.log("called ");
-                    }}
-                >
-                    Generate Summary
-                </button>
+                {
+                    !summary && (
+                        <button
+                            className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`}
+                            onClick={handleGenerateSummary}
+                        >
+                            Generate Summary
+                        </button>
+                    )
+                }
+                {
+                    summary && (
+                        <button
+                            className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`}
+                            onClick={handleShowSummary}
+                        >
+                            Show Summary
+                        </button>
+                    )
+                }
             </div>
             <p className={`pt-1 pb-3 font-inter ${!darkTheme && "text-richblack-400"}`}>{videoData?.description}</p>
 
@@ -311,6 +339,25 @@ const VideoDetails = () => {
                             ))}
                         </ul>
                     )}
+                </div>
+            )}
+
+            {/* Popup for Showing Summary */}
+            {isSummaryPopupOpen && summary && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white text-black p-6 rounded-lg max-w-lg w-full">
+                        <h2 className="text-xl font-semibold mb-4">Summary</h2>
+                        <div
+                            className="summary-content"
+                            dangerouslySetInnerHTML={{ __html: summary }}
+                        />
+                        <button
+                            className="mt-4 text-blue-500 font-semibold"
+                            onClick={() => setSummaryPopupOpen(false)}
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

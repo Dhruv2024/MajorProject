@@ -3,10 +3,10 @@ const mongoose = require("mongoose");
 // Define the Courses schema
 const answerSchema = new mongoose.Schema(
     {
-        room: {
+        questionDetails: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
-            ref: "Room",
+            ref: "Question",
         },
         image: {
             type: String,

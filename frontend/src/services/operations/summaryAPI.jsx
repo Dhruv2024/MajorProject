@@ -23,35 +23,50 @@ const parseMessage = (message) => {
 };
 export function generateSummary(videoUrl, token, navigate) {
     return async (dispatch) => {
-        const toastId = toast.loading("Loading...")
-        // dispatch(setLoading(true))
-        try {
-            const response = await apiConnector("POST", GENERATE_SUMMARY, {
-                lectureUrl: videoUrl,
-            },
-                {
-                    Authorization: `Bearer ${token}`,
-                })
-            // console.log("SENDOTP API RESPONSE............", response)
+        const toastId = toast.loading("Loading...");
+        let result = "";
 
-            // console.log(response.data)
+        try {
+            const response = await apiConnector(
+                "POST",
+                GENERATE_SUMMARY,
+                { lectureUrl: videoUrl },
+                { Authorization: `Bearer ${token}` }
+            );
 
             if (!response.data.success) {
-                throw new Error(response.data.message)
+                throw new Error(response.data.message);
             }
-            alert(response.data.message);
-            // toast.success("OTP Sent Successfully")
-            // navigate("/verify-email")
-            // const res = parseMessage(response.data.message);
-            // console.log(res);
+
+            result = response.data.message;
+
+            // Ensure that special characters like newlines and other formatting issues are handled correctly
+            if (result) {
+                // Handle escaped newlines (\r\n and \n)
+                result = result.replace(/\\r\\n/g, "\r\n")  // Handle escaped \r\n
+                    .replace(/\\n/g, "\n")      // Handle escaped \n
+                    .trim();                    // Remove unnecessary leading/trailing whitespace
+
+                // Replace text wrapped in ** ** with bold HTML tags
+                result = result.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+                // Add line breaks after bold sections so the following text starts on a new line
+                result = result.replace(/(\*\*.*?\*\*)/g, "$1<br>");
+
+                // Ensure that each section (Problem, Solution, Market) starts on a new line
+                result = result.replace(/\n/g, "<br>"); // Replace newlines with <br> to ensure proper formatting in HTML
+            }
+
         } catch (error) {
-            console.log("GENERATE SUMMARY API ERROR............", error)
-            toast.error("Could Not Generate summary")
+            console.log("GENERATE SUMMARY API ERROR............", error);
+            toast.error("Could Not Generate summary");
         }
-        // dispatch(setLoading(false))
-        toast.dismiss(toastId)
+
+        toast.dismiss(toastId);
+        return result;
     }
 }
+
 
 export function signUp(
     accountType,

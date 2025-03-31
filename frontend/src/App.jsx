@@ -35,6 +35,7 @@ import ChatPage from "./pages/ChatPage";
 import { IoSunnyOutline } from "react-icons/io5";
 import { IoMoonOutline } from "react-icons/io5";
 import { ThemeContext } from "./provider/themeContext";
+import AskQuestion from "./pages/AskQuestion";
 
 
 function App() {
@@ -170,6 +171,7 @@ function App() {
           <Route path="/dashboard/my-profile" element={<MyProfile />} />
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/chat/:roomId" element={<ChatPage />} />
+          <Route path="/dashboard/question/:courseId" element={<AskQuestion />} />
           {
             user?.accountType === ACCOUNT_TYPE.STUDENT && (
               <>

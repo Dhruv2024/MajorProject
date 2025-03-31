@@ -61,7 +61,14 @@ const coursesSchema = new mongoose.Schema({
     room: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Room",
-    }
+    },
+    questionsList: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "Question"
+        }
+    ]
 });
 
 // Export the Courses model

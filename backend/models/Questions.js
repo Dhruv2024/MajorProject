@@ -3,17 +3,20 @@ const mongoose = require("mongoose");
 // Define the Courses schema
 const questionSchema = new mongoose.Schema(
     {
-        instructor: {
+        courseId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
-            ref: "user",
+            ref: "Cousrse",
         },
         askedBy: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: "user",
         },
-        image: {
+        imageUrl: {
+            type: String,
+        },
+        imageText: {
             type: String,
         },
         text: {
