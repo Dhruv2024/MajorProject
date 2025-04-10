@@ -6,7 +6,7 @@ const questionSchema = new mongoose.Schema(
         courseId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
-            ref: "Cousrse",
+            ref: "Course",
         },
         askedBy: {
             type: mongoose.Schema.Types.ObjectId,

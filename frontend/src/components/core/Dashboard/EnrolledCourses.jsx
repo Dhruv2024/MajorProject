@@ -5,6 +5,8 @@ import ProgressBar from '@ramonak/react-progress-bar';
 import { useNavigate } from 'react-router-dom';
 import { CiChat1 } from "react-icons/ci";
 import { ThemeContext } from '../../../provider/themeContext';
+import { MdOutlineQuestionMark } from "react-icons/md";
+import { FaClipboardQuestion } from "react-icons/fa6";
 
 export const EnrolledCourses = () => {
     const { token } = useSelector((state) => state.auth)
@@ -86,9 +88,12 @@ export const EnrolledCourses = () => {
                                     isLabelVisible={false}
                                 />
                             </div>
-                            <div className=' pl-20 pr-3 px-2 py-3 text-2xl '>
+                            <div className=' pl-20 pr-3 px-2 py-3 text-2xl flex '>
                                 <CiChat1 className='outline-8 hover:text-blue-100 cursor-pointer' onClick={() => {
                                     navigate(`/dashboard/chat/${course.room}`)
+                                }} />
+                                <FaClipboardQuestion className='outline-8 hover:text-blue-100 cursor-pointer' onClick={() => {
+                                    navigate(`/dashboard/question/${course?._id}`)
                                 }} />
                             </div>
                         </div>

@@ -27,7 +27,10 @@ const io = new Server(server, {
 });
 const Message = require("./models/Message");
 const Room = require("./models/Rooms");
-const { createServer } = require('net');
+// const { createServer } = require('net');
+const Answers = require('./models/Answers');
+const Questions = require('./models/Questions');
+const { uploadImageToCloudinary } = require('./utils/imageUploader');
 io.on('connection', (socket) => {
     console.log("user connected");
     // Join Room
@@ -35,6 +38,42 @@ io.on('connection', (socket) => {
         socket.join(room);
         console.log(`User joined room: ${room}`);
     });
+    socket.on('joinAnswerRoom', (questionId) => {
+        socket.join(questionId);
+        console.log('Now you can answer the question');
+    })
+    socket.on('answeredQuestion', async (data) => {
+        try {
+            const { questionDetails, image, text, userDetails } = data;
+            console.log(data);
+            console.log("answer received is ", data);
+            let imageUrl = null;
+            if (image) {
+                const uploadResult = await uploadImageToCloudinary(image, "questions");
+                console.log(uploadResult.secure_url);
+                imageUrl = uploadResult.secure_url;
+            }
+            const answer = await Answers.create({
+                questionDetails, image: imageUrl, text, userDetails
+            });
+
+            const populatedAnswer = await Answers.findById(answer._id)
+                .populate("questionDetails")
+                .populate("userDetails", 'firstName email accountType image ');
+
+            const updatedQuestion = await Questions.findByIdAndUpdate(
+                questionDetails, // Find the question by ID
+                { $push: { answeredBy: answer._id } }, // Push the answerId into the 'answeredBy' array
+                { new: true } // Return the updated document
+            );
+            // console.log(populatedAnswer);
+            io.to(questionDetails).emit("new-answer-list", populatedAnswer);
+        } catch (error) {
+            console.log("error occured while uploading answer");
+            console.error(error);
+        }
+
+    })
 
     socket.on("check", (data) => {
         console.log(data);

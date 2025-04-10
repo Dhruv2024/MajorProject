@@ -18,6 +18,18 @@ exports.uploadImageToCloudinary = async (file, folder, includeSubtitles = false,
     if (quality) {
         options.quality = quality;
     }
-
+    // If file is received as Buffer, use the buffer directly.
+    if (file instanceof Buffer) {
+        options.resource_type = 'auto';
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+                if (error) {
+                    reject(new Error("Cloudinary upload failed"));
+                }
+                resolve(result);
+            });
+            uploadStream.end(file);
+        });
+    }
     return await cloudinary.uploader.upload(file.tempFilePath, options);
 };

@@ -6,13 +6,15 @@ const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const Tesseract = require("tesseract.js");
 const natural = require("natural");
 const Answer = require("../models/Answers");
+const TfIdf = natural.TfIdf;
+const tokenizer = new natural.WordTokenizer();
 
 exports.askQuestion = async (req, res) => {
     try {
         const { text, courseId } = req.body;
         const userId = req.user.id; // Logged-in user's ID
         const image = req.files?.question; // Image file (if provided)
-
+        // console.log(image)
         // Validate input
         if (!userId || !courseId) {
             return res.status(400).json({
@@ -69,12 +71,25 @@ exports.askQuestion = async (req, res) => {
         // **Find Similar Questions Using ML (TF-IDF)**
         const allQuestions = await Question.find({
             courseId,
-            answers: { $exists: true, $not: { $size: 0 } } // Only fetch questions with answers
-        }).select("_id text imageText");
+            answeredBy: { $exists: true, $ne: [] }
+        }).populate({
+            path: 'askedBy',
+            select: '_id firstName email accountType image createdAt updatedAt'
+        })
+            .populate({
+                path: 'answeredBy',
+                populate: {
+                    path: 'userDetails',
+                    select: '_id firstName email accountType image createdAt updatedAt' // exclude password from userDetails
+                }
+            })
 
+        // console.log("Printing all questions with atleast one answer");
+        // console.log(allQuestions);
         const existingTexts = allQuestions.map(q => ({
             id: q._id,
             text: `${q.text || ""} ${q.imageText || ""}`.trim(),
+            questionDetails: q,
         }));
 
         let similarQuestions = findSimilarQuestions(questionText, existingTexts);
@@ -88,7 +103,12 @@ exports.askQuestion = async (req, res) => {
                 allowNewQuestion: true,
             });
         }
-
+        // else {
+        //     return res.status(201).json({
+        //         success: false,
+        //         message: "New question"
+        //     })
+        // }
         // **If No Similar Question, Proceed to Upload Image**
         let imageUrl = null;
         if (image) {
@@ -149,38 +169,86 @@ exports.askQuestion = async (req, res) => {
 };
 
 // **ML Function: Find Similar Questions Using TF-IDF + Cosine Similarity**
+// function findSimilarQuestions(newQuestionText, existingQuestions) {
+//     if (existingQuestions.length === 0) return [];
+//     // console.log("Printing existing questions");
+//     // console.log(existingQuestions);
+//     const TfIdf = natural.TfIdf;
+//     const tfidf = new TfIdf();
+
+//     existingQuestions.forEach(q => tfidf.addDocument(q.text));
+//     tfidf.addDocument(newQuestionText);
+
+//     let similarities = [];
+//     tfidf.tfidfs(newQuestionText, (i, measure) => {
+//         similarities.push({ index: i, score: measure });
+//     });
+
+//     similarities = similarities.slice(0, -1); // Remove last (new question itself)
+//     similarities.sort((a, b) => b.score - a.score);
+//     // console.log(similarities);
+//     return similarities
+//         .filter(sim => sim.score > 0.2) // Threshold for similarity (adjustable)
+//         .slice(0, 3) // Return top 3 similar questions
+//         .map(sim => ({
+//             questionId: existingQuestions[sim.index].id.toString(),
+//             text: existingQuestions[sim.index].text,
+//         }));
+// }
+
+
+function cosineSimilarity(vecA, vecB) {
+    const intersection = Object.keys(vecA).filter(k => vecB[k] !== undefined);
+    const dotProduct = intersection.reduce((sum, key) => sum + vecA[key] * vecB[key], 0);
+    const magnitudeA = Math.sqrt(Object.values(vecA).reduce((sum, val) => sum + val * val, 0));
+    const magnitudeB = Math.sqrt(Object.values(vecB).reduce((sum, val) => sum + val * val, 0));
+    if (magnitudeA === 0 || magnitudeB === 0) return 0;
+    return dotProduct / (magnitudeA * magnitudeB);
+}
+
+function getTfIdfVector(tfidf, docIndex) {
+    const vector = {};
+    tfidf.listTerms(docIndex).forEach(item => {
+        vector[item.term] = item.tfidf;
+    });
+    return vector;
+}
+
 function findSimilarQuestions(newQuestionText, existingQuestions) {
     if (existingQuestions.length === 0) return [];
 
-    const TfIdf = natural.TfIdf;
     const tfidf = new TfIdf();
-
     existingQuestions.forEach(q => tfidf.addDocument(q.text));
     tfidf.addDocument(newQuestionText);
 
-    let similarities = [];
-    tfidf.tfidfs(newQuestionText, (i, measure) => {
-        similarities.push({ index: i, score: measure });
-    });
+    const newVector = getTfIdfVector(tfidf, existingQuestions.length); // last doc is new question
 
-    similarities = similarities.slice(0, -1); // Remove last (new question itself)
+    let similarities = existingQuestions.map((q, index) => {
+        const existingVector = getTfIdfVector(tfidf, index);
+        const score = cosineSimilarity(newVector, existingVector);
+        return { index, score };
+    });
+    // console.log(similarities);
     similarities.sort((a, b) => b.score - a.score);
 
     return similarities
-        .filter(sim => sim.score > 0.2) // Threshold for similarity (adjustable)
-        .slice(0, 3) // Return top 3 similar questions
+        .filter(sim => sim.score > 0.2) // Adjust threshold as needed
+        .slice(0, 3)
         .map(sim => ({
-            questionId: existingQuestions[sim.index].id,
+            questionId: existingQuestions[sim.index].id.toString(),
             text: existingQuestions[sim.index].text,
+            questionDetails: existingQuestions[sim.index].questionDetails,
+            similarity: sim.score.toFixed(4), // Optional: include normalized score
         }));
 }
+
 exports.deleteQuestion = async (req, res) => {
     try {
         const { questionId } = req.body;
         const userId = req.user.id; // Logged-in user ID
 
         // Check if the question exists
-        const question = await Question.findById(questionId);
+        const question = await Question.findById(questionId).populate('courseId');
         if (!question) {
             return res.status(404).json({
                 success: false,
@@ -196,8 +264,8 @@ exports.deleteQuestion = async (req, res) => {
                 message: "Course not found"
             });
         }
-
-        if (question.askedBy.toString() !== userId && question.instructor.toString() !== userId) {
+        // console.log(question);
+        if (question.askedBy.toString() !== userId && question.courseId.instructor.toString() !== userId) {
             return res.status(403).json({
                 success: false,
                 message: "You are not authorized to delete this question"
@@ -260,7 +328,13 @@ exports.fetchAllQuestionForCourse = async (req, res) => {
         const questions = await Question.find({ courseId })
             .sort({ createdAt: -1 }) // Sort by createdAt descending (latest questions first)
             .populate('askedBy', 'firstName email')
-            .populate('answeredBy'); // Populate user details if needed
+            .populate({
+                path: 'answeredBy',
+                populate: {
+                    path: 'userDetails', // Populate the userDetails for each answer
+                    select: 'firstName email accountType image' // Specify the fields you want from the user
+                }
+            });
 
         // If no questions found
         if (questions.length === 0) {
@@ -283,3 +357,118 @@ exports.fetchAllQuestionForCourse = async (req, res) => {
         });
     }
 }
+
+exports.askQuestionAgain = async (req, res) => {
+    try {
+        const { text, courseId } = req.body;
+        const userId = req.user.id; // Logged-in user's ID
+        const image = req.files?.question; // Image file (if provided)
+        // console.log(image)
+        // Validate input
+        if (!userId || !courseId) {
+            return res.status(400).json({
+                success: false,
+                message: "Instructor ID, User ID, and Course ID are required",
+            });
+        }
+
+        if (!text && !image) {
+            return res.status(400).json({
+                success: false,
+                message: "You must provide either text or an image",
+            });
+        }
+
+        // Check if the course exists
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                message: "Course not found",
+            });
+        }
+        // Check if the user is an enrolled student
+        if (!course.studentsEnrolled.includes(userId) && course.instructor.toString() !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: "You must be enrolled in this course to ask questions",
+            });
+        }
+
+
+
+        // **Extract Text from Image (Without Uploading)**
+        let imageText = null;
+        if (image) {
+            try {
+                const { data } = await Tesseract.recognize(image.tempFilePath, "eng");
+                imageText = data.text.trim();
+                console.log("Extracted text from image:", imageText);
+            } catch (ocrError) {
+                console.error("Error extracting text from image:", ocrError);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error extracting text from image",
+                    error: ocrError.message,
+                });
+            }
+        }
+
+        // **If No Similar Question, Proceed to Upload Image**
+        let imageUrl = null;
+        if (image) {
+            try {
+                // Validate file format
+                const allowedFormats = ["jpg", "jpeg", "png", "gif"];
+                const fileFormat = image.mimetype.split("/")[1];
+
+                if (!allowedFormats.includes(fileFormat)) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Invalid file format. Only JPG, JPEG, PNG, and GIF are allowed.",
+                    });
+                }
+
+                // Upload image to Cloudinary
+                const uploadResult = await uploadImageToCloudinary(image, "questions");
+                imageUrl = uploadResult.secure_url;
+                console.log("Image uploaded:", imageUrl);
+            } catch (uploadError) {
+                console.error("Error uploading image:", uploadError);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error uploading image",
+                    error: uploadError.message,
+                });
+            }
+        }
+
+        // **Create and Save the Question**
+        const newQuestion = new Question({
+            courseId,
+            askedBy: userId,
+            imageUrl,
+            text,
+            imageText,
+        });
+
+        await newQuestion.save();
+
+        // Add the question to the course's question list
+        course.questionsList.push(newQuestion._id);
+        await course.save();
+
+        return res.status(201).json({
+            success: true,
+            message: "Question asked successfully",
+            question: newQuestion,
+        });
+    } catch (err) {
+        console.error("Error in askQuestion:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: err.message,
+        });
+    }
+};
