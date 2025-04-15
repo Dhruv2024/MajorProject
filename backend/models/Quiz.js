@@ -1,17 +1,26 @@
-import mongoose from 'mongoose';
-
-const questionSchema = new mongoose.Schema({
-    questionText: String,
-    options: [String],
-    correctAnswer: Number,
-    topic: String,
-});
-
+const mongoose = require("mongoose");
 const quizSchema = new mongoose.Schema({
     title: String,
-    questions: [questionSchema],
+    questions: [{
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'QuizQuestionSchema',
+    }],
     timeLimit: Number, // in minutes
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-});
+    startTime: {
+        type: Date,
+        required: true,
+    },
+    endTime: {
+        type: Date,
+        required: true,
+    },
+    course: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Course',
+    }
+}, { timestamps: true });
 
-export default mongoose.model('Quiz', quizSchema);
+module.exports = mongoose.model('Quiz', quizSchema);

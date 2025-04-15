@@ -1,5 +1,4 @@
-import mongoose from 'mongoose';
-
+const mongoose = require("mongoose");
 const studentAnswerSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     quizId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' },
@@ -16,4 +15,4 @@ const studentAnswerSchema = new mongoose.Schema({
 });
 
 
-export default mongoose.model('StudentAnswer', studentAnswerSchema);
+module.exports = mongoose.model('StudentAnswer', studentAnswerSchema);

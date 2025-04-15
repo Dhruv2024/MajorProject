@@ -36,6 +36,7 @@ import { IoSunnyOutline } from "react-icons/io5";
 import { IoMoonOutline } from "react-icons/io5";
 import { ThemeContext } from "./provider/themeContext";
 import AskQuestion from "./pages/AskQuestion";
+import QuizCreateForm from "./pages/Quiz";
 
 
 function App() {
@@ -216,6 +217,7 @@ function App() {
           }
 
         </Route>
+        <Route path="/quiz" element={<QuizCreateForm />} />
         <Route path="*" element={<Error />} />
       </Routes>
     </div>

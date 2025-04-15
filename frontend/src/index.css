@@ -167,3 +167,92 @@ body {
     background-color: #357ABD;
     /* Darker shade when hovered */
 }
+
+
+/* Add these styles to your CSS file (e.g., index.css, App.css) or within a <style> tag in your component */
+
+.toggle-bg {
+    width: 2.75rem;
+    /* Equivalent to w-11 in Tailwind */
+    height: 1.5rem;
+    /* Equivalent to h-6 in Tailwind */
+    border-radius: 1rem;
+    /* Equivalent to rounded-full in Tailwind */
+    transition: background-color 0.2s ease-in-out;
+    /* Equivalent to transition-colors and duration */
+    cursor: pointer;
+}
+
+.toggle-circle {
+    position: absolute;
+    top: 0.25rem;
+    /* Adjust as needed */
+    left: 0.25rem;
+    /* Adjust as needed */
+    background-color: white;
+    width: 1.25rem;
+    /* Equivalent to w-5 in Tailwind */
+    height: 1.25rem;
+    /* Equivalent to h-5 in Tailwind */
+    border-radius: 50%;
+    /* Equivalent to rounded-full in Tailwind */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    /* Basic shadow */
+    transform: translateX(0);
+    transition: transform 0.2s ease-in-out;
+    /* Equivalent to transform and duration */
+}
+
+/* Style when the toggle is checked (isImage is true) */
+input[type="checkbox"]:checked+.toggle-bg {
+    background-color: #6366f1;
+    /* Equivalent to bg-indigo-600 in Tailwind */
+}
+
+input[type="checkbox"]:checked+.toggle-bg+.toggle-circle {
+    transform: translateX(1.25rem);
+    /* Equivalent to translate-x-5 in Tailwind (approx) */
+}
+
+/* Style for the file upload label to make it look like a button */
+label[for^="image-"],
+label[for^="option-image-"] {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    /* Equivalent to border gray-300 in Tailwind */
+    border-radius: 0.375rem;
+    /* Equivalent to rounded-md in Tailwind */
+    background-color: white;
+    color: #374151;
+    /* Equivalent to text-gray-700 in Tailwind */
+    font-size: 0.875rem;
+    /* Equivalent to text-sm in Tailwind */
+    font-weight: 500;
+    /* Equivalent to font-medium in Tailwind */
+    cursor: pointer;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    /* Basic shadow */
+    transition: all 0.2s ease-in-out;
+}
+
+label[for^="image-"]:hover,
+label[for^="option-image-"]:hover {
+    background-color: #f3f4f6;
+    /* Equivalent to bg-gray-100 in Tailwind */
+    color: #4f46e5;
+    /* Equivalent to text-indigo-500 in Tailwind */
+    border-color: #4f46e5;
+    /* Equivalent to border-indigo-500 in Tailwind */
+}
+
+/* Style for the selected file name */
+span.file-name {
+    margin-left: 0.75rem;
+    /* Equivalent to ml-3 in Tailwind */
+    font-size: 0.875rem;
+    /* Equivalent to text-sm in Tailwind */
+    color: #6b7280;
+    /* Equivalent to text-gray-500 in Tailwind */
+}

@@ -9,6 +9,7 @@ const courseRoutes = require('./routes/Course');
 const messageRoutes = require('./routes/Message');
 const summaryRoutes = require('./routes/Summary');
 const questionRoutes = require('./routes/Questions');
+const quizRoutes = require('./routes/Quiz');
 
 const { dbConnect } = require('./config/dbConnect');
 const cookieParser = require('cookie-parser');
@@ -151,6 +152,7 @@ app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/summary", summaryRoutes);
 app.use("/api/v1/questions", questionRoutes);
+app.use("/api/v1/quiz", quizRoutes);
 
 app.get("/", (req, res) => {
     res.json({
