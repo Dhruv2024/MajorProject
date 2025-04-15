@@ -55,7 +55,7 @@ exports.submitQuiz = async (req, res) => {
 // Updated Controller for creating a new quiz
 exports.createQuiz = async (req, res) => {
     try {
-        const { title, timeLimit, startTime, endTime, courseId } = req.body;
+        const { title, timeLimit, startTime, endTime } = req.body;
         // console.log(req.body);
         const { userId } = req.user.id;
         const quiz = new Quiz({ title, timeLimit, createdBy: userId, startTime, endTime, course: courseId });

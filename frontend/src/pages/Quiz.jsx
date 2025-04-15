@@ -23,7 +23,7 @@ const QuizCreateForm = () => {
         topic: '',
     }]);
     const { course } = useSelector((state) => state.course);
-    const courseId = course._id;
+    const courseId = course._id || "temp";
     const BASE_URL = import.meta.env.VITE_BASE_URL;
     const { token } = useSelector((state) => state.auth);
     const handleInputChange = useCallback((event, questionIndex, field) => {

@@ -18,7 +18,6 @@ const quizSchema = new mongoose.Schema({
     },
     course: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
         ref: 'Course',
     }
 }, { timestamps: true });
