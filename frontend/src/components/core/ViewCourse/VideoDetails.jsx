@@ -11,6 +11,7 @@ import { IoIosArrowDown, IoIosArrowForward } from "react-icons/io"
 import { ThemeContext } from "../../../provider/themeContext"
 import { generateSummary } from "../../../services/operations/summaryAPI"
 import { FaRegClosedCaptioning } from "react-icons/fa";
+import { MdDateRange } from "react-icons/md";
 
 const VideoDetails = () => {
     const { courseId, sectionId, subSectionId } = useParams();
@@ -33,6 +34,10 @@ const VideoDetails = () => {
     const [summary, setSummary] = useState(null); // Changed to store summary data
     const [isSummaryPopupOpen, setSummaryPopupOpen] = useState(false); // Track summary popup visibility
     const [type, setType] = useState(null);
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [quizStartTime, setQuizStartTime] = useState(null);
+    const [quizEndTime, setQuizEndTime] = useState(null);
+    const [quizId, setQuizId] = useState(null);
     useEffect(() => {
         setSummary(false);
     }, [courseId, sectionId, subSectionId])
@@ -53,7 +58,14 @@ const VideoDetails = () => {
             document.removeEventListener("fullscreenchange", handleFullScreenChange);
         };
     }, []);
-
+    // console.log(quizStartTime);
+    // Update current time every second
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(intervalId);
+    }, []);
     useEffect(() => {
         async function getVideoDetails() {
             if (!courseSectionData.length) return
@@ -75,6 +87,9 @@ const VideoDetails = () => {
 
                 if (filteredVideoData[0]?.type === "quiz") {
                     setType("quiz");
+                    setQuizStartTime(new Date(filteredVideoData[0]?.quiz?.startTime));
+                    setQuizEndTime(new Date(filteredVideoData[0]?.quiz?.endTime))
+                    setQuizId(filteredVideoData[0]?.quiz?._id);
                 }
                 else {
                     setType("recorded");
@@ -212,7 +227,6 @@ const VideoDetails = () => {
     const handleShowSummary = () => {
         setSummaryPopupOpen(true);
     }
-
 
     // console.log(summary);
     // console.log(isSummaryPopupOpen);
@@ -383,9 +397,89 @@ const VideoDetails = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="text-red text-3xl">
-                        Will be available soon
+                    <div className="text-red text-3xl space-y-4">
+                        {
+                            quizStartTime && quizEndTime && currentTime ? (
+                                quizStartTime.getTime() <= currentTime.getTime() &&
+                                    currentTime.getTime() <= quizEndTime.getTime() ? (
+                                    <div className="text-caribbeangreen-400 rounded-lg p-4 shadow-md">
+                                        <div className="text-xl font-semibold">📢 Quiz is <span className="text-green-600">LIVE</span></div>
+                                        <div className="flex items-center gap-2 mt-2 text-sm">
+                                            <MdDateRange className="text-green-600" />
+                                            <span>Ends at: {quizEndTime.toLocaleString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            })}</span>
+                                        </div>
+                                        <div className="mt-4 flex justify-center">
+                                            <button
+                                                onClick={() => {
+                                                    // alert("to be handled");
+                                                    navigate(`/startQuiz/${courseId}/${quizId}`);
+                                                }}
+                                                className=" hover:bg-richblack-5 hover:text-black text-caribbeangreen-600 font-semibold py-2 px-4 transition duration-200 text-3xl border-2 border-richblack-25 rounded-full"
+                                            >
+                                                Start Test
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : quizStartTime.getTime() > currentTime.getTime() ? (
+                                    <div className="bg-yellow-100 text-yellow-800 rounded-lg p-4 shadow-md">
+                                        <div className="text-xl font-semibold">🕒 Quiz is <span className="text-yellow-600">Scheduled</span></div>
+                                        <div className="flex items-center gap-2 mt-2 text-sm">
+                                            <MdDateRange className="text-yellow-600" />
+                                            <span>Starts at: {quizStartTime.toLocaleString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            })}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-1 text-sm">
+                                            <MdDateRange className="text-yellow-600" />
+                                            <span>Ends at: {quizEndTime.toLocaleString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            })}</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-gray-100 text-gray-700 rounded-lg p-4 shadow-md">
+                                        <div className="text-xl font-semibold">❌ Quiz has <span className="text-red-600">Ended</span></div>
+                                        <div className="flex items-center gap-2 mt-2 text-sm">
+                                            <MdDateRange className="text-red-600" />
+                                            <span>Ended at: {quizEndTime.toLocaleString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            })}</span>
+                                        </div>
+                                    </div>
+                                )
+                            ) : (
+                                <div className="text-gray-500 text-lg animate-pulse">⏳ Loading quiz info...</div>
+                            )
+                        }
                     </div>
+
+
                 )
             }
 

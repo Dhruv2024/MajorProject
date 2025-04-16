@@ -37,11 +37,13 @@ import { IoMoonOutline } from "react-icons/io5";
 import { ThemeContext } from "./provider/themeContext";
 import AskQuestion from "./pages/AskQuestion";
 import QuizCreateForm from "./pages/Quiz";
+import StartQuiz from "./pages/StartQuiz";
 
 
 function App() {
   // const [darkTheme, setTheme] = useState(false);
   const { user } = useSelector((state) => state.profile);
+  const [showNavbar, setShowNavbar] = useState(true);
   useEffect(() => {
     const handleContextmenu = e => {
       e.preventDefault()
@@ -102,10 +104,14 @@ function App() {
       console.error("Socket connection failed:", err);
     });
   }, []);
-
+  useEffect(() => {
+    // Hide Navbar on any /startQuiz/:quizId route
+    const isStartQuizRoute = /^\/startQuiz\/\w+\/\w+$/.test(location.pathname);
+    setShowNavbar(!isStartQuizRoute);
+  }, [location.pathname]);
   return (
     <div className={`w-screen min-h-screen ${darkTheme ? "bg-richblack-900 text-white" : "bg-white text-black"} flex flex-col font-inter `}>
-      <Navbar darkTheme={darkTheme} />
+      {showNavbar && <Navbar darkTheme={darkTheme} />}
       {
         darkTheme ? (
           <IoSunnyOutline className=' text-blue-50 text-4xl fixed bottom-2 right-2 cursor-pointer z-20' onClick={
@@ -158,6 +164,11 @@ function App() {
           path="about"
           element={<About />}
         />
+        <Route path="startQuiz/:courseId/:quizId" element={
+          <PrivateRoute>
+            <StartQuiz />
+          </PrivateRoute>
+        } />
         {/* <Route
           path="/contact"
           element={<Contact />}

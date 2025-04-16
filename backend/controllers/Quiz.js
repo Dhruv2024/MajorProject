@@ -1,4 +1,5 @@
 // import { generateQuizReport } from '../utils/geminiReport.js'; // use Gemini/TensorFlow.js logic
+const Course = require('../models/Course');
 const Quiz = require("../models/Quiz");
 const QuizQuestion = require('../models/QuizQuestions');
 const Option = require('../models/QuestionOption');
@@ -102,8 +103,9 @@ exports.createQuiz = async (req, res) => {
             let imageUrl = null;
             // console.log("**************");
             // console.log(image)
+            const image = req.files[`questionsData[${i}][questionImage]`];
             if (isImage === 'true' && image) { // Handle string 'true' from form
-                const image = req.files[`questionsData[${i}][questionImage]`];
+
                 // console.log("image conversion request received");
                 // console.log(image);
                 const response = await uploadImageToCloudinary(image, process.env.FOLDER_NAME);
@@ -239,5 +241,75 @@ exports.deleteQuiz = async (req, res) => {
     } catch (error) {
         console.error('Error deleting quiz:', error);
         res.status(500).json({ message: 'Failed to delete quiz', error: error.message });
+    }
+};
+
+exports.fetchQuiz = async (req, res) => {
+    try {
+        // console.log("received request for fetching quiz");
+        // console.log(req.body);
+        const { courseId, quizId } = req.body;
+        const userId = req.user.id;
+
+        // Step 1: Verify user is enrolled in the course
+        const course = await Course.findById(courseId).populate({
+            path: 'courseContent',
+            populate: {
+                path: 'subSection',
+                model: 'SubSection',
+            },
+        });
+
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Course not found' });
+        }
+
+        const isEnrolled = course.studentsEnrolled.includes(userId);
+        if (!isEnrolled) {
+            return res.status(403).json({ success: false, message: 'User not enrolled in this course' });
+        }
+
+        // Step 2: Check if the quiz exists in any subsection
+        let quizFound = false;
+        for (const section of course.courseContent) {
+            for (const subSection of section.subSection) {
+                if (subSection.quiz?.toString() === quizId) {
+                    quizFound = true;
+                    break;
+                }
+            }
+            if (quizFound) break;
+        }
+
+        if (!quizFound) {
+            return res.status(404).json({ success: false, message: 'Quiz not found in course content' });
+        }
+
+        // Step 3: Fetch quiz with deeply populated questions and options
+        const quiz = await Quiz.findById(quizId)
+            .populate({
+                path: 'questions',
+                model: 'QuizQuestion',
+                populate: {
+                    path: 'options',
+                    model: 'Option',
+                },
+            });
+
+        if (!quiz) {
+            return res.status(404).json({ success: false, message: 'Quiz not found' });
+        }
+        return res.status(200).json({
+            success: true,
+            message: 'Quiz fetched successfully',
+            data: quiz,
+        });
+
+    } catch (error) {
+        console.error('Error fetching quiz:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
     }
 };

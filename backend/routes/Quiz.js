@@ -3,7 +3,7 @@ const Quiz = require('../models/Quiz');
 const StudentAnswer = require('../models/StudentAnswer');
 const axios = require('axios');
 const { auth, isInstructor, isStudent } = require('../middlewares/auth');
-const { createQuiz, editQuiz, deleteQuiz } = require("../controllers/Quiz")
+const { createQuiz, editQuiz, deleteQuiz, fetchQuiz } = require("../controllers/Quiz")
 const router = express.Router();
 // Instructor uploads quiz
 router.post('/upload-quiz', auth, isInstructor, async (req, res) => {
@@ -63,5 +63,6 @@ router.post('/submit-quiz', auth, isStudent, async (req, res) => {
 });
 
 router.post('/createQuiz', auth, isInstructor, createQuiz);
-router.post('/deleteQuiz', auth, isInstructor, deleteQuiz)
+router.post('/deleteQuiz', auth, isInstructor, deleteQuiz);
+router.post("/fetchQuiz", auth, fetchQuiz);
 module.exports = router;
