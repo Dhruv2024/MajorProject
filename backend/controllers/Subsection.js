@@ -7,6 +7,39 @@ const cloudinary = require('cloudinary').v2
 // Create a new sub-section for a given section
 exports.createSubSection = async (req, res) => {
     try {
+        const { type } = req.body;
+        if (type === 'quiz') {
+            const { sectionId, title, quizId } = req.body;
+            if (!sectionId || !title || !quizId) {
+                return res.status(404).json({ success: false, message: "All Fields are Required" });
+            }
+
+            // Create a new SubSection
+            const SubSectionDetails = await SubSection.create({
+                type,
+                title,
+                quiz: quizId
+            });
+            // --- DEBUGGING 1: Log SubSection creation ---
+            const createdSubSection = await SubSection.findById(SubSectionDetails._id);
+            console.log("Created SubSection with quizId:", createdSubSection.quiz);
+            // --- END DEBUGGING 1 ---
+
+
+            // Update the section with the new sub-section
+            const updatedSection = await Section.findByIdAndUpdate(
+                { _id: sectionId },
+                { $push: { subSection: SubSectionDetails._id } },
+                { new: true }
+            ).populate("subSection");
+
+            // --- DEBUGGING 2: Log updatedSection ---
+            console.log("Updated Section:", updatedSection);
+            // --- END DEBUGGING 2 ---
+            return res.status(200).json({ success: true, data: updatedSection });
+
+
+        }
         const { sectionId, title, description } = req.body;
         let { resource } = req.body;
         const video = req.files.video;
@@ -86,6 +119,7 @@ exports.createSubSection = async (req, res) => {
 
         // Create a new SubSection
         const SubSectionDetails = await SubSection.create({
+            type,
             title,
             timeDuration: `${uploadResult.duration}`,
             description,

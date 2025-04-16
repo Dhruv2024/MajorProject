@@ -1,9 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
-
-const QuizCreateForm = () => {
+import {
+    createSubSection,
+    updateSubSection,
+} from "../services/operations/courseDetailsAPI";
+import { setCourse } from "../slices/courseSlice"
+const QuizCreateForm = ({ modalData, setModalData }) => {
+    const dispatch = useDispatch();
+    const [loading, setLoading] = useState(false)
     const [title, setTitle] = useState('');
     const [timeLimit, setTimeLimit] = useState('');
     const [startTime, setStartTime] = useState('');
@@ -22,6 +28,7 @@ const QuizCreateForm = () => {
         correctAnswer: '',
         topic: '',
     }]);
+    const [confirmationModal, setConfirmationModal] = useState(null);
     const { course } = useSelector((state) => state.course);
     const courseId = course._id || "temp";
     const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -95,9 +102,8 @@ const QuizCreateForm = () => {
         });
     }, [setQuestions]);
 
-    const handleSubmit = useCallback(async (event) => {
-        event.preventDefault();
 
+    const addQuiz = async () => {
         const formData = new FormData();
         formData.append('title', title);
         formData.append('timeLimit', timeLimit);
@@ -135,8 +141,27 @@ const QuizCreateForm = () => {
             // });
             // const response = "";
 
-
             console.log('Quiz created:', response.data);
+            if (response.data.success) {
+                const quiz = response.data.quiz;
+                const formData = new FormData()
+                formData.append("type", "quiz")
+                formData.append("sectionId", modalData)
+                formData.append("title", quiz.title);
+                formData.append("quizId", quiz._id);
+                setLoading(true)
+                const result = await createSubSection(formData, token, 'quiz')
+                if (result) {
+                    // update the structure of course
+                    const updatedCourseContent = course.courseContent.map((section) =>
+                        section._id === modalData ? result : section
+                    )
+                    const updatedCourse = { ...course, courseContent: updatedCourseContent }
+                    dispatch(setCourse(updatedCourse))
+                }
+                setModalData(null)
+                setLoading(false)
+            }
             // Optionally redirect or show success message
         } catch (error) {
             console.error('Error creating quiz:', error.response ? error.response.data : error.message);
@@ -145,215 +170,226 @@ const QuizCreateForm = () => {
         finally {
             toast.dismiss(toastId)
         }
+    }
+
+    const handleSubmit = useCallback(async (event) => {
+        event.preventDefault();
+        const confirmation = window.confirm("Are you sure??(once submitted quiz can not be edited)");
+        if (!confirmation) {
+            return;
+        }
+        addQuiz();
     }, [title, timeLimit, startTime, endTime, questions]);
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <h2 className="text-xl font-bold mb-6">Create New Quiz</h2>
-            <div className="mb-4">
-                <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">
-                    Title:
-                </label>
-                <input
-                    type="text"
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-            </div>
-            <div className="mb-4">
-                <label htmlFor="timeLimit" className="block text-gray-700 text-sm font-bold mb-2">
-                    Time Limit (minutes):
-                </label>
-                <input
-                    type="number"
-                    id="timeLimit"
-                    value={timeLimit}
-                    onChange={(e) => setTimeLimit(e.target.value)}
-                    min="1"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-            </div>
-            <div className="mb-4">
-                <label htmlFor="startTime" className="block text-gray-700 text-sm font-bold mb-2">
-                    Start Time:
-                </label>
-                <input
-                    type="datetime-local"
-                    id="startTime"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    required
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-            </div>
-            <div className="mb-4">
-                <label htmlFor="endTime" className="block text-gray-700 text-sm font-bold mb-2">
-                    End Time (for score release):
-                </label>
-                <input
-                    type="datetime-local"
-                    id="endTime"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    required
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-            </div>
+        <div>
+            <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <h2 className="text-xl font-bold mb-6">Create New Quiz</h2>
+                <div className="mb-4">
+                    <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">
+                        Title:
+                    </label>
+                    <input
+                        type="text"
+                        id="title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="timeLimit" className="block text-gray-700 text-sm font-bold mb-2">
+                        Time Limit (minutes):
+                    </label>
+                    <input
+                        type="number"
+                        id="timeLimit"
+                        value={timeLimit}
+                        onChange={(e) => setTimeLimit(e.target.value)}
+                        min="1"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="startTime" className="block text-gray-700 text-sm font-bold mb-2">
+                        Start Time:
+                    </label>
+                    <input
+                        type="datetime-local"
+                        id="startTime"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        required
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="endTime" className="block text-gray-700 text-sm font-bold mb-2">
+                        End Time (for score release):
+                    </label>
+                    <input
+                        type="datetime-local"
+                        id="endTime"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        required
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
 
-            <h3 className="text-lg font-semibold mb-4">Questions:</h3>
-            {questions.map((question, questionIndex) => (
-                <div key={questionIndex} className="mb-6 p-4 border rounded">
-                    <h4 className="text-md font-semibold mb-2">Question {questionIndex + 1}</h4>
-                    <div className="mb-2">
-                        <label htmlFor={`questionText-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
-                            Question Text:
-                        </label>
-                        <textarea
-                            id={`questionText-${questionIndex}`}
-                            value={question.questionText}
-                            onChange={(e) => handleInputChange(e, questionIndex, 'questionText')}
-                            rows="3"
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label htmlFor={`image-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
-                            Select Image:
-                        </label>
-                        <div className="mt-1 flex rounded-md shadow-sm">
-                            <label htmlFor={`image-${questionIndex}`} className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
-                                <span>Upload a file</span>
-                                <input
-                                    id={`image-${questionIndex}`}
-                                    name="questionImage"
-                                    type="file"
-                                    className="sr-only"
-                                    accept="image/*"
-                                    onChange={(e) => handleInputChange(e, questionIndex, 'questionImage')}
-                                />
+                <h3 className="text-lg font-semibold mb-4">Questions:</h3>
+                {questions.map((question, questionIndex) => (
+                    <div key={questionIndex} className="mb-6 p-4 border rounded">
+                        <h4 className="text-md font-semibold mb-2">Question {questionIndex + 1}</h4>
+                        <div className="mb-2">
+                            <label htmlFor={`questionText-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
+                                Question Text:
                             </label>
-                            {question.questionImage && (
-                                <span className="ml-3 inline-flex items-center px-3 py-2 rounded-md text-sm text-gray-500">
-                                    {question.questionImage.name}
-                                </span>
-                            )}
+                            <textarea
+                                id={`questionText-${questionIndex}`}
+                                value={question.questionText}
+                                onChange={(e) => handleInputChange(e, questionIndex, 'questionText')}
+                                rows="3"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            />
                         </div>
-                        {question.questionImagePreview && (
-                            <div className="mt-2">
-                                <label className="block text-gray-700 text-sm font-bold mb-1">Image Preview:</label>
-                                <img src={question.questionImagePreview} alt="Question Preview" className="max-w-xs h-auto rounded border" />
-                            </div>
-                        )}
-                    </div>
-                    <div className="mb-2">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">Options:</label>
-                        {question.options.map((option, optionIndex) => (
-                            <div key={`option-${questionIndex}-${optionIndex}`} className="mb-2 flex items-center">
-                                <div className="relative mr-2">
+                        <div className="mb-2">
+                            <label htmlFor={`image-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
+                                Select Image:
+                            </label>
+                            <div className="mt-1 flex rounded-md shadow-sm">
+                                <label htmlFor={`image-${questionIndex}`} className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
+                                    <span>Upload a file</span>
                                     <input
-                                        type="checkbox"
+                                        id={`image-${questionIndex}`}
+                                        name="questionImage"
+                                        type="file"
                                         className="sr-only"
-                                        checked={option.isImage}
-                                        onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'isImage')}
-                                        id={`isImageOption-${questionIndex}-${optionIndex}`}
+                                        accept="image/*"
+                                        onChange={(e) => handleInputChange(e, questionIndex, 'questionImage')}
                                     />
-                                    <div className={`toggle-bg w-9 h-5 rounded-full transition duration-200 ease-in-out ${option.isImage ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
-                                    <div className={`toggle-circle absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full shadow transform transition duration-200 ease-in-out ${option.isImage ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                </div>
-                                <span className="mr-2">{option.isImage ? 'Image' : 'Text'}</span>
-                                {option.isImage ? (
-                                    <div className="mt-1 flex rounded-md shadow-sm w-full">
-                                        <label htmlFor={`option-image-${questionIndex}-${optionIndex}`} className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 w-full">
-                                            <span>Upload Image</span>
-                                            <input
-                                                id={`option-image-${questionIndex}-${optionIndex}`}
-                                                name={`option-image-${optionIndex}`}
-                                                type="file"
-                                                className="sr-only"
-                                                accept="image/*"
-                                                onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'image')}
-                                                required={option.isImage && !option.image}
-                                            />
-                                        </label>
-                                        {option.image && (
-                                            <span className="ml-3 inline-flex items-center px-3 py-2 rounded-md text-sm text-gray-500">
-                                                {option.image.name}
-                                            </span>
-                                        )}
-                                        {option.imagePreview && (
-                                            <div className="mt-2">
-                                                <label className="block text-gray-700 text-sm font-bold mb-1">Image Preview:</label>
-                                                <img src={option.imagePreview} alt={`Option ${optionIndex + 1} Preview`} className="max-w-xs h-auto rounded border" />
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={option.text}
-                                        onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'text')}
-                                        placeholder={`Option ${optionIndex + 1}`}
-                                        required={!option.isImage}
-                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                        disabled={option.isImage}
-                                    />
+                                </label>
+                                {question.questionImage && (
+                                    <span className="ml-3 inline-flex items-center px-3 py-2 rounded-md text-sm text-gray-500">
+                                        {question.questionImage.name}
+                                    </span>
                                 )}
                             </div>
-                        ))}
+                            {question.questionImagePreview && (
+                                <div className="mt-2">
+                                    <label className="block text-gray-700 text-sm font-bold mb-1">Image Preview:</label>
+                                    <img src={question.questionImagePreview} alt="Question Preview" className="max-w-xs h-auto rounded border" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="mb-2">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Options:</label>
+                            {question.options.map((option, optionIndex) => (
+                                <div key={`option-${questionIndex}-${optionIndex}`} className="mb-2 flex items-center">
+                                    <div className="relative mr-2">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only"
+                                            checked={option.isImage}
+                                            onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'isImage')}
+                                            id={`isImageOption-${questionIndex}-${optionIndex}`}
+                                        />
+                                        <div className={`toggle-bg w-9 h-5 rounded-full transition duration-200 ease-in-out ${option.isImage ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
+                                        <div className={`toggle-circle absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full shadow transform transition duration-200 ease-in-out ${option.isImage ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                                    </div>
+                                    <span className="mr-2">{option.isImage ? 'Image' : 'Text'}</span>
+                                    {option.isImage ? (
+                                        <div className="mt-1 flex rounded-md shadow-sm w-full">
+                                            <label htmlFor={`option-image-${questionIndex}-${optionIndex}`} className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 w-full">
+                                                <span>Upload Image</span>
+                                                <input
+                                                    id={`option-image-${questionIndex}-${optionIndex}`}
+                                                    name={`option-image-${optionIndex}`}
+                                                    type="file"
+                                                    className="sr-only"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'image')}
+                                                    required={option.isImage && !option.image}
+                                                />
+                                            </label>
+                                            {option.image && (
+                                                <span className="ml-3 inline-flex items-center px-3 py-2 rounded-md text-sm text-gray-500">
+                                                    {option.image.name}
+                                                </span>
+                                            )}
+                                            {option.imagePreview && (
+                                                <div className="mt-2">
+                                                    <label className="block text-gray-700 text-sm font-bold mb-1">Image Preview:</label>
+                                                    <img src={option.imagePreview} alt={`Option ${optionIndex + 1} Preview`} className="max-w-xs h-auto rounded border" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={option.text}
+                                            onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'text')}
+                                            placeholder={`Option ${optionIndex + 1}`}
+                                            required={!option.isImage}
+                                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            disabled={option.isImage}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mb-2">
+                            <label htmlFor={`correctAnswer-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
+                                Correct Answer:
+                            </label>
+                            <input
+                                type="text"
+                                id={`correctAnswer-${questionIndex}`}
+                                value={question.correctAnswer}
+                                onChange={(e) => handleInputChange(e, questionIndex, 'correctAnswer')}
+                                required
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            />
+                            <p className="text-gray-500 text-xs italic">Enter the text of the correct option or the URL if it's an image option.</p>
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor={`topic-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
+                                Topic:
+                            </label>
+                            <input
+                                type="text"
+                                id={`topic-${questionIndex}`}
+                                value={question.topic}
+                                onChange={(e) => handleInputChange(e, questionIndex, 'topic')}
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => removeQuestion(questionIndex)}
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        >
+                            Remove Question
+                        </button>
+                        <hr className="my-4" />
                     </div>
-                    <div className="mb-2">
-                        <label htmlFor={`correctAnswer-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
-                            Correct Answer:
-                        </label>
-                        <input
-                            type="text"
-                            id={`correctAnswer-${questionIndex}`}
-                            value={question.correctAnswer}
-                            onChange={(e) => handleInputChange(e, questionIndex, 'correctAnswer')}
-                            required
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        />
-                        <p className="text-gray-500 text-xs italic">Enter the text of the correct option or the URL if it's an image option.</p>
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor={`topic-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
-                            Topic:
-                        </label>
-                        <input
-                            type="text"
-                            id={`topic-${questionIndex}`}
-                            value={question.topic}
-                            onChange={(e) => handleInputChange(e, questionIndex, 'topic')}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        />
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => removeQuestion(questionIndex)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                        Remove Question
-                    </button>
-                    <hr className="my-4" />
-                </div>
-            ))}
-            <button
-                type="button"
-                onClick={addQuestion}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
-            >
-                Add New Question
-            </button>
-            <button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline"
-            >
-                Create Quiz
-            </button>
-        </form>
+                ))}
+                <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
+                >
+                    Add New Question
+                </button>
+                <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline"
+                >
+                    Create Quiz
+                </button>
+            </form>
+        </div>
     );
 };
 

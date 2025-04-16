@@ -138,27 +138,53 @@ exports.getEnrolledCourses = async (req, res) => {
                     path: "courseContent",
                     populate: {
                         path: "subSection",
+                        populate: {
+                            path: "quiz",
+                            model: "Quiz",
+                            populate: { // Populate questions and options
+                                path: 'questions',
+                                model: 'QuizQuestion',
+                                populate: {
+                                    path: 'options',
+                                    model: 'Option'
+                                }
+                            }
+                            // match: { type: 'quiz' }
+                        }
                     },
                 },
             })
             .exec()
 
         userDetails = userDetails.toObject()
-
         if (!userDetails) {
             return res.status(400).json({
                 success: false,
                 message: `Could not find user with id: ${userDetails}`,
             })
         }
+        console.log("printing userCourseDetails");
         var SubsectionLength = 0
         for (var i = 0; i < userDetails.courses.length; i++) {
             let totalDurationInSeconds = 0
             SubsectionLength = 0
             for (var j = 0; j < userDetails.courses[i].courseContent.length; j++) {
-                totalDurationInSeconds += userDetails.courses[i].courseContent[
-                    j
-                ].subSection.reduce((acc, curr) => acc + parseInt(curr.timeDuration), 0)
+                // console.log(userDetails.courses[i].courseContent[j].subSection);
+                // if (userDetails.courses[i].courseContent[j].subSection.type === "quiz") {
+                //     continue;
+                // }
+                // totalDurationInSeconds += userDetails.courses[i].courseContent[
+                //     j
+                // ].subSection.reduce((acc, curr) => acc + parseInt(curr.timeDuration), 0)
+
+
+                for (var k = 0; k < userDetails.courses[i].courseContent[j].subSection.length; k++) {
+                    if (userDetails.courses[i].courseContent[j].subSection[k].type !== "quiz") {
+                        totalDurationInSeconds += parseInt(userDetails.courses[i].courseContent[j].subSection[k].timeDuration) || 0; // handle NaN
+                        // SubsectionLength++;
+                    }
+                }
+
                 userDetails.courses[i].totalDuration = convertSecondsToDuration(
                     totalDurationInSeconds
                 )

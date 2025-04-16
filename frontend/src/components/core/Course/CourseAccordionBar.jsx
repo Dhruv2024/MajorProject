@@ -38,7 +38,10 @@ export default function CourseAccordionBar({ course, isActive, handleActive }) {
           </div>
           <div className="space-x-4">
             <span className={`${darkTheme ? "text-yellow-25" : "text-blue-300"}`}>
-              {`${course.subSection.length || 0} lecture(s)`}
+              {
+                course?.sectionName === "Course Quizzes" ? <div>{`${course.subSection.length || 0} Quiz(s)`}</div> : <div>{`${course.subSection.length || 0} lecture(s)`}</div>
+              }
+
             </span>
           </div>
         </div>

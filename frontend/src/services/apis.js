@@ -81,3 +81,7 @@ export const messageEndpoints = {
 export const summaryEndpoints = {
     GENERATE_SUMMARY: BASE_URL + "/summary/generate-summary",
 }
+
+export const quizEndpoints = {
+    DELETE_QUIZ: BASE_URL + "/quiz/deleteQuiz",
+}

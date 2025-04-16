@@ -58,7 +58,7 @@ exports.createQuiz = async (req, res) => {
         const { title, timeLimit, startTime, endTime } = req.body;
         // console.log(req.body);
         const { userId } = req.user.id;
-        const quiz = new Quiz({ title, timeLimit, createdBy: userId, startTime, endTime, course: courseId });
+        const quiz = new Quiz({ title, timeLimit, createdBy: userId, startTime, endTime });
         const questionsData = [];
         const questionKeys = Object.keys(req.body).filter(key => key.startsWith('questionsData'));
         const questionsMap = {};
@@ -100,10 +100,10 @@ exports.createQuiz = async (req, res) => {
             const questionData = questionsData[i];
             const { questionText, isImage, options, correctAnswer, topic } = questionData;
             let imageUrl = null;
-            const image = req.files[`questionsData[${i}][questionImage]`];
             // console.log("**************");
             // console.log(image)
             if (isImage === 'true' && image) { // Handle string 'true' from form
+                const image = req.files[`questionsData[${i}][questionImage]`];
                 // console.log("image conversion request received");
                 // console.log(image);
                 const response = await uploadImageToCloudinary(image, process.env.FOLDER_NAME);
@@ -148,10 +148,10 @@ exports.createQuiz = async (req, res) => {
         quiz.questions = questionIds;
         await quiz.save();
 
-        res.status(201).json({ message: 'Quiz created successfully', quiz });
+        res.status(201).json({ success: true, message: 'Quiz created successfully', quiz });
     } catch (error) {
         console.error('Error creating quiz:', error);
-        res.status(500).json({ message: 'Failed to create quiz', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to create quiz', error: error.message });
     }
 };
 

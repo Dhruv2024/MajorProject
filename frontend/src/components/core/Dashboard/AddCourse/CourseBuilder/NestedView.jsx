@@ -16,7 +16,8 @@ import { ConfirmationModal } from "../../../../common/ConfirmationModal"
 import { ThemeContext } from "../../../../../provider/themeContext"
 
 export default function NestedView({ handleChangeEditSectionName }) {
-    const { course } = useSelector((state) => state.course)
+    const { course } = useSelector((state) => state.course);
+    console.log(course);
     const { token } = useSelector((state) => state.auth);
     const { darkTheme } = useContext(ThemeContext);
     const dispatch = useDispatch()
@@ -25,8 +26,8 @@ export default function NestedView({ handleChangeEditSectionName }) {
     const [viewSubSection, setViewSubSection] = useState(null)
     const [editSubSection, setEditSubSection] = useState(null)
     // to keep track of confirmation modal
-    const [confirmationModal, setConfirmationModal] = useState(null)
-
+    const [confirmationModal, setConfirmationModal] = useState(null);
+    const [type, setType] = useState(null);
     const handleDeleleSection = async (sectionId) => {
         const result = await deleteSection({
             sectionId,
@@ -39,8 +40,14 @@ export default function NestedView({ handleChangeEditSectionName }) {
         setConfirmationModal(null)
     }
 
-    const handleDeleteSubSection = async (subSectionId, sectionId) => {
-        const result = await deleteSubSection({ subSectionId, sectionId, token })
+    const handleDeleteSubSection = async (subSectionId, sectionId, quizId, section) => {
+        let result;
+        if (section.sectionName === "Course Quizzes") {
+            result = await deleteSubSection({ subSectionId, sectionId }, token, 'quiz', quizId)
+        }
+        else {
+            result = await deleteSubSection({ subSectionId, sectionId, token })
+        }
         if (result) {
             // update the structure of course
             const updatedCourseContent = course.courseContent.map((section) =>
@@ -70,30 +77,36 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                 </p>
                             </div>
                             <div className="flex items-center gap-x-3">
-                                <button
-                                    onClick={() =>
-                                        handleChangeEditSectionName(
-                                            section._id,
-                                            section.sectionName
-                                        )
-                                    }
-                                >
-                                    <MdEdit className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        setConfirmationModal({
-                                            text1: "Delete this Section?",
-                                            text2: "All the lectures in this section will be deleted",
-                                            btn1Text: "Delete",
-                                            btn2Text: "Cancel",
-                                            btn1Handler: () => handleDeleleSection(section._id),
-                                            btn2Handler: () => setConfirmationModal(null),
-                                        })
-                                    }
-                                >
-                                    <RiDeleteBin6Line className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
-                                </button>
+                                {
+                                    section.sectionName !== "Course Quizzes" &&
+                                    <button
+                                        onClick={() =>
+                                            handleChangeEditSectionName(
+                                                section._id,
+                                                section.sectionName
+                                            )
+                                        }
+                                    >
+                                        <MdEdit className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
+                                    </button>
+                                }
+                                {
+                                    section?.sectionName !== "Course Quizzes" &&
+                                    <button
+                                        onClick={() =>
+                                            setConfirmationModal({
+                                                text1: "Delete this Section?",
+                                                text2: "All the lectures in this section will be deleted",
+                                                btn1Text: "Delete",
+                                                btn2Text: "Cancel",
+                                                btn1Handler: () => handleDeleleSection(section._id),
+                                                btn2Handler: () => setConfirmationModal(null),
+                                            })
+                                        }
+                                    >
+                                        <RiDeleteBin6Line className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
+                                    </button>
+                                }
                                 <span className="font-medium text-richblack-300">|</span>
                                 <AiFillCaretDown className={`text-xl ${darkTheme ? "text-richblack-300" : "text-richblack-400"}`} />
                             </div>
@@ -103,7 +116,18 @@ export default function NestedView({ handleChangeEditSectionName }) {
                             {section.subSection.map((data) => (
                                 <div
                                     key={data?._id}
-                                    onClick={() => setViewSubSection(data)}
+                                    onClick={() => {
+                                        if (section.sectionName === "Course Quizzes") {
+                                            return;
+                                        }
+                                        else {
+                                            setViewSubSection(data);
+                                            if (section.sectionName === "Course Quizzes") {
+                                                return;
+                                            }
+                                            setType('recorded');
+                                        }
+                                    }}
                                     className={`flex cursor-pointer items-center justify-between gap-x-3 py-2 ${darkTheme ? "border-b-2 border-b-richblack-600" : "border-b-2 border-b-richblack-5"}`}
                                 >
                                     <div className="flex items-center gap-x-3 py-2 ">
@@ -116,24 +140,29 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                         onClick={(e) => e.stopPropagation()}
                                         className="flex items-center gap-x-3"
                                     >
+                                        {
+                                            section.sectionName !== "Course Quizzes" &&
+                                            <button
+                                                onClick={() =>
+                                                    setEditSubSection({ ...data, sectionId: section._id })
+                                                }
+                                            >
+                                                <MdEdit className="text-xl text-richblack-300" />
+                                            </button>
+                                        }
                                         <button
-                                            onClick={() =>
-                                                setEditSubSection({ ...data, sectionId: section._id })
-                                            }
-                                        >
-                                            <MdEdit className="text-xl text-richblack-300" />
-                                        </button>
-                                        <button
-                                            onClick={() =>
+                                            onClick={() => {
+                                                // console.log(data);
                                                 setConfirmationModal({
                                                     text1: "Delete this Sub-Section?",
                                                     text2: "This lecture will be deleted",
                                                     btn1Text: "Delete",
                                                     btn2Text: "Cancel",
                                                     btn1Handler: () =>
-                                                        handleDeleteSubSection(data._id, section._id),
+                                                        handleDeleteSubSection(data._id, section._id, data.quiz, section),
                                                     btn2Handler: () => setConfirmationModal(null),
                                                 })
+                                            }
                                             }
                                         >
                                             <RiDeleteBin6Line className="text-xl text-richblack-300" />
@@ -143,11 +172,21 @@ export default function NestedView({ handleChangeEditSectionName }) {
                             ))}
                             {/* Add New Lecture to Section */}
                             <button
-                                onClick={() => setAddSubsection(section._id)}
+                                onClick={() => {
+                                    setAddSubsection(section._id);
+                                    if (section.sectionName === "Course Quizzes") {
+                                        setType('quiz')
+                                    }
+                                    else {
+                                        setType('recorded');
+                                    }
+                                }}
                                 className={`mt-3 flex items-center gap-x-1 ${darkTheme ? "text-yellow-50" : "text-blue-300"}`}
                             >
                                 <FaPlus className="text-lg" />
-                                <p>Add Lecture</p>
+                                <p>{
+                                    section.sectionName === "Course Quizzes" ? "Add Quiz" : "Add Lecture"
+                                }</p>
                             </button>
                         </div>
                     </details>
@@ -159,18 +198,21 @@ export default function NestedView({ handleChangeEditSectionName }) {
                     modalData={addSubSection}
                     setModalData={setAddSubsection}
                     add={true}
+                    type={type}
                 />
             ) : viewSubSection ? (
                 <SubSectionModal
                     modalData={viewSubSection}
                     setModalData={setViewSubSection}
                     view={true}
+                    type={type}
                 />
             ) : editSubSection ? (
                 <SubSectionModal
                     modalData={editSubSection}
                     setModalData={setEditSubSection}
                     edit={true}
+                    type={type}
                 />
             ) : (
                 <></>

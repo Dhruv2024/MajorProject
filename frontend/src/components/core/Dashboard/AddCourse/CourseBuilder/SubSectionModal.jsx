@@ -13,6 +13,7 @@ import { setCourse } from "../../../../../slices/courseSlice"
 import Upload from "../Upload"
 import { IconBtn } from "../../../../common/IconBtn"
 import { ThemeContext } from "../../../../../provider/themeContext"
+import QuizCreateForm from "../../../../../pages/Quiz"
 
 export default function SubSectionModal({
     modalData,
@@ -20,7 +21,10 @@ export default function SubSectionModal({
     add = false,
     view = false,
     edit = false,
+    type
 }) {
+    console.log("view", view);
+    console.log(type);
     const {
         register,
         handleSubmit,
@@ -113,6 +117,7 @@ export default function SubSectionModal({
         }
 
         const formData = new FormData()
+        formData.append("type", "recorded")
         formData.append("sectionId", modalData)
         formData.append("title", data.lectureTitle)
         formData.append("description", data.lectureDesc)
@@ -137,88 +142,105 @@ export default function SubSectionModal({
             <div className={`my-10 w-11/12 max-w-[700px] rounded-lg border ${darkTheme ? "border-richblack-400 bg-richblack-800" : "border-richblack-25 bg-white"}`}>
                 {/* Modal Header */}
                 <div className="flex items-center justify-between rounded-t-lg p-5">
-                    <p className={`text-xl font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-700"}`}>
-                        {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Lecture
-                    </p>
+                    {
+                        type === 'recorded' &&
+                        <p className={`text-xl font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-700"}`}>
+                            {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Lecture
+                        </p>
+                    }
+                    {
+                        type === 'quiz' &&
+                        <p className={`text-xl font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-700"}`}>
+                            Adding Quiz
+                        </p>
+                    }
                     <button onClick={() => (!loading ? setModalData(null) : {})}>
                         <RxCross2 className={`text-2xl ${darkTheme ? "text-richblack-5" : "text-black"}`} />
                     </button>
                 </div>
                 {/* Modal Form */}
-                <form
-                    onSubmit={handleSubmit(onSubmit)}
-                    className="space-y-8 px-8 py-10"
-                >
-                    {/* Lecture Video Upload */}
-                    <Upload
-                        name="lectureVideo"
-                        label="Lecture Video"
-                        register={register}
-                        setValue={setValue}
-                        errors={errors}
-                        video={true}
-                        viewData={view ? modalData.videoUrl : null}
-                        editData={edit ? modalData.videoUrl : null}
-                    />
-                    {/* Lecture Title */}
-                    <div className="flex flex-col space-y-2">
-                        <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureTitle">
-                            Lecture Title {!view && <sup className="text-pink-200">*</sup>}
-                        </label>
-                        <input
-                            disabled={view || loading}
-                            id="lectureTitle"
-                            placeholder="Enter Lecture Title"
-                            {...register("lectureTitle", { required: true })}
-                            className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
-                        />
-                        {errors.lectureTitle && (
-                            <span className="ml-2 text-xs tracking-wide text-pink-200">
-                                Lecture title is required
-                            </span>
-                        )}
-                    </div>
-                    {/* Lecture Description */}
-                    <div className="flex flex-col space-y-2">
-                        <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
-                            Lecture Description{" "}
-                            {!view && <sup className="text-pink-200">*</sup>}
-                        </label>
-                        <textarea
-                            disabled={view || loading}
-                            id="lectureDesc"
-                            placeholder="Enter Lecture Description"
-                            {...register("lectureDesc", { required: true })}
-                            className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
-                        />
-                        {errors.lectureDesc && (
-                            <span className="ml-2 text-xs tracking-wide text-pink-200">
-                                Lecture Description is required
-                            </span>
-                        )}
-                    </div>
-                    {/* Lecture resource */}
-                    <div className="flex flex-col space-y-2">
-                        <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
-                            Lecture Resource{" "}
-                        </label>
-                        <textarea
-                            disabled={view || loading}
-                            id="lectureResource"
-                            placeholder="Enter Lecture Resource"
-                            {...register("lectureResource")}
-                            className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
-                        />
-                    </div>
-                    {!view && (
-                        <div className="flex justify-end">
-                            <IconBtn
-                                disabled={loading}
-                                text={loading ? "Loading.." : edit ? "Save Changes" : "Save"}
+                {
+                    type === 'recorded' ? (
+                        <form
+                            onSubmit={handleSubmit(onSubmit)}
+                            className="space-y-8 px-8 py-10"
+                        >
+                            {/* Lecture Video Upload */}
+                            <Upload
+                                name="lectureVideo"
+                                label="Lecture Video"
+                                register={register}
+                                setValue={setValue}
+                                errors={errors}
+                                video={true}
+                                viewData={view ? modalData.videoUrl : null}
+                                editData={edit ? modalData.videoUrl : null}
                             />
+                            {/* Lecture Title */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureTitle">
+                                    Lecture Title {!view && <sup className="text-pink-200">*</sup>}
+                                </label>
+                                <input
+                                    disabled={view || loading}
+                                    id="lectureTitle"
+                                    placeholder="Enter Lecture Title"
+                                    {...register("lectureTitle", { required: true })}
+                                    className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                />
+                                {errors.lectureTitle && (
+                                    <span className="ml-2 text-xs tracking-wide text-pink-200">
+                                        Lecture title is required
+                                    </span>
+                                )}
+                            </div>
+                            {/* Lecture Description */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
+                                    Lecture Description{" "}
+                                    {!view && <sup className="text-pink-200">*</sup>}
+                                </label>
+                                <textarea
+                                    disabled={view || loading}
+                                    id="lectureDesc"
+                                    placeholder="Enter Lecture Description"
+                                    {...register("lectureDesc", { required: true })}
+                                    className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                />
+                                {errors.lectureDesc && (
+                                    <span className="ml-2 text-xs tracking-wide text-pink-200">
+                                        Lecture Description is required
+                                    </span>
+                                )}
+                            </div>
+                            {/* Lecture resource */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
+                                    Lecture Resource{" "}
+                                </label>
+                                <textarea
+                                    disabled={view || loading}
+                                    id="lectureResource"
+                                    placeholder="Enter Lecture Resource"
+                                    {...register("lectureResource")}
+                                    className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                />
+                            </div>
+                            {!view && (
+                                <div className="flex justify-end">
+                                    <IconBtn
+                                        disabled={loading}
+                                        text={loading ? "Loading.." : edit ? "Save Changes" : "Save"}
+                                    />
+                                </div>
+                            )}
+                        </form>
+                    ) : (
+                        <div>
+                            <QuizCreateForm modalData={modalData} setModalData={setModalData} />
                         </div>
-                    )}
-                </form>
+                    )
+                }
             </div>
         </div>
     )

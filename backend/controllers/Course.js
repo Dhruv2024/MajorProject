@@ -96,7 +96,21 @@ exports.createCourse = async (req, res) => {
             instructions,
             room: newRoom._id,
         })
+        // Create the default "Course Quizzes" section
+        const courseQuizzesSection = await Section.create({
+            sectionName: "Course Quizzes",
+        });
 
+        // Update the course to include the new section
+        const updatedCourse = await Course.findByIdAndUpdate(
+            newCourse._id,
+            {
+                $push: {
+                    courseContent: courseQuizzesSection._id,
+                },
+            },
+            { new: true }
+        ).populate('courseContent');
         // Add the new course to the User Schema of the Instructor
         await User.findByIdAndUpdate(
             {
@@ -123,7 +137,7 @@ exports.createCourse = async (req, res) => {
         // Return the new course and a success message
         res.status(200).json({
             success: true,
-            data: newCourse,
+            data: updatedCourse,
             message: "Course Created Successfully",
         })
     } catch (error) {
@@ -255,10 +269,24 @@ exports.getCourseDetails = async (req, res) => {
                 populate: {
                     path: "subSection",
                     select: "-videoUrl",
+                    populate: {
+                        path: "quiz",
+                        model: "Quiz",
+                        populate: { // Populate questions and options
+                            path: 'questions',
+                            model: 'QuizQuestion',
+                            populate: {
+                                path: 'options',
+                                model: 'Option'
+                            }
+                        }
+                        // match: { type: 'quiz' }
+                    }
                 },
             })
-            .exec()
+            .exec();
 
+        console.log(courseDetails);
         if (!courseDetails) {
             return res.status(400).json({
                 success: false,
@@ -276,6 +304,9 @@ exports.getCourseDetails = async (req, res) => {
         let totalDurationInSeconds = 0
         courseDetails.courseContent.forEach((content) => {
             content.subSection.forEach((subSection) => {
+                if (subSection.type === 'quiz') {
+                    return;
+                }
                 const timeDurationInSeconds = parseInt(subSection.timeDuration)
                 totalDurationInSeconds += timeDurationInSeconds
             })
@@ -316,9 +347,37 @@ exports.getFullCourseDetails = async (req, res) => {
                 path: "courseContent",
                 populate: {
                     path: "subSection",
+                    populate: {
+                        path: "quiz",
+                        model: "Quiz",
+                        populate: { // Populate questions and options
+                            path: 'questions',
+                            model: 'QuizQuestion',
+                            populate: {
+                                path: 'options',
+                                model: 'Option'
+                            }
+                        }
+                        // match: { type: 'quiz' }
+                    }
                 },
             })
-            .exec()
+            .exec();
+
+        // --- DEBUGGING 3: Logging with Null Check and Type Handling ---
+        console.log("Course Details:", courseDetails);
+        if (courseDetails && courseDetails.courseContent) {
+            courseDetails.courseContent.forEach(content => {
+                if (content.subSection) {
+                    content.subSection.forEach(sub => {
+                        console.log(`SubSection ID: ${sub._id}, Type: ${sub.type}, Quiz:`, sub.quiz);
+                        if (sub.type === 'quiz' && sub.quiz) {
+                            console.log("Populated Quiz Details:", sub.quiz);
+                        }
+                    });
+                }
+            });
+        }
 
         let courseProgressCount = await CourseProgress.findOne({
             courseID: courseId,
@@ -382,14 +441,35 @@ exports.getInstructorCourses = async (req, res) => {
             .populate({
                 path: "courseContent",
                 populate: {
-                    path: "subSection"
+                    path: "subSection",
+                    populate: {
+                        path: "quiz",
+                        model: "Quiz",
+                        populate: { // Populate questions and options
+                            path: 'questions',
+                            model: 'QuizQuestion',
+                            populate: {
+                                path: 'options',
+                                model: 'Option'
+                            }
+                        }
+                        // match: { type: 'quiz' }
+                    }
                 }
             }).
-            sort({ createdAt: -1 })
+            sort({ createdAt: -1 });
+
+
+        // console.log(instructorCourses)
         const instructorCoursesWithDuration = instructorCourses.map((courseDetails) => {
             let totalDurationInSeconds = 0
             courseDetails.courseContent.forEach((content) => {
                 content.subSection.forEach((subSection) => {
+                    // console.log(subSection);
+                    if (subSection.type === "quiz") {
+                        return;
+                    }
+                    // console.log(subSection);
                     const timeDurationInSeconds = parseInt(subSection.timeDuration)
                     totalDurationInSeconds += timeDurationInSeconds
                 })

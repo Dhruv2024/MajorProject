@@ -38,8 +38,13 @@ export default function CourseBuilderForm() {
         // console.log(data)
         setLoading(true)
 
-        let result
-
+        let result;
+        const sectionName = data.sectionName;
+        if (sectionName === "Course Quizzes") {
+            toast.error("Section Name can not be Course Quizzes");
+            setLoading(false);
+            return;
+        }
         if (editSectionName) {
             result = await updateSection(
                 {

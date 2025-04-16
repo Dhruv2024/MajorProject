@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from "react"
 import { AiOutlineDown } from "react-icons/ai"
 import { HiOutlineVideoCamera } from "react-icons/hi"
+import QuizIcon from '../../../assets/Images/quiz.png'
+import { MdQuiz } from "react-icons/md";
 
 function CourseSubSectionAccordion({ subSec }) {
   return (
@@ -8,7 +10,9 @@ function CourseSubSectionAccordion({ subSec }) {
       <div className="flex justify-between py-2">
         <div className={`flex items-center gap-2`}>
           <span>
-            <HiOutlineVideoCamera />
+            {
+              subSec.type === 'recorded' ? <HiOutlineVideoCamera /> : <MdQuiz className=" text-lg" />
+            }
           </span>
           <p>{subSec?.title}</p>
         </div>

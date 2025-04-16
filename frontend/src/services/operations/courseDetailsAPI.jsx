@@ -1,7 +1,7 @@
 import { toast } from "react-hot-toast"
 
 // import { updateCompletedLectures } from "../../slices/viewCourseSlice"
-import { courseEndpoints } from "../apis"
+import { courseEndpoints, quizEndpoints } from "../apis"
 import { apiConnector } from "../apiConnector"
 
 const {
@@ -22,6 +22,8 @@ const {
     CREATE_RATING_API,
     LECTURE_COMPLETION_API,
 } = courseEndpoints
+
+const { DELETE_QUIZ } = quizEndpoints
 
 export const getAllCourses = async () => {
     const toastId = toast.loading("Loading...")
@@ -96,6 +98,7 @@ export const addCourseDetails = async (data, token) => {
         }
         toast.success("Course Details Added Successfully")
         result = response?.data?.data
+        console.log(result);
     } catch (error) {
         console.log("CREATE COURSE API ERROR............", error)
         toast.error(error.message)
@@ -150,7 +153,7 @@ export const createSection = async (data, token) => {
 }
 
 // create a subsection
-export const createSubSection = async (data, token) => {
+export const createSubSection = async (data, token, type = 'recorded') => {
     let result = null
     const toastId = toast.loading("Loading...")
     try {
@@ -161,7 +164,13 @@ export const createSubSection = async (data, token) => {
         if (!response?.data?.success) {
             throw new Error("Could Not Add Lecture")
         }
-        toast.success("Lecture Added")
+        if (type === 'quiz') {
+            toast.success("Quiz Added")
+        }
+        else {
+            toast.success("Lecture Added")
+        }
+
         result = response?.data?.data
     } catch (error) {
         console.log("CREATE SUB-SECTION API ERROR............", error)
@@ -237,7 +246,7 @@ export const deleteSection = async (data, token) => {
     return result
 }
 // delete a subsection
-export const deleteSubSection = async (data, token) => {
+export const deleteSubSection = async (data, token, type = 'recorded', quizId = '') => {
     let result = null
     const toastId = toast.loading("Loading...")
     try {
@@ -247,6 +256,11 @@ export const deleteSubSection = async (data, token) => {
         console.log("DELETE SUB-SECTION API RESPONSE............", response)
         if (!response?.data?.success) {
             throw new Error("Could Not Delete Lecture")
+        }
+        if (type === 'quiz') {
+            const result = await apiConnector("POST", DELETE_QUIZ, { quizId }, {
+                Authorization: `Bearer ${token}`,
+            })
         }
         toast.success("Lecture Deleted")
         result = response?.data?.data
