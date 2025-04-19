@@ -255,9 +255,9 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                             />
                         </div>
                         <div className="mb-2">
-                            <label htmlFor={`image-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
+                            {/* <label htmlFor={`image-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
                                 Select Image:
-                            </label>
+                            </label> */}
                             <div className="mt-1 flex rounded-md shadow-sm">
                                 <label htmlFor={`image-${questionIndex}`} className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                                     <span>Upload a file</span>
@@ -287,72 +287,51 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                             <label className="block text-gray-700 text-sm font-bold mb-2">Options:</label>
                             {question.options.map((option, optionIndex) => (
                                 <div key={`option-${questionIndex}-${optionIndex}`} className="mb-2 flex items-center">
-                                    <div className="relative mr-2">
-                                        <input
-                                            type="checkbox"
-                                            className="sr-only"
-                                            checked={option.isImage}
-                                            onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'isImage')}
-                                            id={`isImageOption-${questionIndex}-${optionIndex}`}
-                                        />
-                                        <div className={`toggle-bg w-9 h-5 rounded-full transition duration-200 ease-in-out ${option.isImage ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
-                                        <div className={`toggle-circle absolute top-0.5 left-0.5 bg-white w-4 h-4 rounded-full shadow transform transition duration-200 ease-in-out ${option.isImage ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                    </div>
-                                    <span className="mr-2">{option.isImage ? 'Image' : 'Text'}</span>
-                                    {option.isImage ? (
-                                        <div className="mt-1 flex rounded-md shadow-sm w-full">
-                                            <label htmlFor={`option-image-${questionIndex}-${optionIndex}`} className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 w-full">
-                                                <span>Upload Image</span>
-                                                <input
-                                                    id={`option-image-${questionIndex}-${optionIndex}`}
-                                                    name={`option-image-${optionIndex}`}
-                                                    type="file"
-                                                    className="sr-only"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'image')}
-                                                    required={option.isImage && !option.image}
-                                                />
-                                            </label>
-                                            {option.image && (
-                                                <span className="ml-3 inline-flex items-center px-3 py-2 rounded-md text-sm text-gray-500">
-                                                    {option.image.name}
-                                                </span>
-                                            )}
-                                            {option.imagePreview && (
-                                                <div className="mt-2">
-                                                    <label className="block text-gray-700 text-sm font-bold mb-1">Image Preview:</label>
-                                                    <img src={option.imagePreview} alt={`Option ${optionIndex + 1} Preview`} className="max-w-xs h-auto rounded border" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <input
-                                            type="text"
-                                            value={option.text}
-                                            onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'text')}
-                                            placeholder={`Option ${optionIndex + 1}`}
-                                            required={!option.isImage}
-                                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                            disabled={option.isImage}
-                                        />
-                                    )}
+
+
+                                    {/* Text input field for options */}
+                                    <input
+                                        type="text"
+                                        value={option.text}
+                                        onChange={(e) => handleOptionChange(e, questionIndex, optionIndex, 'text')}
+                                        placeholder={`Option ${optionIndex + 1}`}
+                                        required
+                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    />
                                 </div>
                             ))}
+
                         </div>
-                        <div className="mb-2">
+                        <div className="mb-2 relative">
                             <label htmlFor={`correctAnswer-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
                                 Correct Answer:
                             </label>
-                            <input
-                                type="text"
-                                id={`correctAnswer-${questionIndex}`}
-                                value={question.correctAnswer}
-                                onChange={(e) => handleInputChange(e, questionIndex, 'correctAnswer')}
-                                required
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            />
-                            <p className="text-gray-500 text-xs italic">Enter the text of the correct option or the URL if it's an image option.</p>
+
+                            <div className="relative">
+                                <select
+                                    id={`correctAnswer-${questionIndex}`}
+                                    value={question.correctAnswer}
+                                    onChange={(e) => handleInputChange(e, questionIndex, 'correctAnswer')}
+                                    required
+                                    className="shadow appearance-none border rounded w-full py-2 pl-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                >
+                                    {/* Define your 4 options here */}
+                                    <option value="option1">Option 1</option>
+                                    <option value="option2">Option 2</option>
+                                    <option value="option3">Option 3</option>
+                                    <option value="option4">Option 4</option>
+                                </select>
+
+                                {/* Dropdown arrow icon */}
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
+
+
                         <div className="mb-4">
                             <label htmlFor={`topic-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
                                 Topic:

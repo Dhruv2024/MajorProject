@@ -84,5 +84,7 @@ export const summaryEndpoints = {
 
 export const quizEndpoints = {
     DELETE_QUIZ: BASE_URL + "/quiz/deleteQuiz",
-    FETCH_QUIZ: BASE_URL + "/quiz/fetchQuiz"
+    FETCH_QUIZ: BASE_URL + "/quiz/fetchQuiz",
+    SUBMIT_QUIZ: BASE_URL + "/quiz/submitQuiz",
+    GET_QUIZ_RESULT: BASE_URL + "/quiz/getResult",
 }

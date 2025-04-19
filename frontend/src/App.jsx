@@ -105,8 +105,8 @@ function App() {
     });
   }, []);
   useEffect(() => {
-    // Hide Navbar on any /startQuiz/:quizId route
-    const isStartQuizRoute = /^\/startQuiz\/\w+\/\w+$/.test(location.pathname);
+    // Hide Navbar on /startQuiz/:courseId/:subSectionId/:quizId routes
+    const isStartQuizRoute = /^\/startQuiz\/[^/]+\/[^/]+\/[^/]+$/.test(location.pathname);
     setShowNavbar(!isStartQuizRoute);
   }, [location.pathname]);
   return (
@@ -164,7 +164,7 @@ function App() {
           path="about"
           element={<About />}
         />
-        <Route path="startQuiz/:courseId/:quizId" element={
+        <Route path="startQuiz/:courseId/:subSectionId/:quizId" element={
           <PrivateRoute>
             <StartQuiz />
           </PrivateRoute>

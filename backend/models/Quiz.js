@@ -4,7 +4,7 @@ const quizSchema = new mongoose.Schema({
     questions: [{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'QuizQuestionSchema',
+        ref: 'QuizQuestion',
     }],
     timeLimit: Number, // in minutes
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },

@@ -3,54 +3,10 @@ const Course = require('../models/Course');
 const Quiz = require("../models/Quiz");
 const QuizQuestion = require('../models/QuizQuestions');
 const Option = require('../models/QuestionOption');
+const QuizSubmission = require('../models/QuizSubmission');
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
-
-exports.submitQuiz = async (req, res) => {
-    try {
-        const { studentId, answers, quizId } = req.body;
-
-        const quiz = await Quiz.findById(quizId);
-        let score = 0;
-        const detailedAnswers = [];
-
-        quiz.questions.forEach((question, i) => {
-            const isCorrect = question.correctAnswer === answers[i];
-            if (isCorrect) score++;
-
-            detailedAnswers.push({
-                questionText: question.questionText,
-                selectedOption: answers[i],
-                correctAnswer: question.correctAnswer,
-                topic: question.topic,
-                options: question.options
-            });
-        });
-
-        //   const report = await generateQuizReport(detailedAnswers);
-        const report = "";
-        const newSubmission = new StudentAnswer({
-            studentId,
-            quizId,
-            answers: detailedAnswers,
-            score,
-            report,
-            submittedAt: new Date(),
-        });
-
-        await newSubmission.save();
-        return res.json({
-            status: 200,
-            score, report, detailedAnswers
-        });
-    }
-    catch (err) {
-        console.log("error while submitting quiz....");
-        return res.status(500).json({
-            success: false,
-            message: err.message()
-        })
-    }
-};
+const SubSection = require('../models/SubSection');
+const CourseProgress = require('../models/CourseProgress');
 
 
 // Updated Controller for creating a new quiz
@@ -103,9 +59,9 @@ exports.createQuiz = async (req, res) => {
             let imageUrl = null;
             // console.log("**************");
             // console.log(image)
-            const image = req.files[`questionsData[${i}][questionImage]`];
-            if (isImage === 'true' && image) { // Handle string 'true' from form
+            if (isImage === 'true') { // Handle string 'true' from form
 
+                const image = req.files[`questionsData[${i}][questionImage]`];
                 // console.log("image conversion request received");
                 // console.log(image);
                 const response = await uploadImageToCloudinary(image, process.env.FOLDER_NAME);
@@ -285,7 +241,13 @@ exports.fetchQuiz = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Quiz not found in course content' });
         }
 
-        // Step 3: Fetch quiz with deeply populated questions and options
+        // Step 3: Check if the user has already attempted the quiz
+        const submission = await QuizSubmission.findOne({ userId: userId, quizId: quizId });
+        if (submission) {
+            return res.status(200).json({ success: false, message: 'You have already attempted this quiz', attempted: true });
+        }
+
+        // Step 4: Fetch quiz with deeply populated questions and options
         const quiz = await Quiz.findById(quizId)
             .populate({
                 path: 'questions',
@@ -310,6 +272,210 @@ exports.fetchQuiz = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Internal server error',
+        });
+    }
+};
+
+const updateCourseProgress = async (courseId, subSectionId, userId) => {
+    try {
+        //check if the subsection is valid
+        console.log("Received subsection id is :" + subSectionId)
+        const subSection = await SubSection.findById(subSectionId);
+
+        if (!subSection) {
+            return res.status(404).json({ error: "Invalid SUbSection" });
+        }
+
+        console.log("SubSection Validation Done");
+
+        //check for old entry 
+        let courseProgress = await CourseProgress.findOne({
+            courseID: courseId,
+            userId: userId,
+        });
+        if (!courseProgress) {
+            return res.status(404).json({
+                success: false,
+                message: "Course Progress does not exist"
+            });
+        }
+        else {
+            console.log("Course Progress Validation Done");
+            //check for re-completing video/subsection
+            if (courseProgress.completedVideos.includes(subSectionId)) {
+                return res.status(400).json({
+                    error: "Subsection already completed",
+                });
+            }
+
+            //poush into completed video
+            courseProgress.completedVideos.push(subSectionId);
+            console.log("Copurse Progress Push Done");
+        }
+        await courseProgress.save();
+        console.log("Course Progress Save call Done");
+        return true;
+    }
+    catch (error) {
+        console.log("Error while updating course Progress for Quiz")
+        console.error(error);
+        return false;
+    }
+}
+
+// Controller to store user's quiz answers
+exports.submitQuiz = async (req, res) => {
+    try {
+        const { quizId, finalAnswers, courseId, subSectionId } = req.body;
+        const userId = req.user.id;
+
+        const quiz = await Quiz.findById(quizId).populate({
+            path: 'questions',
+            populate: {
+                path: 'options',
+            },
+        });
+        console.log(quiz);
+        if (!quiz) {
+            return res.status(404).json({ message: 'Quiz not found' });
+        }
+
+        let score = 0;
+        for (const userAnswer of finalAnswers) {
+            const question = await QuizQuestion.findById(userAnswer.questionId);
+            // console.log(Number(question.correctAnswer), typeof (Number(question.correctAnswer)));
+            // console.log(userAnswer.answer, typeof (userAnswer.answer));
+            // console.log(Number(question.correctAnswer) === userAnswer.answer);
+            if (question && Number(question.correctAnswer) === userAnswer.answer) {
+                score++;
+            }
+        }
+        console.log(score);
+        const submission = new QuizSubmission({
+            userId,
+            quizId,
+            answers: finalAnswers,
+            score,
+            totalQuestions: quiz.questions.length,
+        });
+
+        await submission.save();
+
+        const courseProgressed = await updateCourseProgress(courseId, subSectionId, userId);
+        if (courseProgressed) {
+
+            return res.status(201).json({ message: 'Quiz submitted successfully', submissionId: submission._id });
+        }
+        else {
+            return res.status(500).json({
+                success: false,
+                message: "Failed while updating courseProgress for Quiz Subsection"
+            })
+        }
+    } catch (error) {
+        console.error('Error submitting quiz:', error);
+        res.status(500).json({ message: 'Failed to submit quiz' });
+    }
+};
+
+// Controller to show quiz result to a student by quizId and userId
+exports.getQuizResultByUserAndQuiz = async (req, res) => {
+    try {
+        const { quizId } = req.body;
+        const userId = req.user.id;
+
+        const submission = await QuizSubmission.findOne({ quizId, userId })
+            .populate({
+                path: 'quizId',
+                model: 'Quiz',
+                populate: {
+                    path: 'questions',
+                    model: 'QuizQuestion',
+                    populate: {
+                        path: 'options',
+                        model: 'Option',
+                    },
+                },
+            })
+            .populate('userId', 'name email')
+            .sort({ submittedAt: -1 });
+
+        if (!submission) {
+            return res.status(404).json({ message: 'No submission found for this user and quiz' });
+        }
+
+        const detailedAnswers = await Promise.all(submission.answers.map(async (userAnswer) => {
+            const question = await QuizQuestion.findById(userAnswer.questionId).populate('options');
+            const correctAnswerIndex = question ? question.correctAnswer : null;
+            const correctAnswer = question && correctAnswerIndex !== null
+                ? (await Option.findById(question.options[correctAnswerIndex])).option
+                : null;
+            const selectedAnswer = userAnswer.answer !== null && question && question.options[userAnswer.answer]
+                ? (await Option.findById(question.options[userAnswer.answer])).option
+                : null;
+
+            return {
+                questionId: userAnswer.questionId,
+                selectedAnswer: userAnswer.answer,
+                // selectedAnswer: selectedAnswer,
+                correctOption: correctAnswerIndex,
+                // correctAnswer: correctAnswer,
+                isCorrect: userAnswer.answer === correctAnswerIndex,
+                questionText: question ? question.question : 'Question not found',
+                options: question ? question.options.map(opt => ({
+                    _id: opt._id,
+                    option: opt.option,
+                    isImage: opt.isImage
+                })) : [],
+                isImage: question ? question.isImage : false,
+                imageUrl: question ? question.imageUrl : null,
+            };
+        }));
+
+        res.status(200).json({
+            quizTitle: submission.quizId.title,
+            submittedAt: submission.submittedAt,
+            score: submission.score,
+            totalQuestions: submission.totalQuestions,
+            detailedAnswers,
+        });
+    } catch (error) {
+        console.error('Error fetching quiz result:', error);
+        res.status(500).json({ message: 'Failed to fetch quiz result' });
+    }
+};
+
+
+
+exports.unsubmitQuiz = async (req, res) => {
+    try {
+        const { submissionId } = req.body;
+        const userId = req.user.id;
+
+        // Find the submission by ID
+        const submission = await QuizSubmission.findById(submissionId);
+
+        if (!submission) {
+            return res.status(404).json({ message: 'Quiz submission not found' });
+        }
+
+        // Make sure the submission belongs to the authenticated user
+        if (submission.userId.toString() !== userId) {
+            return res.status(403).json({ message: 'You are not authorized to unsubmit this quiz' });
+        }
+
+        // Delete the submission
+        await QuizSubmission.deleteOne({ _id: submissionId });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Quiz unsubmitted successfully',
+        });
+    } catch (error) {
+        console.error('Error unsubmitting quiz:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to unsubmit quiz',
         });
     }
 };
