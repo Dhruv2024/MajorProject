@@ -5,7 +5,8 @@ import { apiConnector } from "../apiConnector"
 import { summaryEndpoints } from "../apis";
 import { useSelector } from "react-redux";
 const {
-    GENERATE_SUMMARY
+    GENERATE_SUMMARY,
+    GENERATE_QUIZ_RESULT_SUMMARY
 } = summaryEndpoints;
 
 const parseMessage = (message) => {
@@ -66,6 +67,81 @@ export function generateSummary(videoUrl, token, navigate) {
         return result;
     }
 }
+
+export const generateQuizResultSummary = async (detailedTopicStats, token, navigate) => {
+
+    const toastId = toast.loading("Loading...");
+    let summaryResult = "";
+
+    try {
+        const quizResultTopicWise = detailedTopicStats;
+        const response = await apiConnector(
+            "POST",
+            GENERATE_QUIZ_RESULT_SUMMARY,
+            { quizResultTopicWise },
+            { Authorization: `Bearer ${token}` }
+        );
+
+        if (!response.data.success) {
+            throw new Error(response.data.message);
+        }
+
+        summaryResult = response.data.message;
+        // console.log(summaryResult);
+        // Ensure that special characters like newlines and other formatting issues are handled correctly
+        if (summaryResult) {
+            // Handle escaped newlines (\r\n and \n)
+            summaryResult = summaryResult.replace(/\\r\\n/g, "\r\n")  // Handle escaped \r\n
+                .replace(/\\n/g, "\n")      // Handle escaped \n
+                .trim();                    // Remove unnecessary leading/trailing whitespace
+
+            // Replace text wrapped in ** ** with bold HTML tags
+            summaryResult = summaryResult.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+            // Add line breaks after bold sections so the following text starts on a new line
+            summaryResult = summaryResult.replace(/(\*\*.*?\*\*)/g, "$1<br>");
+
+            // Ensure that each section (Problem, Solution, Market) starts on a new line
+            summaryResult = summaryResult.replace(/\n/g, "<br>"); // Replace newlines with <br> to ensure proper formatting in HTML
+        }
+
+    } catch (error) {
+        console.log("GENERATE SUMMARY API ERROR............", error);
+        toast.error("Could Not Generate summary");
+    }
+
+    toast.dismiss(toastId);
+    return summaryResult;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 export function signUp(

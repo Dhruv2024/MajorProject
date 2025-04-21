@@ -28,7 +28,7 @@ const Navbar = ({ darkTheme }) => {
     const { token } = useSelector((state) => state.auth);
     const { user } = useSelector((state) => state.profile);
     const { totalItems } = useSelector((state) => state.cart);
-    console.log(totalItems);
+    // console.log(totalItems);
     const location = useLocation();
     const [loading, setLoading] = useState(false);
 

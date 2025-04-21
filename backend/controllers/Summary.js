@@ -101,3 +101,36 @@ exports.generateSummary = async (req, res) => {
         })
     }
 }
+
+exports.summarizeQuizResult = async (req, res) => {
+    try {
+        const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        // const { transcript } = req.body;
+        const { quizResultTopicWise } = req.body;
+        console.log(quizResultTopicWise);
+        const prompt = `Analyze the following quiz results provided in JSON format. Provide a concise summary of the performance in each subject area and offer specific, actionable suggestions for improvement in each area where the student did not achieve a perfect score.
+Quiz Results:
+${JSON.stringify(quizResultTopicWise, null, 2)}
+`;
+        // const { videoId } = req.body;
+        // const prompt = `Summarize the YouTube video with ID: ${videoId} into revision notes.`;
+        // console.log(prompt);
+        const result = await model.generateContent(prompt);
+        // console.log(result.response.text());
+        // return result.response.text()
+        return res.json({
+            success: true,
+            message: result.response.text(),
+            status: 200
+        });
+    } catch (error) {
+        console.log("Something went wrong");
+        console.log(error);
+        // return res.json({
+        //     success: false,
+        //     message: "Something went wrong ",
+        //     status: 500
+        // });
+    }
+}

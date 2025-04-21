@@ -80,6 +80,7 @@ export const messageEndpoints = {
 
 export const summaryEndpoints = {
     GENERATE_SUMMARY: BASE_URL + "/summary/generate-summary",
+    GENERATE_QUIZ_RESULT_SUMMARY: BASE_URL + "/summary/generateQuizResultSummary",
 }
 
 export const quizEndpoints = {

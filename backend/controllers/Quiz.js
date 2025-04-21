@@ -399,7 +399,8 @@ exports.getQuizResultByUserAndQuiz = async (req, res) => {
             })
             .populate('userId', 'name email')
             .sort({ submittedAt: -1 });
-
+        // console.log(submission);
+        // console.log(submission.quizId.questions);
         if (!submission) {
             return res.status(404).json({ message: 'No submission found for this user and quiz' });
         }
@@ -407,12 +408,13 @@ exports.getQuizResultByUserAndQuiz = async (req, res) => {
         const detailedAnswers = await Promise.all(submission.answers.map(async (userAnswer) => {
             const question = await QuizQuestion.findById(userAnswer.questionId).populate('options');
             const correctAnswerIndex = question ? question.correctAnswer : null;
-            const correctAnswer = question && correctAnswerIndex !== null
-                ? (await Option.findById(question.options[correctAnswerIndex])).option
-                : null;
-            const selectedAnswer = userAnswer.answer !== null && question && question.options[userAnswer.answer]
-                ? (await Option.findById(question.options[userAnswer.answer])).option
-                : null;
+            console.log(correctAnswerIndex)
+            // const correctAnswer = question && correctAnswerIndex !== null
+            //     ? (await Option.findById(question.options[correctAnswerIndex])).option
+            //     : null;
+            // const selectedAnswer = userAnswer.answer !== null && question && question.options[userAnswer.answer]
+            //     ? (await Option.findById(question.options[userAnswer.answer])).option
+            //     : null;
 
             return {
                 questionId: userAnswer.questionId,
@@ -429,6 +431,7 @@ exports.getQuizResultByUserAndQuiz = async (req, res) => {
                 })) : [],
                 isImage: question ? question.isImage : false,
                 imageUrl: question ? question.imageUrl : null,
+                topic: question.topic
             };
         }));
 
