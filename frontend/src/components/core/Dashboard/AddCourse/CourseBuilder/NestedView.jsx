@@ -5,6 +5,7 @@ import { MdEdit } from "react-icons/md"
 import { RiDeleteBin6Line } from "react-icons/ri"
 import { RxDropdownMenu } from "react-icons/rx"
 import { useDispatch, useSelector } from "react-redux"
+import { SiGooglemeet } from "react-icons/si";
 
 import {
     deleteSection,
@@ -125,13 +126,17 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                             if (section.sectionName === "Course Quizzes") {
                                                 return;
                                             }
-                                            setType('recorded');
+                                            setType(data.type);
+                                            console.log(data.type);
                                         }
                                     }}
                                     className={`flex cursor-pointer items-center justify-between gap-x-3 py-2 ${darkTheme ? "border-b-2 border-b-richblack-600" : "border-b-2 border-b-richblack-5"}`}
                                 >
                                     <div className="flex items-center gap-x-3 py-2 ">
-                                        <RxDropdownMenu className="text-2xl text-richblack-50" />
+                                        {
+                                            data.type === 'videoCall' ? <SiGooglemeet className="text-xl text-richblack-50" /> : <RxDropdownMenu className="text-2xl text-richblack-50" />
+                                        }
+
                                         <p className={`font-semibold ${darkTheme ? "text-richblack-50" : "text-richblack-400"}`}>
                                             {data.title}
                                         </p>
@@ -198,12 +203,14 @@ export default function NestedView({ handleChangeEditSectionName }) {
                     modalData={addSubSection}
                     setModalData={setAddSubsection}
                     add={true}
+                    sectionName={type === 'quiz' && "Course Quizzes"}
                     type={type}
                 />
             ) : viewSubSection ? (
                 <SubSectionModal
                     modalData={viewSubSection}
                     setModalData={setViewSubSection}
+                    sectionName={type === 'quiz' && "Course Quizzes"}
                     view={true}
                     type={type}
                 />
@@ -212,6 +219,7 @@ export default function NestedView({ handleChangeEditSectionName }) {
                     modalData={editSubSection}
                     setModalData={setEditSubSection}
                     edit={true}
+                    sectionName={type === 'quiz' && "Course Quizzes"}
                     type={type}
                 />
             ) : (

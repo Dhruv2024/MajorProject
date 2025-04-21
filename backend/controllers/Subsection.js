@@ -8,6 +8,34 @@ const cloudinary = require('cloudinary').v2
 exports.createSubSection = async (req, res) => {
     try {
         const { type } = req.body;
+        console.log(req.body);
+        // return res.json({
+        //     message: "to be"
+        // })
+        if (type === 'videoCall') {
+            const { sectionId, title, video, startTime, description } = req.body;
+            const meetUrl = video;
+            if (!sectionId || !title || !startTime || !meetUrl) {
+                return res.status(404).json({ success: false, message: "All Fields are Required" });
+            }
+            // Create a new SubSection
+            const SubSectionDetails = await SubSection.create({
+                type,
+                title,
+                description,
+                meetUrl,
+                meetStartTime: startTime,
+            });
+
+            // Update the section with the new sub-section
+            const updatedSection = await Section.findByIdAndUpdate(
+                { _id: sectionId },
+                { $push: { subSection: SubSectionDetails._id } },
+                { new: true }
+            ).populate("subSection");
+
+            return res.status(200).json({ success: true, data: updatedSection });
+        }
         if (type === 'quiz') {
             const { sectionId, title, quizId } = req.body;
             if (!sectionId || !title || !quizId) {
@@ -37,8 +65,6 @@ exports.createSubSection = async (req, res) => {
             console.log("Updated Section:", updatedSection);
             // --- END DEBUGGING 2 ---
             return res.status(200).json({ success: true, data: updatedSection });
-
-
         }
         const { sectionId, title, description } = req.body;
         let { resource } = req.body;
@@ -150,7 +176,8 @@ exports.createSubSection = async (req, res) => {
 
 exports.updateSubSection = async (req, res) => {
     try {
-        const { sectionId, subSectionId, title, description, resource } = req.body
+        console.log(req.body);
+        const { subSectionType, sectionId, subSectionId } = req.body
         const subSection = await SubSection.findById(subSectionId)
 
         if (!subSection) {
@@ -159,25 +186,43 @@ exports.updateSubSection = async (req, res) => {
                 message: "SubSection not found",
             })
         }
+        if (subSectionType === 'recorded') {
+            const { title, description, resource } = req.body
+            if (title !== undefined) {
+                subSection.title = title
+            }
 
-        if (title !== undefined) {
-            subSection.title = title
+            if (description !== undefined) {
+                subSection.description = description
+            }
+            if (req.files && req.files.video !== undefined) {
+                const video = req.files.video
+                const uploadDetails = await uploadImageToCloudinary(
+                    video,
+                    process.env.FOLDER_NAME
+                )
+                subSection.videoUrl = uploadDetails.secure_url;
+                subSection.timeDuration = `${uploadDetails.duration}`
+            }
+            if (resource !== undefined) {
+                subSection.resource = resource;
+            }
         }
+        if (subSectionType === 'videoCall') {
+            const { title, description, meetUrl, startTime } = req.body
+            if (title !== undefined) {
+                subSection.title = title
+            }
 
-        if (description !== undefined) {
-            subSection.description = description
-        }
-        if (req.files && req.files.video !== undefined) {
-            const video = req.files.video
-            const uploadDetails = await uploadImageToCloudinary(
-                video,
-                process.env.FOLDER_NAME
-            )
-            subSection.videoUrl = uploadDetails.secure_url;
-            subSection.timeDuration = `${uploadDetails.duration}`
-        }
-        if (resource !== undefined) {
-            subSection.resource = resource;
+            if (description !== undefined) {
+                subSection.description = description
+            }
+            if (meetUrl !== undefined) {
+                subSection.meetUrl = meetUrl
+            }
+            if (startTime !== undefined) {
+                subSection.meetStartTime = startTime
+            }
         }
         await subSection.save()
         const updatedSection = await Section.findById(sectionId).populate("subSection");

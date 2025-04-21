@@ -466,7 +466,7 @@ exports.getInstructorCourses = async (req, res) => {
             courseDetails.courseContent.forEach((content) => {
                 content.subSection.forEach((subSection) => {
                     // console.log(subSection);
-                    if (subSection.type === "quiz") {
+                    if (subSection.type === "quiz" || subSection.type === "videoCall") {
                         return;
                     }
                     // console.log(subSection);

@@ -212,7 +212,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="startTime" className="block text-gray-700 text-sm font-bold mb-2">
+                    <label htmlFor="startTime" className="block text-pure-greys-600 text-sm font-bold mb-2">
                         Start Time:
                     </label>
                     <input
@@ -225,7 +225,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="endTime" className="block text-gray-700 text-sm font-bold mb-2">
+                    <label htmlFor="endTime" className="block text-pure-greys-600 text-sm font-bold mb-2">
                         End Time (for score release):
                     </label>
                     <input
@@ -243,7 +243,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                     <div key={questionIndex} className="mb-6 p-4 border rounded">
                         <h4 className="text-md font-semibold mb-2">Question {questionIndex + 1}</h4>
                         <div className="mb-2">
-                            <label htmlFor={`questionText-${questionIndex}`} className="block text-gray-700 text-sm font-bold mb-2">
+                            <label htmlFor={`questionText-${questionIndex}`} className="block text-pure-greys-600 text-sm font-bold mb-2">
                                 Question Text:
                             </label>
                             <textarea
@@ -251,7 +251,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                                 value={question.questionText}
                                 onChange={(e) => handleInputChange(e, questionIndex, 'questionText')}
                                 rows="3"
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-pure-greys-600 leading-tight focus:outline-none focus:shadow-outline"
                             />
                         </div>
                         <div className="mb-2">
@@ -347,26 +347,28 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                         <button
                             type="button"
                             onClick={() => removeQuestion(questionIndex)}
-                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            className=" bg-richblue-100 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         >
                             Remove Question
                         </button>
                         <hr className="my-4" />
                     </div>
                 ))}
-                <button
-                    type="button"
-                    onClick={addQuestion}
-                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
-                >
-                    Add New Question
-                </button>
-                <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline"
-                >
-                    Create Quiz
-                </button>
+                <div className='flex justify-between'>
+                    <button
+                        type="button"
+                        onClick={addQuestion}
+                        className="bg-caribbeangreen-400 hover:bg-caribbeangreen-500 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline mb-4"
+                    >
+                        Add New Question
+                    </button>
+                    <button
+                        type="submit"
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold px-6 rounded focus:outline-none focus:shadow-outline"
+                    >
+                        Create Quiz
+                    </button>
+                </div>
             </form>
         </div>
     );

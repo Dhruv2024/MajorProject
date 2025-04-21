@@ -15,6 +15,7 @@ export default function Upload({
     video = false,
     viewData = null,
     editData = null,
+    disable = false
 }) {
     const { course } = useSelector((state) => state.course);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -50,7 +51,7 @@ export default function Upload({
 
     // Register with form
     useEffect(() => {
-        register(name, { required: true });
+        register(name, { required: !disable });
     }, [register]);
 
     // Set value for form state when file is selected
