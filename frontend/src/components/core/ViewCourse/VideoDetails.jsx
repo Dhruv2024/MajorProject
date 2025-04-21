@@ -426,7 +426,7 @@ const VideoDetails = () => {
                     type === "videoCall" ? (
                         <div>
 
-                            <VideoCallLink data={meetDetails} handleLectureCompletion={handleLectureCompletion} />
+                            <VideoCallLink data={meetDetails} handleLectureCompletion={handleLectureCompletion} completed={completed} />
                         </div>
                     ) : (
                         <div className="text-red text-3xl space-y-4">

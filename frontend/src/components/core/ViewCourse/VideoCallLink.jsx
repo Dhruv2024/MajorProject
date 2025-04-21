@@ -3,7 +3,7 @@ import moment from 'moment';
 import './VideoCallLinkCool.css';
 import { ThemeContext } from '../../../provider/themeContext';
 
-const VideoCallLink = ({ data, handleLectureCompletion }) => {
+const VideoCallLink = ({ data, handleLectureCompletion, completed }) => {
     const { meetStartTime, meetUrl, title, description } = data;
     const [currentTime, setCurrentTime] = useState(moment());
     const startTime = moment(meetStartTime);
@@ -17,7 +17,7 @@ const VideoCallLink = ({ data, handleLectureCompletion }) => {
         const intervalId = setInterval(() => {
             const now = moment();
             setCurrentTime(now);
-
+            const timeDuration = completed ? 30 : 10;
             if (!showButton && now.isSameOrAfter(startTime)) {
                 setShowButton(true);
                 setPulse(true);
@@ -25,7 +25,7 @@ const VideoCallLink = ({ data, handleLectureCompletion }) => {
             }
 
             // Hide button after 10 minutes
-            if (showButton && now.diff(startTime, 'minutes') >= 10) {
+            if (showButton && now.diff(startTime, 'minutes') >= timeDuration) {
                 setShowButton(false);
                 setMeetingEnded(true);
             }
@@ -44,9 +44,9 @@ const VideoCallLink = ({ data, handleLectureCompletion }) => {
             setPulse(true);
             setTimeout(() => setPulse(false), 2000);
         }
-
+        const timeDuration = completed ? 30 : 10;
         // Check immediately if meeting should already be considered ended
-        if (now.diff(startTime, 'minutes') >= 10) {
+        if (now.diff(startTime, 'minutes') >= timeDuration) {
             setShowButton(false);
             setMeetingEnded(true);
         }
