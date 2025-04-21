@@ -17,10 +17,11 @@ export default function PublishCourse() {
     const { token } = useSelector((state) => state.auth)
     const { course } = useSelector((state) => state.course)
     const [loading, setLoading] = useState(false)
-
+    const [isPublic, setIsPublic] = useState(false)
     useEffect(() => {
         if (course?.status === COURSE_STATUS.PUBLISHED) {
-            setValue("public", true)
+            setValue("public", true);
+            setIsPublic(true);
         }
     }, [])
 
@@ -32,7 +33,15 @@ export default function PublishCourse() {
         dispatch(resetCourseState())
         navigate("/dashboard/my-courses")
     }
-
+    useEffect(() => {
+        const currentPublic = getValues("public");
+        console.log(currentPublic);
+        // 🔒 Prevent changing Published to Draft
+        if (course?.status === COURSE_STATUS.PUBLISHED && !currentPublic) {
+            alert("You cannot unpublish a course once it has been made public.")
+            return
+        }
+    }, [getValues("public")])
     const handleCoursePublish = async () => {
         // check if form has been updated or not
         if (
@@ -49,8 +58,21 @@ export default function PublishCourse() {
         formData.append("courseId", course._id)
         const courseStatus = getValues("public")
             ? COURSE_STATUS.PUBLISHED
-            : COURSE_STATUS.DRAFT
-        formData.append("status", courseStatus)
+            : COURSE_STATUS.DRAFT;
+
+        if (course?.status === COURSE_STATUS.DRAFT) {
+            formData.append("status", courseStatus)
+            if (courseStatus === "Published") {
+                const now = new Date();
+                const enrollmentOpenAt = now;
+                const enrollmentCloseAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+                formData.append("enrollmentOpen", true);
+                formData.append("enrollmentOpenAt", enrollmentOpenAt);
+                formData.append("enrollmentCloseAt", enrollmentCloseAt);
+            }
+        }
+
         setLoading(true)
         const result = await editCourseDetails(formData, token)
         if (result) {
@@ -58,7 +80,18 @@ export default function PublishCourse() {
         }
         setLoading(false)
     }
+    const handleCheckboxChange = (e) => {
+        const checked = e.target.checked
 
+        // Prevent unchecking if already published
+        if (course?.status === COURSE_STATUS.PUBLISHED && !checked) {
+            alert("You cannot unpublish a course once it has been made public.")
+            return
+        }
+
+        setIsPublic(checked)
+        setValue("public", checked)
+    }
     const onSubmit = (data) => {
         // console.log(data)
         handleCoursePublish()
@@ -76,7 +109,8 @@ export default function PublishCourse() {
                         <input
                             type="checkbox"
                             id="public"
-                            {...register("public")}
+                            checked={isPublic}
+                            onChange={handleCheckboxChange}
                             className="border-gray-300 h-4 w-4 rounded bg-richblack-500 text-richblack-400 focus:ring-2 focus:ring-richblack-5"
                         />
                         <span className="ml-2 text-richblack-400">

@@ -8,8 +8,9 @@ import { addToCart } from '../../../slices/cartSlice';
 import { FaShareSquare } from "react-icons/fa"
 import { BsFillCaretRightFill } from "react-icons/bs"
 import { ThemeContext } from '../../../provider/themeContext';
+import { formatDateTime } from '../../../utils/formatDateTime';
 
-function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
+function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse, isEnrollmentOpen, enrollmentEndDate, enrollmentStartDate }) {
 
     const { user } = useSelector((state) => state.profile);
     const { token } = useSelector((state) => state.auth);
@@ -58,28 +59,49 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
                 Rs. {CurrentPrice}
             </div>
             <div className='flex flex-col gap-y-6'>
-                <button
-                    className='yellowButton'
-                    onClick={
-                        user && course?.studentsEnrolled.includes(user?._id)
-                            ? () => navigate("/dashboard/enrolled-courses")
-                            : handleBuyCourse
-                    }
-                >
-                    {
-                        user && course?.studentsEnrolled.includes(user?._id) ? "Go to Course " : "Buy Now"
-                    }
-                </button>
-
-                {
-                    (!course?.studentsEnrolled.includes(user?._id)) && (
-                        <button onClick={handleAddToCart}
-                            className="blackButton">
-                            Add to Cart
+                {isEnrollmentOpen ? (
+                    <>
+                        <button
+                            className='yellowButton'
+                            onClick={
+                                user && course?.studentsEnrolled.includes(user?._id)
+                                    ? () => navigate("/dashboard/enrolled-courses")
+                                    : handleBuyCourse
+                            }
+                        >
+                            {
+                                user && course?.studentsEnrolled.includes(user?._id)
+                                    ? "Go to Course"
+                                    : "Buy Now"
+                            }
                         </button>
+
+                        {
+                            (!course?.studentsEnrolled.includes(user?._id)) && (
+                                <button onClick={handleAddToCart} className="blackButton">
+                                    Add to Cart
+                                </button>
+                            )
+                        }
+                        {
+                            <p className="text-sm text-richblack-200 mt-2">
+                                Enrollment ends at: {formatDateTime(enrollmentEndDate)}
+                            </p>
+                        }
+                    </>
+                ) : (
+                    !course?.studentsEnrolled.includes(user?._id) && (
+                        <div className="text-pink-200 text-center text-lg font-semibold pb-10">
+                            Enrollments Closed
+                            <p className="text-sm text-richblack-200 mt-2">
+                                Next enrollment opens at: {formatDateTime(enrollmentStartDate)}
+                            </p>
+                        </div>
                     )
-                }
+
+                )}
             </div>
+
 
             <div>
                 <div>

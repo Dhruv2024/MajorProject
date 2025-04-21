@@ -23,7 +23,9 @@ exports.createCourse = async (req, res) => {
             category,
             status,
             instructions: _instructions,
+            courseDuration,
         } = req.body
+        console.log(req.body);
         // Get thumbnail image from request files
         const thumbnail = req.files.thumbnailImage
 
@@ -83,6 +85,12 @@ exports.createCourse = async (req, res) => {
         const newRoom = await Rooms.create({
             instructor: instructorDetails._id
         });
+        // const temp = parseInt(courseDurationDays);
+        // console.log(temp);
+        // console.log(typeof (temp));
+        // Calculate the enrollmentCloseAt (based on user-defined course duration)
+        // const enrollmentCloseAt = new Date();
+        // enrollmentCloseAt.setDate(enrollmentCloseAt.getDate() + parseInt(courseDurationDays));  // user-defined duration
         const newCourse = await Course.create({
             courseName,
             courseDescription,
@@ -95,6 +103,10 @@ exports.createCourse = async (req, res) => {
             status: status,
             instructions,
             room: newRoom._id,
+            // Enrollment dates
+            // enrollmentCloseAt,
+            enrollmentOpen: true,  // initially set to true
+            courseDurationDays: parseInt(courseDuration),  // store user-defined course duration
         })
         // Create the default "Course Quizzes" section
         const courseQuizzesSection = await Section.create({

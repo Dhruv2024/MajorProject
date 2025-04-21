@@ -36,7 +36,7 @@
     "react-super-responsive-table": "^6.0.2",
     "react-type-animation": "^3.2.0",
     "socket.io-client": "^4.8.1",
-    "swiper": "^11.2.6",
+    "swiper": "^11.0.7",
     "video-react": "^0.16.0"
   },
   "devDependencies": {

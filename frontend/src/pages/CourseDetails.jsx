@@ -10,6 +10,7 @@ import GetAvgRating from '../utils/avgRating';
 import RatingStars from "../components/common/RatingStars"
 import CourseAccordionBar from "../components/core/Course/CourseAccordionBar"
 import { formatDate } from '../services/formatDate';
+import { formatDateTime } from '../utils/formatDateTime'
 import Footer from "../components/common/Footer"
 import CourseDetailsCard from '../components/core/Course/CourseDetailsCard';
 import { Error } from './Error';
@@ -17,7 +18,6 @@ import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { ThemeContext } from '../provider/themeContext';
 
 const CourseDetails = () => {
-
     const { user } = useSelector((state) => state.profile)
     const { token } = useSelector((state) => state.auth)
     const { loading } = useSelector((state) => state.profile)
@@ -37,7 +37,7 @@ const CourseDetails = () => {
         ; (async () => {
             try {
                 const res = await fetchCourseDetails(courseId)
-                // console.log("course details res: ", res)
+                console.log("course details res: ", res)
                 setResponse(res)
             } catch (error) {
                 console.log("Could not fetch Course Details")
@@ -54,6 +54,10 @@ const CourseDetails = () => {
         setAvgReviewCount(count)
     }, [response])
     // console.log("avgReviewCount: ", avgReviewCount)
+    const isEnrollmentOpen = response?.data?.courseDetails?.enrollmentOpen === true;
+    const enrollmentStartDate = response?.data?.courseDetails?.enrollmentOpenAt;
+    const enrollmentEndDate = response?.data?.courseDetails?.enrollmentCloseAt;
+    // console.log(enrollmentEndDate);
 
     // // Collapse all
     // const [collapse, setCollapse] = useState("")
@@ -177,11 +181,29 @@ const CourseDetails = () => {
                             <p className="space-x-3 pb-4 text-3xl font-semibold text-richblack-5">
                                 Rs. {price}
                             </p>
-                            <button className="yellowButton" onClick={handleBuyCourse}>
-                                Buy Now
-                            </button>
-                            <button className="blackButton">Add to Cart</button>
+                            {isEnrollmentOpen ? (
+                                <>
+                                    <button className="yellowButton" onClick={handleBuyCourse}>
+                                        Buy Now
+                                    </button>
+                                    <button className="blackButton">Add to Cart</button>
+                                    <p className="text-sm text-richblack-200 mt-2">
+                                        Enrollment ends at: {formatDateTime(enrollmentEndDate)}
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="text-pink-200 text-lg font-semibold">
+                                        Enrollments Closed
+                                    </div>
+                                    <p className="text-sm text-richblack-200 mt-2">
+                                        Next enrollment opens at: {formatDateTime(enrollmentStartDate)}
+                                    </p>
+                                </>
+                            )}
+
                         </div>
+
                     </div>
                     {/* Courses Card */}
                     <div className="right-[1rem] top-[60px] mx-auto hidden min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0 lg:absolute  lg:block">
@@ -189,6 +211,9 @@ const CourseDetails = () => {
                             course={response?.data?.courseDetails}
                             setConfirmationModal={setConfirmationModal}
                             handleBuyCourse={handleBuyCourse}
+                            isEnrollmentOpen={isEnrollmentOpen}
+                            enrollmentEndDate={enrollmentEndDate}
+                            enrollmentStartDate={enrollmentStartDate}
                         />
                     </div>
                 </div>

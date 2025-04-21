@@ -35,7 +35,12 @@ exports.capturePayment = async(req, res) => {
             if(course.studentsEnrolled.includes(uid)) {
                 return res.status(200).json({success:false, message:"Student is already Enrolled"});
             }
-
+            if (!course?.enrollmentOpen) {
+                return res.status(403).json({
+                    success: false,
+                    message: `Enrollment is currently closed for ${course.courseName}`,
+                });
+            }
             totalAmount += course.price;
         }
         catch(error) {

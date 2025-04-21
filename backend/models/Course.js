@@ -68,7 +68,12 @@ const coursesSchema = new mongoose.Schema({
             required: true,
             ref: "Question"
         }
-    ]
+    ],
+    // 🆕 Enrollment cycle fields
+    enrollmentOpen: { type: Boolean, default: true },
+    enrollmentOpenAt: { type: Date },  // next open time
+    enrollmentCloseAt: { type: Date }, // close time after 15 days
+    courseDurationDays: { type: Number, default: 30 } // controls cycle pause time
 });
 
 // Export the Courses model

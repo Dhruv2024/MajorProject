@@ -121,6 +121,8 @@ export default function CourseInformationForm() {
         if (currentValues.courseImage !== course.thumbnail) {
           formData.append("thumbnailImage", data.courseImage)
         }
+        // Add the course duration to the form data
+        formData.append("courseDuration", data.courseDuration);
         // console.log("Edit Form data: ", formData)
         setLoading(true)
         const result = await editCourseDetails(formData, token)
@@ -144,7 +146,9 @@ export default function CourseInformationForm() {
     formData.append("category", data.courseCategory)
     formData.append("status", COURSE_STATUS.DRAFT)
     formData.append("instructions", JSON.stringify(data.courseRequirements))
-    formData.append("thumbnailImage", data.courseImage)
+    formData.append("thumbnailImage", data.courseImage);
+    // Append course duration
+    formData.append("courseDuration", data.courseDuration);
     setLoading(true)
     const result = await addCourseDetails(formData, token)
     if (result) {
@@ -243,6 +247,27 @@ export default function CourseInformationForm() {
         {errors.courseCategory && (
           <span className="ml-2 text-xs tracking-wide text-pink-200">
             Course Category is required
+          </span>
+        )}
+      </div>
+      {/* Course Duration */}
+      <div className="flex flex-col space-y-2">
+        <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="courseDuration">
+          Course Duration (in days) <sup className="text-pink-200">*</sup>
+        </label>
+        <input
+          id="courseDuration"
+          placeholder="Enter Course Duration in Days"
+          {...register("courseDuration", {
+            required: true,
+            // valueAsNumber: true,
+            min: 1, // Ensure the duration is at least 1 day
+          })}
+          className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+        />
+        {errors.courseDuration && (
+          <span className="ml-2 text-xs tracking-wide text-pink-200">
+            Course duration is required and should be at least 1 day.
           </span>
         )}
       </div>

@@ -10,6 +10,7 @@ const messageRoutes = require('./routes/Message');
 const summaryRoutes = require('./routes/Summary');
 const questionRoutes = require('./routes/Questions');
 const quizRoutes = require('./routes/Quiz');
+const cron = require('node-cron');
 
 const { dbConnect } = require('./config/dbConnect');
 const cookieParser = require('cookie-parser');
@@ -153,6 +154,61 @@ app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/summary", summaryRoutes);
 app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/quiz", quizRoutes);
+
+
+
+const Course = require("./models/Course");
+// A cron job to check every hour and close courses if necessary
+
+// cron.schedule('0 * * * *', async () => {  // This will run every hour
+cron.schedule('*/2 * * * *', async () => {
+    console.log("hmm")
+    const currentDate = new Date();
+    currentDate.setMilliseconds(0);
+    const coursesToClose = await Course.find({
+        enrollmentOpen: true,
+        enrollmentCloseAt: { $lte: currentDate }, // Check if the current time is after enrollmentCloseAt
+    });
+
+    // Close enrollment for each course that has passed the duration
+    for (const course of coursesToClose) {
+        console.log(`➡️ Closing course: ${course.courseName}`);
+        console.log(`  - Current Duration: ${course.courseDurationDays}`);
+        console.log(`  - Current Close At: ${course.enrollmentCloseAt.toISOString()}`);
+
+        const durationDays = course.courseDurationDays || 30;
+        const nextOpenAt = new Date(currentDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
+        nextOpenAt.setMilliseconds(0);
+        const nextCloseAt = new Date(nextOpenAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+        nextCloseAt.setMilliseconds(0);
+
+        course.enrollmentOpen = false;
+        course.enrollmentOpenAt = nextOpenAt;
+        course.enrollmentCloseAt = nextCloseAt;
+
+        await course.save();
+
+        console.log(`✅ Enrollment closed for: ${course.courseName}`);
+        console.log(`🔜 Next Open: ${nextOpenAt.toISOString()}`);
+        console.log(`🔚 Next Close: ${nextCloseAt.toISOString()}`);
+    }
+
+
+    const coursesToOpen = await Course.find({
+        enrollmentOpen: false,
+        enrollmentOpenAt: { $lte: currentDate },
+    });
+
+    for (const course of coursesToOpen) {
+        course.enrollmentOpen = true;
+        await course.save();
+        console.log(`Enrollment opened for course: ${course.courseName}`);
+    }
+});
+
+
+
+
 
 app.get("/", (req, res) => {
     res.json({
