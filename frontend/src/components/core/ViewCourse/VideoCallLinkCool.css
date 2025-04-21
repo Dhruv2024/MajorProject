@@ -1,0 +1,123 @@
+/* Fonts & Reset */
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
+/* Root Container */
+.fullscreen-container {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    /* No transition */
+}
+
+/* Light Theme */
+.fullscreen-container.light {
+    background: linear-gradient(135deg, #e0eafc, #cfdef3);
+}
+
+/* Dark Theme */
+.fullscreen-container.dark {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+}
+
+/* Meeting Card - Static */
+.meeting-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 20px;
+    padding: 40px 30px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+    text-align: center;
+
+    /* Fully visible */
+    opacity: 1;
+    transform: none;
+}
+
+/* Title & Description */
+.cool-title {
+    font-size: 1.9rem;
+    margin-bottom: 10px;
+}
+
+.cool-description {
+    font-size: 1rem;
+    margin-bottom: 24px;
+}
+
+/* Text color based on theme */
+.fullscreen-container.light .cool-title,
+.fullscreen-container.light .cool-description,
+.fullscreen-container.light .cool-message,
+.fullscreen-container.light .cool-time {
+    color: #222;
+}
+
+.fullscreen-container.dark .cool-title,
+.fullscreen-container.dark .cool-description,
+.fullscreen-container.dark .cool-message,
+.fullscreen-container.dark .cool-time {
+    color: #f0f0f0;
+}
+
+/* Join Button */
+.cool-button {
+    padding: 12px 26px;
+    background: linear-gradient(to right, #38f9d7, #43e97b);
+    color: #000;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+
+    /* Static style */
+    opacity: 1;
+    transform: none;
+}
+
+/* No pulse animation */
+.cool-button.pulse {
+    /* pulse style removed */
+}
+
+/* Button hover */
+.cool-button:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Info Message */
+.cool-message {
+    font-size: 0.95rem;
+    color: #ccc;
+}
+
+.cool-time {
+    font-weight: bold;
+    color: #81ecec;
+}
+
+/* Background (static) */
+.animated-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    pointer-events: none;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.06), transparent),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.06), transparent);
+    /* No animation */
+}
