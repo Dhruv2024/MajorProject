@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { GiNinjaStar } from "react-icons/gi"
 import { RiDeleteBin6Line } from "react-icons/ri"
@@ -9,16 +9,28 @@ import { ThemeContext } from '../../../../provider/themeContext'
 const RenderCartCourses = () => {
     const { cart } = useSelector((state) => state.cart);
     const dispatch = useDispatch();
-    console.log("Printing cart items...")
-    console.log(cart);
     const { darkTheme } = useContext(ThemeContext);
+
+    useEffect(() => {
+        const currentTime = new Date();
+
+        cart.forEach((course) => {
+            if (
+                course?.enrollmentCloseAt &&
+                new Date(course.enrollmentCloseAt) < currentTime
+            ) {
+                dispatch(removeFromCart(course._id));
+                console.log(`⛔ Removed expired course from cart: ${course.courseName}`);
+            }
+        });
+    }, [cart, dispatch]);
+
     return (
         <div className="flex flex-1 flex-col">
             {cart.map((course, indx) => (
                 <div
                     key={course._id}
-                    className={`flex w-full flex-wrap items-start justify-between gap-6 ${indx !== cart.length - 1 && "border-b border-b-richblack-400 pb-6"
-                        } ${indx !== 0 && "mt-6"} `}
+                    className={`flex w-full flex-wrap items-start justify-between gap-6 ${indx !== cart.length - 1 && "border-b border-b-richblack-400 pb-6"} ${indx !== 0 && "mt-6"} `}
                 >
                     <div className="flex flex-1 flex-col gap-4 xl:flex-row">
                         <img
@@ -34,7 +46,6 @@ const RenderCartCourses = () => {
                                 {course?.category?.name}
                             </p>
                             <div className="flex items-center gap-2">
-                                {/* to be update */}
                                 <span className={darkTheme ? "text-yellow-5" : "text-blue-100"}>0</span>
                                 <ReactStars
                                     count={5}
@@ -54,7 +65,7 @@ const RenderCartCourses = () => {
                     <div className="flex flex-col items-end space-y-2">
                         <button
                             onClick={() => dispatch(removeFromCart(course._id))}
-                            className={`flex items-center gap-x-1 rounded-md border py-3 px-[12px] text-pink-200 ${darkTheme ? "border-richblack-600 bg-richblack-700 " : " border-none"}`}
+                            className={`flex items-center gap-x-1 rounded-md border py-3 px-[12px] text-pink-200 ${darkTheme ? "border-richblack-600 bg-richblack-700" : "border-none"}`}
                         >
                             <RiDeleteBin6Line />
                             <span>Remove</span>
@@ -69,4 +80,4 @@ const RenderCartCourses = () => {
     )
 }
 
-export default RenderCartCourses
+export default RenderCartCourses;

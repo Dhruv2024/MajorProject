@@ -28,6 +28,7 @@ const Navbar = ({ darkTheme }) => {
     const { token } = useSelector((state) => state.auth);
     const { user } = useSelector((state) => state.profile);
     const { totalItems } = useSelector((state) => state.cart);
+    console.log(totalItems);
     const location = useLocation();
     const [loading, setLoading] = useState(false);
 
@@ -153,7 +154,7 @@ const Navbar = ({ darkTheme }) => {
                                 <IoCart className={`text-2xl ${darkTheme ? "text-white" : "text-black"}`} />
                                 {
                                     totalItems > 0 &&
-                                    <span className='absolute -top-1 -right-2 bg-green-600 text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full text-white'>
+                                    <span className='absolute -top-1 -right-2 bg-green-600 text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full text-white bg-red'>
                                         {totalItems}
                                     </span>
                                 }
