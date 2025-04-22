@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { useForm } from "react-hook-form"
-import CountryCode from "../../data/countrycode.json"
+import React, { useContext, useEffect, useState } from 'react';
+import { useForm } from "react-hook-form";
+import CountryCode from "../../data/countrycode.json";
+import { ThemeContext } from '../../provider/themeContext';
 
 export const ContactUsForm = () => {
-
     const [loading, setLoading] = useState(false);
+    const { darkTheme } = useContext(ThemeContext);
     const {
         register,
         handleSubmit,
@@ -25,7 +26,7 @@ export const ContactUsForm = () => {
             console.log("Error:", error.message);
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (isSubmitSuccessful) {
@@ -35,19 +36,18 @@ export const ContactUsForm = () => {
                 lastname: "",
                 message: "",
                 phoneNo: "",
-            })
+            });
         }
     }, [reset, isSubmitSuccessful]);
 
-
     return (
         <form
-            className="flex flex-col gap-7"
+            className={`flex flex-col gap-7 ${darkTheme ? 'text-white' : 'text-richblack-900'}`}
             onSubmit={handleSubmit(submitContactForm)}
         >
             <div className="flex flex-col gap-5 lg:flex-row">
                 <div className="flex flex-col gap-2 lg:w-[48%]">
-                    <label htmlFor="firstname" className="lable-style">
+                    <label htmlFor="firstname" className={` ${darkTheme ? 'lable-style' : 'light-lable-style'}`}>
                         First Name
                     </label>
                     <input
@@ -55,17 +55,17 @@ export const ContactUsForm = () => {
                         name="firstname"
                         id="firstname"
                         placeholder="Enter first name"
-                        className="form-style"
+                        className={` ${darkTheme ? 'bg-richblack-800 form-style' : 'bg-white light-form-style'} ${darkTheme ? 'text-white' : 'text-richblack-900'}`}
                         {...register("firstname", { required: true })}
                     />
                     {errors.firstname && (
-                        <span className="-mt-1 text-[12px] text-yellow-100">
+                        <span className={`-mt-1 text-[12px] ${darkTheme ? 'text-yellow-100' : 'text-yellow-500'}`}>
                             Please enter your name.
                         </span>
                     )}
                 </div>
                 <div className="flex flex-col gap-2 lg:w-[48%]">
-                    <label htmlFor="lastname" className="lable-style">
+                    <label htmlFor="lastname" className={`lable-style ${darkTheme ? 'lable-style' : 'light-lable-style'}`}>
                         Last Name
                     </label>
                     <input
@@ -73,14 +73,14 @@ export const ContactUsForm = () => {
                         name="lastname"
                         id="lastname"
                         placeholder="Enter last name"
-                        className="form-style"
+                        className={` ${darkTheme ? 'bg-richblack-800 form-style' : 'bg-white light-form-style'} ${darkTheme ? 'text-white' : 'text-richblack-900'}`}
                         {...register("lastname")}
                     />
                 </div>
             </div>
 
             <div className="flex flex-col gap-2">
-                <label htmlFor="email" className="lable-style">
+                <label htmlFor="email" className={`lable-style ${darkTheme ? 'lable-style' : 'light-lable-style'}`}>
                     Email Address
                 </label>
                 <input
@@ -88,38 +88,34 @@ export const ContactUsForm = () => {
                     name="email"
                     id="email"
                     placeholder="Enter email address"
-                    className="form-style"
+                    className={` ${darkTheme ? 'bg-richblack-800 form-style' : 'bg-white light-form-style'} ${darkTheme ? 'text-white' : 'text-richblack-900'}`}
                     {...register("email", { required: true })}
                 />
                 {errors.email && (
-                    <span className="-mt-1 text-[12px] text-yellow-100">
+                    <span className={`-mt-1 text-[12px] ${darkTheme ? 'text-yellow-100' : 'text-yellow-500'}`}>
                         Please enter your Email address.
                     </span>
                 )}
             </div>
 
             <div className="flex flex-col gap-2">
-                <label htmlFor="phonenumber" className="lable-style">
+                <label htmlFor="phonenumber" className={`lable-style ${darkTheme ? 'lable-style' : 'light-lable-style'}`}>
                     Phone Number
                 </label>
 
                 <div className="flex gap-5">
                     <div className="flex w-[81px] flex-col gap-2">
                         <select
-                            type="text"
-                            name="firstname"
-                            id="firstname"
-                            placeholder="Enter first name"
-                            className="form-style"
+                            name="countrycode"
+                            id="countrycode"
+                            className={` ${darkTheme ? 'bg-richblack-800 form-style' : 'bg-white light-form-style'} ${darkTheme ? 'text-white' : 'text-richblack-900'}`}
                             {...register("countrycode", { required: true })}
                         >
-                            {CountryCode.map((ele, i) => {
-                                return (
-                                    <option key={i} value={ele.code}>
-                                        {ele.code} -{ele.country}
-                                    </option>
-                                )
-                            })}
+                            {CountryCode.map((ele, i) => (
+                                <option key={i} value={ele.code}>
+                                    {ele.code} - {ele.country}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     <div className="flex w-[calc(100%-90px)] flex-col gap-2">
@@ -128,7 +124,7 @@ export const ContactUsForm = () => {
                             name="phonenumber"
                             id="phonenumber"
                             placeholder="12345 67890"
-                            className="form-style"
+                            className={`${darkTheme ? 'bg-richblack-800 form-style' : 'bg-white light-form-style'} ${darkTheme ? 'text-white' : 'text-richblack-900'}`}
                             {...register("phoneNo", {
                                 required: {
                                     value: true,
@@ -141,14 +137,14 @@ export const ContactUsForm = () => {
                     </div>
                 </div>
                 {errors.phoneNo && (
-                    <span className="-mt-1 text-[12px] text-yellow-100">
+                    <span className={`-mt-1 text-[12px] ${darkTheme ? 'text-yellow-100' : 'text-yellow-500'}`}>
                         {errors.phoneNo.message}
                     </span>
                 )}
             </div>
 
             <div className="flex flex-col gap-2">
-                <label htmlFor="message" className="lable-style">
+                <label htmlFor="message" className={`lable-style ${darkTheme ? 'lable-style' : 'light-lable-style'}`}>
                     Message
                 </label>
                 <textarea
@@ -157,11 +153,11 @@ export const ContactUsForm = () => {
                     cols="30"
                     rows="7"
                     placeholder="Enter your message here"
-                    className="form-style"
+                    className={` ${darkTheme ? 'bg-richblack-800 form-style' : 'bg-white light-form-style'} ${darkTheme ? 'text-white' : 'text-richblack-900'}`}
                     {...register("message", { required: true })}
                 />
                 {errors.message && (
-                    <span className="-mt-1 text-[12px] text-yellow-100">
+                    <span className={`-mt-1 text-[12px] ${darkTheme ? 'text-yellow-100' : 'text-yellow-500'}`}>
                         Please enter your Message.
                     </span>
                 )}
@@ -170,13 +166,13 @@ export const ContactUsForm = () => {
             <button
                 disabled={loading}
                 type="submit"
-                className={`rounded-md bg-yellow-50 px-6 py-3 text-center text-[13px] font-bold text-black shadow-[2px_2px_0px_0px_rgba(255,255,255,0.18)] 
-         ${!loading &&
-                    "transition-all duration-200 hover:scale-95 hover:shadow-none"
-                    }  disabled:bg-richblack-500 sm:text-[16px] `}
+                className={`rounded-md px-6 py-3 text-center text-[13px] font-bold shadow-[2px_2px_0px_0px_rgba(255,255,255,0.18)] 
+                ${darkTheme ? 'bg-yellow-50 text-black' : 'bg-blue-600 text-white'} 
+                ${!loading && "transition-all duration-200 hover:scale-95 hover:shadow-none"} 
+                disabled:bg-richblack-500 sm:text-[16px]`}
             >
                 Send Message
             </button>
         </form>
-    )
-}
+    );
+};

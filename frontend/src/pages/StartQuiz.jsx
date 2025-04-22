@@ -147,13 +147,13 @@ const StartQuiz = () => {
             questionId: q._id,
             answer: answers[q._id] ?? null,
         }));
-        setSubmitted(true);
         localStorage.removeItem(localEndKey);
         localStorage.removeItem(localQuizKey);
         localStorage.removeItem(localAnswersKey);
         const data = { quizId, finalAnswers, courseId, subSectionId }
         console.log("Quiz Submitted!", data);
         const result = await submitQuiz(data, token);
+        setSubmitted(true);
 
     };
 

@@ -7,6 +7,7 @@ const QuizSubmission = require('../models/QuizSubmission');
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const SubSection = require('../models/SubSection');
 const CourseProgress = require('../models/CourseProgress');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 
 // Updated Controller for creating a new quiz
@@ -323,6 +324,41 @@ const updateCourseProgress = async (courseId, subSectionId, userId) => {
     }
 }
 
+
+const summarizeQuizResult = async (quizResultTopicWise) => {
+    try {
+        const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        // const { transcript } = req.body;
+        // const { quizResultTopicWise } = req.body;
+        console.log(quizResultTopicWise);
+        const prompt = `Analyze the following quiz results provided in JSON format. Provide a concise summary of the performance in each subject area and offer specific, actionable suggestions for improvement in each area where the student did not achieve a perfect score.
+Quiz Results:
+${JSON.stringify(quizResultTopicWise, null, 2)}
+`;
+        // const { videoId } = req.body;
+        // const prompt = `Summarize the YouTube video with ID: ${videoId} into revision notes.`;
+        // console.log(prompt);
+        const result = await model.generateContent(prompt);
+        // console.log(result.response.text());
+        return result.response.text()
+        // return res.json({
+        //     success: true,
+        //     message: result.response.text(),
+        //     status: 200
+        // });
+    } catch (error) {
+        console.log("Something went wrong");
+        console.log(error);
+        // return res.json({
+        //     success: false,
+        //     message: "Something went wrong ",
+        //     status: 500
+        // });
+    }
+}
+
+
 // Controller to store user's quiz answers
 exports.submitQuiz = async (req, res) => {
     try {
@@ -351,12 +387,63 @@ exports.submitQuiz = async (req, res) => {
             }
         }
         console.log(score);
+
+        const detailedAnswers = await Promise.all(finalAnswers.map(async (userAnswer) => {
+            const question = await QuizQuestion.findById(userAnswer.questionId).populate('options');
+            const correctAnswerIndex = question ? question.correctAnswer : null;
+            // console.log(correctAnswerIndex)
+
+            return {
+                questionId: userAnswer.questionId,
+                selectedAnswer: userAnswer.answer,
+                // selectedAnswer: selectedAnswer,
+                correctOption: correctAnswerIndex,
+                // correctAnswer: correctAnswer,
+                isCorrect: userAnswer.answer === parseInt(correctAnswerIndex),
+                questionText: question ? question.question : 'Question not found',
+                options: question ? question.options.map(opt => ({
+                    _id: opt._id,
+                    option: opt.option,
+                    isImage: opt.isImage
+                })) : [],
+                isImage: question ? question.isImage : false,
+                imageUrl: question ? question.imageUrl : null,
+                topic: question.topic
+            };
+        }));
+        // console.log(detailedAnswers);
+        const quizResultTopicWise = detailedAnswers.reduce((acc, answer) => {
+            const topic = answer.topic || 'Unknown';
+            acc[topic] = acc[topic] || {
+                correct: 0,
+                total: 0,
+                correctQuestions: [],
+                incorrectQuestions: [],
+            };
+            acc[topic].total += 1;
+            if (answer.isCorrect) {
+                acc[topic].correct += 1;
+                acc[topic].correctQuestions.push(answer.questionText);
+            } else {
+                acc[topic].incorrectQuestions.push(answer.questionText);
+            }
+            return acc;
+        }, {});
+        // console.log("printing detailed topic stat");
+        // console.log(quizResultTopicWise);
+        // return res.json({
+        //     message: "done"
+        // })
+        const summaryResult = await summarizeQuizResult(quizResultTopicWise);
+
+        // const report=summarizeQuizResult
         const submission = new QuizSubmission({
             userId,
             quizId,
             answers: finalAnswers,
             score,
             totalQuestions: quiz.questions.length,
+            report: summaryResult
         });
 
         await submission.save();
@@ -441,6 +528,7 @@ exports.getQuizResultByUserAndQuiz = async (req, res) => {
             score: submission.score,
             totalQuestions: submission.totalQuestions,
             detailedAnswers,
+            report: submission.report
         });
     } catch (error) {
         console.error('Error fetching quiz result:', error);

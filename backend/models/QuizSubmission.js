@@ -36,6 +36,9 @@ const quizSubmissionSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    report: {
+        type: String,
+    }
 });
 
 const QuizSubmission = mongoose.model('QuizSubmission', quizSubmissionSchema);

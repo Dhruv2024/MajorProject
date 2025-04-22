@@ -8,13 +8,14 @@ import { useSelector } from 'react-redux';
 
 const QuizResultPopup = ({ result, onClose }) => {
     if (!result) return null;
-
+    // console.log(result);
     const correctPercentage = (result.score / result.totalQuestions) * 100;
     const incorrectPercentage = 100 - correctPercentage;
     const [loading, setLoading] = useState(false);
     const [quizSummary, setQuizSummary] = useState('');
     const { token } = useSelector((state) => state.auth);
-
+    // console.log(loading);
+    // console.log(quizSummary);
     const topicStats = result.detailedAnswers.reduce((acc, answer) => {
         const topic = answer.topic || 'Unknown';
         acc[topic] = acc[topic] || { correct: 0, total: 0 };
@@ -44,14 +45,40 @@ const QuizResultPopup = ({ result, onClose }) => {
     useEffect(() => {
         async function fetchQuizSummary() {
             setLoading(true);
-            try {
-                const summary = await generateQuizResultSummary(detailedTopicStats, token);
-                setQuizSummary(summary);
-            } catch (error) {
-                console.error('Error fetching quiz summary:', error);
-                setQuizSummary('<p class="text-red-500">Failed to generate summary.</p>');
-            } finally {
+            if (result.report) {
+                console.log("auto generated");
+
+                let summaryResult = result.report;
+                if (summaryResult) {
+                    // Handle escaped newlines (\r\n and \n)
+                    summaryResult = summaryResult.replace(/\\r\\n/g, "\r\n")  // Handle escaped \r\n
+                        .replace(/\\n/g, "\n")      // Handle escaped \n
+                        .trim();                    // Remove unnecessary leading/trailing whitespace
+
+                    // Replace text wrapped in ** ** with bold HTML tags
+                    summaryResult = summaryResult.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+                    // Add line breaks after bold sections so the following text starts on a new line
+                    summaryResult = summaryResult.replace(/(\*\*.*?\*\*)/g, "$1<br>");
+
+                    // Ensure that each section (Problem, Solution, Market) starts on a new line
+                    summaryResult = summaryResult.replace(/\n/g, "<br>"); // Replace newlines with <br> to ensure proper formatting in HTML
+                }
+                // console.log(summaryResult);
+                setQuizSummary(summaryResult);
                 setLoading(false);
+            }
+            else {
+                try {
+                    console.log("generating");
+                    const summary = await generateQuizResultSummary(detailedTopicStats, token);
+                    setQuizSummary(summary);
+                } catch (error) {
+                    console.error('Error fetching quiz summary:', error);
+                    setQuizSummary('<p class="text-red-500">Failed to generate summary.</p>');
+                } finally {
+                    setLoading(false);
+                }
             }
         }
 

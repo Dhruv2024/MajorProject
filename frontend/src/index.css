@@ -90,6 +90,10 @@ body {
 }
 
 .light-lable-style {
+    @apply text-[14px] text-richblack-700;
+}
+
+.light-lable-style {
     @apply text-[14px] text-richblack-800;
 }
 

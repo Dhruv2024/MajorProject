@@ -54,6 +54,7 @@ export default function CourseInformationForm() {
       setValue("courseCategory", course.category)
       setValue("courseRequirements", course.instructions)
       setValue("courseImage", course.thumbnail)
+      setValue("courseDuration", course.courseDurationDays);
     }
     getCategories()
   }, [])
@@ -264,6 +265,7 @@ export default function CourseInformationForm() {
             min: 1, // Ensure the duration is at least 1 day
           })}
           className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+          disabled={editCourse}
         />
         {errors.courseDuration && (
           <span className="ml-2 text-xs tracking-wide text-pink-200">

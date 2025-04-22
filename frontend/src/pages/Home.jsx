@@ -11,7 +11,7 @@ import { InstructorSection } from "../components/core/HomePage/InstructorSection
 import { ExploreMore } from "../components/core/HomePage/ExploreMore";
 import Footer from "../components/common/Footer";
 import { ThemeContext } from "../provider/themeContext";
-// import ReviewSlider from "../components/common/ReviewSlider";
+import ReviewSlider from "../components/common/ReviewSlider";
 
 const Home = () => {
     const { darkTheme } = useContext(ThemeContext);
@@ -173,8 +173,8 @@ const Home = () => {
                 <h2 className="text-center text-4xl font-semibold mt-10">Reviews from other learners</h2>
 
                 {/* Review Slider */}
-                <h1 className="text-5xl text-red mx-auto"> To be updated</h1>
-                {/* <ReviewSlider /> */}
+                {/* <h1 className="text-5xl text-red mx-auto"> To be updated</h1> */}
+                <ReviewSlider />
             </div>
 
             {/* Footer */}
