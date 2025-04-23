@@ -13,6 +13,7 @@ const {
     editCourse,
     getInstructorCourses,
     deleteCourse,
+    unenrollFromCourse,
 } = require("../controllers/Course")
 
 
@@ -93,4 +94,7 @@ router.post("/createRating", auth, isStudent, createRating)
 router.get("/getAverageRating", getAverageRating)
 router.get("/getReviews", getAllRating)
 
+
+
+router.post("/unenroll", auth, unenrollFromCourse);
 module.exports = router

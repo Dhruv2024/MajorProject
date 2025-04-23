@@ -24,7 +24,7 @@ function loadScript(src) {
 }
 
 
-export async function buyCourse(token, courses, userDetails, navigate, dispatch) {
+export async function buyCourse(token, courses, userDetails, navigate, dispatch, reEnroll = false) {
     const toastId = toast.loading("Loading...");
     try {
         //load the script
@@ -37,7 +37,7 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch)
 
         //initiate the order
         const orderResponse = await apiConnector("POST", COURSE_PAYMENT_API,
-            { courses },
+            { courses, reEnroll },
             {
                 Authorization: `Bearer ${token}`,
             })
@@ -63,7 +63,7 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch)
                 //send successful wala mail
                 sendPaymentSuccessEmail(response, orderResponse.data.message.amount, token);
                 //verifyPayment
-                verifyPayment({ ...response, courses }, token, navigate, dispatch);
+                verifyPayment({ ...response, courses, reEnroll }, token, navigate, dispatch);
             }
         }
         //miss hogya tha 
@@ -79,7 +79,9 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch)
         console.log("PAYMENT API ERROR.....", error);
         toast.error("Could not make Payment");
     }
-    toast.dismiss(toastId);
+    finally {
+        toast.dismiss(toastId);
+    }
 }
 
 async function sendPaymentSuccessEmail(response, amount, token) {
@@ -110,7 +112,13 @@ async function verifyPayment(bodyData, token, navigate, dispatch) {
             throw new Error(response.data.message);
         }
         toast.success("payment Successful, you are addded to the course");
-        navigate("/dashboard/enrolled-courses");
+        const { reEnroll } = bodyData;
+        if (!reEnroll) {
+            navigate("/dashboard/enrolled-courses");
+        }
+        else {
+            window.location.reload();
+        }
         dispatch(resetCart());
     }
     catch (error) {

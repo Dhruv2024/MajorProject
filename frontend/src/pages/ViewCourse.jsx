@@ -21,6 +21,7 @@ export default function ViewCourse() {
     useEffect(() => {
         async function getDetails() {
             const courseData = await getFullDetailsOfCourse(courseId, token)
+            courseData.courseDetails.courseExpiryDate = courseData.courseExpiryDate;
             // console.log("Course Data here... ", courseData.courseDetails)
             dispatch(setCourseSectionData(courseData.courseDetails.courseContent))
             dispatch(setEntireCourseData(courseData.courseDetails))

@@ -2,6 +2,7 @@ const Course = require("../models/Course")
 const Category = require("../models/Category")
 const Section = require("../models/Section")
 const SubSection = require("../models/SubSection")
+const CourseExpiry = require("../models/CourseExpiry")
 const User = require("../models/User")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
 const CourseProgress = require("../models/CourseProgress")
@@ -344,7 +345,7 @@ exports.getFullCourseDetails = async (req, res) => {
     try {
         const { courseId } = req.body
         const userId = req.user.id
-        const courseDetails = await Course.findOne({
+        let courseDetails = await Course.findOne({
             _id: courseId,
         })
             .populate({
@@ -390,7 +391,18 @@ exports.getFullCourseDetails = async (req, res) => {
                 }
             });
         }
-
+        const courseExpiry = await CourseExpiry.findOne({
+            userId: userId,
+            courseId: courseDetails._id,
+        });
+        console.log("***************************");
+        const expiryDate = courseExpiry?.expiryDate
+        console.log(expiryDate);
+        if (expiryDate) {
+            // console.log("entered");
+            Object.assign(courseDetails, { "expiryDate": expiryDate });
+            // console.log(courseDetails.expiryDate);
+        }
         let courseProgressCount = await CourseProgress.findOne({
             courseID: courseId,
             userId: userId,
@@ -419,7 +431,7 @@ exports.getFullCourseDetails = async (req, res) => {
                 totalDurationInSeconds += timeDurationInSeconds
             })
         })
-
+        // console.log(courseDetails.expiryDate);
         const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
 
         return res.status(200).json({
@@ -430,6 +442,7 @@ exports.getFullCourseDetails = async (req, res) => {
                 completedVideos: courseProgressCount?.completedVideos
                     ? courseProgressCount?.completedVideos
                     : [],
+                courseExpiryDate: expiryDate
             },
         })
     } catch (error) {
@@ -561,3 +574,73 @@ exports.deleteCourse = async (req, res) => {
         })
     }
 }
+
+
+exports.unenrollFromCourse = async (req, res) => {
+    try {
+        const { courseId } = req.body; // The course the user wants to unenroll from
+        // console.log(req.user.id);
+        const userId = req.user.id;
+        // console.log(userId);
+
+        // 1. Find the course and check if it's valid
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                message: "Course not found",
+            });
+        }
+
+        // 2. Check if the user is enrolled in the course
+        if (!course.studentsEnrolled.includes(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: "User is not enrolled in this course",
+            });
+        }
+
+        // 3. Remove the student from the course's enrolled students list
+        await Course.findByIdAndUpdate(courseId, {
+            $pull: { studentsEnrolled: userId },
+        });
+
+        // 4. Remove the course from the student's list of enrolled courses
+        await User.findByIdAndUpdate(userId, {
+            $pull: { courses: courseId },
+        });
+
+        // 5. Remove the student's course progress data
+        const courseProgress = await CourseProgress.findOneAndDelete({
+            courseID: courseId,
+            userId: userId,
+        });
+
+        // 6. Remove the student from the course room (if applicable)
+        const room = await Rooms.findById(course.room);
+        if (room) {
+            await Rooms.findByIdAndUpdate(course.room, {
+                $pull: { studentsEnrolled: userId },
+            });
+        }
+
+        // 7. Optionally, remove the expiry date record from CourseExpiry if needed
+        const courseExpiry = await CourseExpiry.findOneAndDelete({
+            userId: userId,
+            courseId: courseId,
+        });
+
+        // Optionally: Send an email to notify the student about unenrollment
+        const enrolledStudent = await User.findById(userId);
+        return res.status(200).json({
+            success: true,
+            message: `Successfully unenrolled from ${course.courseName}`,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};

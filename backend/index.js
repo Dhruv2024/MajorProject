@@ -12,6 +12,10 @@ const questionRoutes = require('./routes/Questions');
 const quizRoutes = require('./routes/Quiz');
 const cron = require('node-cron');
 
+const Course = require("./models/Course");
+const SubSection = require("./models/SubSection");
+const Quiz = require("./models/Quiz");
+
 const { dbConnect } = require('./config/dbConnect');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -203,6 +207,17 @@ cron.schedule('*/2 * * * *', async () => {
         course.enrollmentOpen = true;
         await course.save();
         console.log(`Enrollment opened for course: ${course.courseName}`);
+
+        // Update quizzes linked to this course
+        // const quizzes = await Quiz.find({ course: course._id });
+
+        // for (const quiz of quizzes) {
+        //     const durationInMs = (course.courseDurationDays || 30) * 24 * 60 * 60 * 1000;
+        //     quiz.startTime = new Date(quiz.startTime + durationInMs);
+        //     quiz.endTime = new Date(quiz.endTime + durationInMs);
+        //     await quiz.save();
+        //     console.log(`📘 Quiz "${quiz.title}" updated for course "${course.courseName}"`);
+        // }
     }
 });
 

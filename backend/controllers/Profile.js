@@ -2,6 +2,7 @@ const Course = require("../models/Course");
 const CourseProgress = require("../models/CourseProgress");
 const Profile = require("../models/Profile");
 const User = require("../models/User");
+const CourseExpiry = require("../models/CourseExpiry");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const { convertSecondsToDuration } = require("../utils/secToDuration")
 // Method for updating a profile
@@ -205,6 +206,19 @@ exports.getEnrolledCourses = async (req, res) => {
                     Math.round(
                         (courseProgressCount / SubsectionLength) * 100 * multiplier
                     ) / multiplier
+            }
+            // Fetch the expiry date for the course (if any)
+            const courseExpiry = await CourseExpiry.findOne({
+                userId: userId,
+                courseId: userDetails.courses[i]._id,
+            });
+
+            // Add expiry date to course details
+            if (courseExpiry) {
+                userDetails.courses[i].expiryDate = courseExpiry.expiryDate;
+            } else {
+                // If no expiry date found, set it as null or a default value
+                userDetails.courses[i].expiryDate = null;
             }
         }
 

@@ -8,12 +8,13 @@ const crypto = require("crypto");
 const { courseEnrollmentEmail } = require("../mail/templates/courseEnrollmentEmail");
 const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessfulEmail");
 const CourseProgress = require("../models/CourseProgress");
+const CourseExpiry = require("../models/CourseExpiry");
 const Rooms = require("../models/Rooms");
 
 //initiate the razorpay order
 exports.capturePayment = async(req, res) => {
 
-    const {courses} = req.body;
+    const {courses,reEnroll} = req.body;
     const userId = req.user.id;
 
     if(courses.length === 0) {
@@ -32,7 +33,7 @@ exports.capturePayment = async(req, res) => {
             }
 
             const uid  = new mongoose.Types.ObjectId(userId);
-            if(course.studentsEnrolled.includes(uid)) {
+            if(course.studentsEnrolled.includes(uid) && !reEnroll) {
                 return res.status(200).json({success:false, message:"Student is already Enrolled"});
             }
             if (!course?.enrollmentOpen) {
@@ -76,8 +77,11 @@ exports.verifyPayment = async(req, res) => {
     const razorpay_payment_id = req.body?.razorpay_payment_id;
     const razorpay_signature = req.body?.razorpay_signature;
     const courses = req.body?.courses;
+    console.log("printing.........");
+    // console.log(req.body);
+    const {reEnroll} = req.body || false;
     const userId = req.user.id;
-
+    console.log(reEnroll);
     if(!razorpay_order_id ||
         !razorpay_payment_id ||
         !razorpay_signature || !courses || !userId) {
@@ -92,7 +96,7 @@ exports.verifyPayment = async(req, res) => {
 
         if(expectedSignature === razorpay_signature) {
             //enroll karwao student ko
-            await enrollStudents(courses, userId, res);
+            await enrollStudents(courses, userId, res,reEnroll);
             //return res
             return res.status(200).json({success:true, message:"Payment Verified"});
         }
@@ -101,50 +105,87 @@ exports.verifyPayment = async(req, res) => {
 }
 
 
-const enrollStudents = async(courses, userId, res) => {
+const enrollStudents = async(courses, userId, res,reEnroll=false) => {
 
     if(!courses || !userId) {
         return res.status(400).json({success:false,message:"Please Provide data for Courses or UserId"});
     }
 
     for(const courseId of courses) {
-        try{
-            //find the course and enroll the student in it
-            const enrolledCourse = await Course.findOneAndUpdate(
-                { _id: courseId },
-                { $push: { studentsEnrolled: userId } },
-                { new: true },
-            );
-        if(!enrolledCourse) {
-            return res.status(500).json({success:false,message:"Course not Found"});
-        };
-            const roomNumber = enrolledCourse.room;
-            const courseProgress = await CourseProgress.create({
-                courseID: courseId,
-                userId: userId,
-                completedVideos: [],
-            });
-        //find the student and add the course to their list of enrolledCOurses
-            const enrolledStudent = await User.findByIdAndUpdate(userId,
-                {
-                    $push: {
-                        courses: courseId,
-                        courseProgress: courseProgress._id,
-                    }
-                }, { new: true });
-            const enrollInRoom = await Rooms.findByIdAndUpdate(roomNumber,
-                {
-                    $push: {
-                        studentsEnrolled: userId,
-                    }
-                }, { new: true });
-        ///bachhe ko mail send kardo
-        const emailResponse = await mailSender(
-            enrollStudents.email,
-            `Successfully Enrolled into ${enrolledCourse.courseName}`,
-            courseEnrollmentEmail(enrolledCourse.courseName, `${enrolledStudent.firstName}`)
-        )    
-        //console.log("Email Sent Successfully", emailResponse.response);
+        try {
+            if (reEnroll) {
+                console.log("re enrolling student");
+                const enrolledCourse = await Course.findById(courseId);
+                const courseDurationInMs = enrolledCourse.courseDurationDays * 24 * 60 * 60 * 1000; // days to ms
+                const calculatedExpiryDate = new Date(enrolledCourse.enrollmentOpenAt.getTime() + courseDurationInMs);
+
+                const courseExpiry = await CourseExpiry.findOneAndUpdate(
+                    { userId: userId, courseId: courseId },
+                    { expiryDate: calculatedExpiryDate },
+                    { new: true }  // To return the updated document
+                );
+
+                if (!courseExpiry) {
+                    return res.status(500).json({ success: false, message: "Could not update expiry date" });
+                }
+                console.log(`Updated expiry date for user: ${userId} in course: ${courseId}`);
+                const enrolledStudent = await User.findById(userId);
+                ///bachhe ko mail send kardo
+                const emailResponse = await mailSender(
+                    enrolledStudent.email,
+                    `Successfully Enrolled into ${enrolledCourse.courseName}`,
+                    courseEnrollmentEmail(enrolledCourse.courseName, `${enrolledStudent.firstName}`)
+                )   
+                // return res.status(200).json({
+                //     success: true,
+                //     message:"user has been enrolled in course again successfully"
+                // })
+            }
+            else {
+                 //find the course and enroll the student in it
+                const enrolledCourse = await Course.findOneAndUpdate(
+                    { _id: courseId },
+                    { $push: { studentsEnrolled: userId } },
+                    { new: true },
+                );
+                const courseDurationInMs = enrolledCourse.courseDurationDays * 24 * 60 * 60 * 1000; // days to ms
+                const calculatedExpiryDate = new Date(enrolledCourse.enrollmentOpenAt.getTime() + courseDurationInMs);
+                if(!enrolledCourse) {
+                    return res.status(500).json({success:false,message:"Course not Found"});
+                };
+                const roomNumber = enrolledCourse.room;
+                const courseProgress = await CourseProgress.create({
+                    courseID: courseId,
+                    userId: userId,
+                    completedVideos: [],
+                });
+                //find the student and add the course to their list of enrolledCOurses
+                const enrolledStudent = await User.findByIdAndUpdate(userId,
+                    {
+                        $push: {
+                            courses: courseId,
+                            courseProgress: courseProgress._id,
+                        }
+                    }, { new: true });
+                const enrollInRoom = await Rooms.findByIdAndUpdate(roomNumber,
+                    {
+                        $push: {
+                            studentsEnrolled: userId,
+                        }
+                    }, { new: true });
+                const courseExpiry = await CourseExpiry.create({
+                    courseId,
+                    userId,
+                    expiryDate:calculatedExpiryDate,
+                })
+                    ///bachhe ko mail send kardo
+                    const emailResponse = await mailSender(
+                        enrolledStudent.email,
+                        `Successfully Enrolled into ${enrolledCourse.courseName}`,
+                        courseEnrollmentEmail(enrolledCourse.courseName, `${enrolledStudent.firstName}`)
+                    )    
+            }
+            //console.log("Email Sent Successfully", emailResponse.response);
         }
         catch(error) {
             console.log(error);
