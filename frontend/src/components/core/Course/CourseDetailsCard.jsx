@@ -84,7 +84,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse, isEn
                             )
                         }
                         {
-                            <p className="text-sm text-richblack-200 mt-2">
+                            <p className="text-sm text-red mt-2">
                                 Enrollment ends at: {formatDateTime(enrollmentEndDate)}
                             </p>
                         }
@@ -93,7 +93,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse, isEn
                     !course?.studentsEnrolled.includes(user?._id) && (
                         <div className="text-pink-200 text-center text-lg font-semibold pb-10">
                             Enrollments Closed
-                            <p className="text-sm text-richblack-200 mt-2">
+                            <p className="text-sm text-caribbeangreen-200 mt-2">
                                 Next enrollment opens at: {formatDateTime(enrollmentStartDate)}
                             </p>
                         </div>
@@ -111,7 +111,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse, isEn
                 </div>
                 <div className={``}>
                     <p className={`my-2 text-xl font-semibold `}>
-                        This Course Includes :
+                        Requirements for the Course :
                     </p>
                     <div className="flex flex-col gap-3 text-sm text-caribbeangreen-100">
                         {course?.instructions?.map((item, i) => {

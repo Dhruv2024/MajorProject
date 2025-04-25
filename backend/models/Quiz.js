@@ -19,6 +19,16 @@ const quizSchema = new mongoose.Schema({
     course: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course',
+    },
+    remainderMailSent: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    reportMailSent: {
+        type: Boolean,
+        required: true,
+        default: false,
     }
 }, { timestamps: true });
 

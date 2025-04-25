@@ -36,6 +36,12 @@ const ChatPage = () => {
     }, []);
     const { course } = useSelector((state) => state.course);
     const { darkTheme } = useContext(ThemeContext);
+    function capitalizeFirstLetter(str) {
+        return str
+            .split(' ')                        // Split the string into an array of words
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize first letter of each word
+            .join(' ');                        // Join the words back into a single string
+    }
     return (
         <div className='text-white'>
             {
@@ -43,7 +49,7 @@ const ChatPage = () => {
                     <div>Loading...</div>
                 ) : (
                     <div>
-                        {heading.current && <h1 className={`text-2xl h-[7vh] flex items-center justify-center font-semibold ${darkTheme ? "text-brown-25" : " text-red border-b border-richblack-50"}`}>{heading.current}</h1>}
+                        {heading.current && <h1 className={`text-2xl h-[7vh] flex items-center justify-center font-semibold ${darkTheme ? "text-brown-25" : " text-red border-b border-richblack-50"}`}>{capitalizeFirstLetter(heading.current)}</h1>}
                         <Messages messages={messages} />
                         <SendMessage setMessages={setMessages} messages={messages} />
                     </div>

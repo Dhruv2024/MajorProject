@@ -105,7 +105,7 @@ const CourseDetails = () => {
         studentsEnrolled,
         createdAt,
     } = response.data?.courseDetails
-
+    console.log(whatYouWillLearn);
     const handleBuyCourse = () => {
         if (token) {
             buyCourse(token, [courseId], user, navigate, dispatch)
@@ -130,6 +130,12 @@ const CourseDetails = () => {
         )
     }
     const { darkTheme } = useContext(ThemeContext);
+    function capitalizeFirstLetter(str) {
+        return str
+            .split(' ')                        // Split the string into an array of words
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize first letter of each word
+            .join(' ');                        // Join the words back into a single string
+    }
     return (
         <>
             <div className={`relative w-full bg-richblack-800`}>
@@ -149,7 +155,7 @@ const CourseDetails = () => {
                         >
                             <div>
                                 <p className="text-4xl font-bold text-richblack-5 sm:text-[42px]">
-                                    {courseName}
+                                    {capitalizeFirstLetter(courseName)}
                                 </p>
                             </div>
                             <p className={`text-richblack-200`}>{courseDescription}</p>
@@ -187,7 +193,7 @@ const CourseDetails = () => {
                                         Buy Now
                                     </button>
                                     <button className="blackButton">Add to Cart</button>
-                                    <p className="text-sm text-richblack-200 mt-2">
+                                    <p className="text-sm text-red mt-2">
                                         Enrollment ends at: {formatDateTime(enrollmentEndDate)}
                                     </p>
                                 </>
@@ -223,7 +229,7 @@ const CourseDetails = () => {
                     {/* What will you learn section */}
                     <div className="my-8 border border-richblack-600 p-8">
                         <p className="text-3xl font-semibold">What you'll learn</p>
-                        <div className="mt-5">
+                        <div className="mt-5" style={{ whiteSpace: 'pre-line' }}>
                             {/* <ReactMarkdown>{whatYouWillLearn}</ReactMarkdown> */}
                             {whatYouWillLearn}
                         </div>

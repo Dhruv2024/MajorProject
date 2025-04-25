@@ -1,0 +1,239 @@
+/* EnrolledCourses.css */
+.enrolled-courses-container {
+    padding: 1rem;
+}
+
+.enrolled-courses-container.dark {
+    background-color: #1e293b;
+    /* Example dark background color */
+    color: #f8f9fa;
+    /* Example dark text color */
+}
+
+.enrolled-courses-table-container {
+    overflow-x: auto;
+    /* Enable horizontal scrolling for small screens */
+}
+
+.enrolled-courses-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.enrolled-courses-table thead th {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    font-weight: bold;
+    /* Inherit text color from parent or set specifically for dark theme if needed */
+}
+
+.enrolled-courses-table thead.dark th {
+    /* Example dark theme header text color if different */
+    color: #e9ecef;
+}
+
+.enrolled-courses-table tbody td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    /* Inherit text color */
+}
+
+.enrolled-courses-table tbody.dark td {
+    border-bottom-color: #495057;
+    /* Example dark theme border color */
+}
+
+.enrolled-courses-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.course-row.even-row {
+    background-color: #f9f9f9;
+}
+
+.enrolled-courses-container.dark .course-row.even-row {
+    background-color: #2c384e;
+    /* Example dark theme even row color */
+}
+
+.course-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.course-thumbnail {
+    height: 3rem;
+    width: 3rem;
+    border-radius: 0.25rem;
+    object-fit: cover;
+}
+
+.course-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.course-title {
+    font-weight: bold;
+    /* Inherit text color */
+}
+
+.course-description {
+    font-size: 0.875rem;
+    color: #717171;
+}
+
+.enrolled-courses-container.dark .course-description {
+    color: #adb5bd;
+    /* Example dark theme description color */
+}
+
+.progress-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    /* Inherit text color */
+}
+
+.progress-bar {
+    width: 100%;
+}
+
+.actions-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.action-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #4a5568;
+    transition: color 0.2s ease-in-out;
+}
+
+.enrolled-courses-container.dark .action-icon {
+    color: #e9ecef;
+    /* Example dark theme icon color */
+}
+
+.action-icon:hover {
+    color: #2b6cb0;
+}
+
+.enrolled-courses-container.dark .action-icon:hover {
+    color: #90caf9;
+    /* Example dark theme hover color */
+}
+
+.action-text {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    /* Inherit text color */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .enrolled-courses-table thead {
+        display: none;
+        /* Hide table headers on smaller screens */
+    }
+
+    .enrolled-courses-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 0.25rem;
+        padding: 0.75rem;
+    }
+
+    .enrolled-courses-container.dark .enrolled-courses-table tbody tr {
+        border-color: #495057;
+        /* Example dark theme border color */
+    }
+
+    .enrolled-courses-table tbody td {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        border-bottom: none;
+    }
+
+    .enrolled-courses-table tbody td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        min-width: 80px;
+        color: #4a5568;
+    }
+
+    .enrolled-courses-container.dark .enrolled-courses-table tbody td:before {
+        color: #e9ecef;
+        /* Example dark theme label color */
+    }
+
+    .course-name-cell,
+    .duration-cell,
+    .progress-cell,
+    .actions-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .course-info {
+        width: 100%;
+    }
+
+    .progress-cell .progress-label {
+        margin-top: 0.5rem;
+    }
+
+    .actions-container {
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .action-icon {
+        font-size: 1.25rem;
+    }
+}
+
+/* Spinner styles */
+.spinner-container {
+    display: grid;
+    place-items: center;
+    min-height: calc(100vh - 3.5rem);
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border-left-color: #3498db;
+    animation: spin 1s linear infinite;
+}
+
+.enrolled-courses-container.dark .spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-left-color: #5cb85c;
+    /* Example dark theme spinner color */
+}
+
+/* Empty courses message */
+.empty-courses-message {
+    grid-column: 1 / -1;
+    /* Make it span the entire table width on small screens */
+    padding: 1rem;
+    text-align: center;
+    /* Inherit text color */
+}

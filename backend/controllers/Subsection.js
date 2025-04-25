@@ -259,6 +259,12 @@ exports.deleteSubSection = async (req, res) => {
                 .json({ success: false, message: "SubSection not found" })
         }
 
+        // Update courseProgress by removing the deleted subSection from completedVideos
+        await courseProgress.updateMany(
+            { completedVideos: subSectionId },
+            { $pull: { completedVideos: subSectionId } }
+        );
+
         const updatedSection = await Section.findById(sectionId).populate("subSection")
 
         return res.json({

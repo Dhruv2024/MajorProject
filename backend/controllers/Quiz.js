@@ -13,10 +13,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Updated Controller for creating a new quiz
 exports.createQuiz = async (req, res) => {
     try {
-        const { title, timeLimit, startTime, endTime } = req.body;
+        const { title, timeLimit, startTime, endTime, courseId } = req.body;
         // console.log(req.body);
         const { userId } = req.user.id;
-        const quiz = new Quiz({ title, timeLimit, createdBy: userId, startTime, endTime });
+        const quiz = new Quiz({ title, timeLimit, createdBy: userId, startTime, endTime, course: courseId });
         const questionsData = [];
         const questionKeys = Object.keys(req.body).filter(key => key.startsWith('questionsData'));
         const questionsMap = {};
@@ -567,6 +567,30 @@ exports.unsubmitQuiz = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to unsubmit quiz',
+        });
+    }
+};
+
+
+// Controller function to update quizzes and add `remainderMailSent` if missing
+exports.addRemainderMailSentField = async (req, res) => {
+    try {
+        // Find all quizzes where `remainderMailSent` field is not present
+        const result = await Quiz.updateMany(
+            { remainderMailSent: { $exists: false } }, // condition to check missing field
+            { $set: { remainderMailSent: false } }     // adding the missing field with default value
+        );
+
+        // Respond with a success message and how many documents were modified
+        return res.status(200).json({
+            message: 'Field `remainderMailSent` added to missing documents.',
+            modifiedCount: result.modifiedCount,
+        });
+    } catch (error) {
+        console.error('Error while adding remainderMailSent field:', error);
+        return res.status(500).json({
+            message: 'Error while updating records.',
+            error: error.message,
         });
     }
 };

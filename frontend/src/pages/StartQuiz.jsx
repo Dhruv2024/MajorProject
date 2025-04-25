@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { fetchQuiz, submitQuiz } from '../services/operations/quizAPI';
 import { useSelector } from 'react-redux';
+import { ThemeContext } from '../provider/themeContext';
 
 const StartQuiz = () => {
     const [quiz, setQuiz] = useState(null);
@@ -17,14 +18,14 @@ const StartQuiz = () => {
     const [popupImage, setPopupImage] = useState(null);
     const [completed, setCompleted] = useState(null);
     const [error, setError] = useState(null);
-
+    const { darkTheme } = useContext(ThemeContext);
     const {
         courseSectionData,
         courseEntireData,
         totalNoOfLectures,
         completedLectures,
     } = useSelector((state) => state.viewCourse);
-    console.log(completedLectures);
+    // console.log(completedLectures);
 
     const localQuizKey = `active-quiz-${quizId}`;
     const localEndKey = `quiz-${quizId}-endTime`;
@@ -140,7 +141,9 @@ const StartQuiz = () => {
         setAnswers((prev) => ({ ...prev, [qId]: index + 1 }));
         localStorage.setItem(localAnswersKey, JSON.stringify({ ...answers, [qId]: index }));
     };
-
+    useEffect(() => {
+        console.log(answers);
+    }, [answers])
     const handleSubmit = async () => {
         if (!quiz) return;
         const finalAnswers = quiz.questions.map((q) => ({
@@ -304,7 +307,8 @@ const StartQuiz = () => {
                                             key={q._id}
                                             style={styles.questionContainer}
                                         >
-                                            <div style={styles.questionTitle}>
+                                            <div style={{ whiteSpace: 'pre-line', ...styles.questionTitle }}
+                                            >
                                                 Question {index + 1}: {q.question}
                                             </div>
                                             {q.isImage && (
@@ -322,11 +326,12 @@ const StartQuiz = () => {
                                             <div style={{ marginTop: '1.5rem' }}>
                                                 {q.options.map((optObj, i) => {
                                                     const isSelected = answers[q._id] === i + 1;
+                                                    const radioId = `${q._id}-${i}`;
                                                     return (
                                                         <div key={i} style={styles.optionContainer}>
                                                             <input
                                                                 type="radio"
-                                                                id={`question-<span class="math-inline">\{q\.\_id\}\-option\-</span>{i}`}
+                                                                id={radioId}
                                                                 name={q._id}
                                                                 value={optObj.option}
                                                                 checked={isSelected}
@@ -334,7 +339,7 @@ const StartQuiz = () => {
                                                                 style={styles.optionInput}
                                                             />
                                                             <label
-                                                                htmlFor={`question-<span class="math-inline">\{q\.\_id\}\-option\-</span>{i}`}
+                                                                htmlFor={radioId}
                                                                 style={styles.optionLabel}
                                                             >
                                                                 {optObj.option}

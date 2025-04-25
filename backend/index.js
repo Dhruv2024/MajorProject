@@ -15,6 +15,11 @@ const cron = require('node-cron');
 const Course = require("./models/Course");
 const SubSection = require("./models/SubSection");
 const Quiz = require("./models/Quiz");
+const User = require("./models/User");
+const QuizSubmission = require("./models/QuizSubmission");
+
+const { quizReminderEmail } = require("./mail/templates/quizRemainderEmail");
+const { quizScoreEmail } = require("./mail/templates/quizScoreEmail");
 
 const { dbConnect } = require('./config/dbConnect');
 const cookieParser = require('cookie-parser');
@@ -37,6 +42,7 @@ const Room = require("./models/Rooms");
 const Answers = require('./models/Answers');
 const Questions = require('./models/Questions');
 const { uploadImageToCloudinary } = require('./utils/imageUploader');
+const mailSender = require('./utils/mailSender');
 io.on('connection', (socket) => {
     console.log("user connected");
     // Join Room
@@ -161,7 +167,6 @@ app.use("/api/v1/quiz", quizRoutes);
 
 
 
-const Course = require("./models/Course");
 // A cron job to check every hour and close courses if necessary
 
 // cron.schedule('0 * * * *', async () => {  // This will run every hour
@@ -209,20 +214,128 @@ cron.schedule('*/2 * * * *', async () => {
         console.log(`Enrollment opened for course: ${course.courseName}`);
 
         // Update quizzes linked to this course
-        // const quizzes = await Quiz.find({ course: course._id });
+        const quizzes = await Quiz.find({ course: course._id });
 
-        // for (const quiz of quizzes) {
-        //     const durationInMs = (course.courseDurationDays || 30) * 24 * 60 * 60 * 1000;
-        //     quiz.startTime = new Date(quiz.startTime + durationInMs);
-        //     quiz.endTime = new Date(quiz.endTime + durationInMs);
-        //     await quiz.save();
-        //     console.log(`📘 Quiz "${quiz.title}" updated for course "${course.courseName}"`);
-        // }
+        for (const quiz of quizzes) {
+            const durationInMs = (course.courseDurationDays || 30) * 24 * 60 * 60 * 1000;
+            quiz.startTime = new Date(quiz.startTime + durationInMs);
+            quiz.endTime = new Date(quiz.endTime + durationInMs);
+            quiz.reportMailSent = false;
+            await quiz.save();
+            console.log(`📘 Quiz "${quiz.title}" updated for course "${course.courseName}"`);
+        }
     }
 });
 
+const sendQuizReminderEmail = async (user, quiz) => {
+    try {
+        const mailResponse = await mailSender(
+            user.email,
+            "Test Remainder",
+            quizReminderEmail(quiz.title, quiz.startTime, quiz.endTime, user.firstName),
+        )
+        console.log('Email sent successfully to:', user.email);
+    }
+    catch (error) {
+        console.log(error);
+        // return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Function to check and send email reminders
+const checkAndSendQuizReminder = async () => {
+    console.log("checking for sending mail");
+    const quizzes = await Quiz.find({ remainderMailSent: false });
+    const now = new Date();  // Current time in UTC
+    const thirtyMinutesBefore = new Date(now.getTime() + 30 * 60000);  // 30 minutes from now
+
+    quizzes.forEach(async (quiz) => {
+        // Convert quiz start time (ISO format) to Date object
+        const quizStartTime = new Date(quiz.startTime);
+
+        // Check if the quiz is about to start in 30 minutes
+        if (quizStartTime <= thirtyMinutesBefore && quizStartTime > now) {
+            // Find all the eligible users for this quiz (those enrolled in the course)
+            const course = await Course.findById(quiz.course);
+            const eligibleUsers = await User.find({
+                _id: { $in: course.studentsEnrolled },
+                active: true,  // You may want to only send to active users
+            });
+
+            // Send an email to each eligible user
+            eligibleUsers.forEach(user => {
+                sendQuizReminderEmail(user, quiz);
+            });
+
+            // Update the quiz document to mark the reminder as sent
+            quiz.remainderMailSent = true;
+            await quiz.save();
+        }
+    }
+    );
+};
 
 
+const sendQuizResultEmail = async (user, quiz) => {
+    try {
+        const mailResponse = await mailSender(
+            user.email,
+            "Quiz Result",
+            quizScoreEmail(quiz.title, user.firstName),
+        )
+        console.log('Email sent successfully to:', user.email);
+    }
+    catch (error) {
+        console.log(error);
+        // return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+const checkAndSendQuizResultReport = async () => {
+    console.log("Checking for sending report mail");
+
+    const quizzes = await Quiz.find({ reportMailSent: false }); // Find quizzes that haven't sent the report yet
+    const now = new Date();  // Current time in UTC
+
+    quizzes.forEach(async (quiz) => {
+        // Convert quiz end time (ISO format) to Date object
+        const quizEndTime = new Date(quiz.endTime);
+
+        // Check if the quiz has already ended
+        if (quizEndTime <= now) {
+            // Find all the eligible users for this quiz (those enrolled in the course)
+            const course = await Course.findById(quiz.course);
+            const eligibleUsers = await User.find({
+                _id: { $in: course.studentsEnrolled },
+                active: true,  // Only send to active users
+            });
+
+            // Send the report email to each eligible user
+            // eligibleUsers.forEach(async (user) => {
+            //     const userReportDetails = await QuizSubmission.findById(user._id);
+            //     sendQuizResultEmail(user, quiz, userReportDetails.score, userReportDetails.totalQuestions, `${process.env.FRONTEND_URL}`);
+            // });
+
+            for (const user of eligibleUsers) {
+                const userSubmission = await QuizSubmission.findOne({ quizId: quiz._id, userId: user._id });
+                if (userSubmission) {
+                    // User has submitted the quiz, so send the email
+                    sendQuizResultEmail(user, quiz, userSubmission.score, userSubmission.totalQuestions, `${process.env.FRONTEND_URL}`);
+                }
+            }
+
+            // Update the quiz document to mark the report as sent
+            quiz.reportMailSent = true;
+            await quiz.save();
+        }
+    });
+};
+
+
+// Set up the cron job to run every minute
+cron.schedule('*/15 * * * *', checkAndSendQuizReminder);  // Every 15 minute
+cron.schedule('*/15 * * * *', checkAndSendQuizResultReport);  // Every 15 minute
 
 
 app.get("/", (req, res) => {

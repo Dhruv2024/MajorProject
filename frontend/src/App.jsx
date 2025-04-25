@@ -18,7 +18,7 @@ import { EnrolledCourses } from "./components/core/Dashboard/EnrolledCourses";
 import Cart from "./components/core/Dashboard/Cart/index";
 import { useDispatch, useSelector } from "react-redux";
 import { ACCOUNT_TYPE } from "./utils/constants";
-// import Contact from "./pages/Contact";
+import Contact from "./pages/Contact";
 import AddCourse from "./components/core/Dashboard/AddCourse";
 import MyCourses from "./components/core/Dashboard/MyCourses";
 import EditCourse from "./components/core/Dashboard/EditCourse";
@@ -169,10 +169,10 @@ function App() {
             <StartQuiz />
           </PrivateRoute>
         } />
-        {/* <Route
+        <Route
           path="/contact"
           element={<Contact />}
-        /> */}
+        />
         <Route
           element={
             <PrivateRoute>

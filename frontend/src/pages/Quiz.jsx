@@ -31,6 +31,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
     const [confirmationModal, setConfirmationModal] = useState(null);
     const { course } = useSelector((state) => state.course);
     const courseId = course._id || "temp";
+    console.log(courseId);
     const BASE_URL = import.meta.env.VITE_BASE_URL;
     const { token } = useSelector((state) => state.auth);
     const handleInputChange = useCallback((event, questionIndex, field) => {
@@ -110,7 +111,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
         formData.append('createdBy', 'user_placeholder'); // Replace with actual user ID
         formData.append('startTime', startTime);
         formData.append('endTime', endTime);
-
+        formData.append('courseId', courseId);
         questions.forEach((questionData, index) => {
             formData.append(`questionsData[${index}][questionText]`, questionData.questionText);
             formData.append(`questionsData[${index}][isImage]`, questionData.isImage);
@@ -174,6 +175,10 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
 
     const handleSubmit = useCallback(async (event) => {
         event.preventDefault();
+        if (questions.length < 10) {
+            toast.error("Minimum 10 questions are required for a quiz");
+            return;
+        }
         const confirmation = window.confirm("Are you sure??(once submitted quiz can not be edited)");
         if (!confirmation) {
             return;
@@ -310,7 +315,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                             <div className="relative">
                                 <select
                                     id={`correctAnswer-${questionIndex}`}
-                                    value={question.correctAnswer}
+                                    value={question.correctAnswer || "1"}
                                     onChange={(e) => handleInputChange(e, questionIndex, 'correctAnswer')}
                                     required
                                     className="shadow appearance-none border rounded w-full py-2 pl-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
