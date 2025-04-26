@@ -583,50 +583,69 @@ const VideoDetails = () => {
                             {
                                 quizStartTime && quizEndTime && currentTime ? (
                                     courseExpired ? (
-                                        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                                            <div className="flex justify-center items-center mb-6">
-                                                <svg
-                                                    className="w-10 h-10 text-red mr-3"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                    xmlns="http://www.w3.org/2000/svg"
+                                        type === 'quiz' && completed ? (
+                                            <div className="bg-white border border-green-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm mx-auto">
+                                                <div className="text-2xl font-semibold text-green-600 flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
+                                                        <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Quiz Attempted
+                                                </div>
+                                                <button
+                                                    className="mt-4 px-6 py-3 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600 transition duration-200"
+                                                    onClick={() => handleShowResult()}
                                                 >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-                                                <h2 className="text-xl font-semibold text-pure-greys-800">
-                                                    Course Access Expired
-                                                </h2>
+                                                    Check Result
+                                                </button>
                                             </div>
-                                            <p className="text-pure-greys-600 mb-4">
-                                                Your enrollment period for this course has ended. To regain access to:
-                                            </p>
-                                            <ul className="list-disc list-inside text-pure-greys-600 mb-4">
-                                                <li>Lectures</li>
-                                                <li>Unattempted Quizzes</li>
-                                                <li>Live Meetings</li>
-                                            </ul>
-                                            {
-                                                isEnrollmentOpen ? (
-                                                    <button
-                                                        onClick={handleEnrollAgain} // Assuming handleEnrollAgain is defined in your component
-                                                        className="bg-caribbeangreen-500 hover:bg-caribbeangreen-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
-                                                    >
-                                                        Re-enroll Now
-                                                    </button>
-                                                ) : (
-                                                    <div>Enrollement will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
-                                                )
-                                            }
-                                            <p className="mt-4 text-sm text-pure-greys-500">
-                                                Have questions? <a href="#" className="text-blue-500 hover:underline">Contact Support</a>
-                                            </p>
-                                        </div>
+                                        ) :
+                                            (
+                                                <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                                                    <div className="flex justify-center items-center mb-6">
+                                                        <svg
+                                                            className="w-10 h-10 text-red mr-3"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                            />
+                                                        </svg>
+                                                        <h2 className="text-xl font-semibold text-pure-greys-800">
+                                                            Course Access Expired
+                                                        </h2>
+                                                    </div>
+                                                    <p className="text-pure-greys-600 mb-4">
+                                                        Your enrollment period for this course has ended. To regain access to:
+                                                    </p>
+                                                    <ul className="list-disc list-inside text-pure-greys-600 mb-4">
+                                                        <li>Lectures</li>
+                                                        <li>Unattempted Quizzes</li>
+                                                        <li>Live Meetings</li>
+                                                    </ul>
+                                                    {
+                                                        isEnrollmentOpen ? (
+                                                            <button
+                                                                onClick={handleEnrollAgain} // Assuming handleEnrollAgain is defined in your component
+                                                                className="bg-caribbeangreen-500 hover:bg-caribbeangreen-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
+                                                            >
+                                                                Re-enroll Now
+                                                            </button>
+                                                        ) : (
+                                                            <div>Enrollement will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
+                                                        )
+                                                    }
+                                                    <p className="mt-4 text-sm text-pure-greys-500">
+                                                        Have questions? <a href="#" className="text-blue-500 hover:underline">Contact Support</a>
+                                                    </p>
+                                                </div>
+                                            )
+
                                     ) : (
                                         quizStartTime.getTime() <= currentTime.getTime() && currentTime.getTime() <= quizEndTime.getTime() ? (
                                             <div className="text-caribbeangreen-400 rounded-lg p-4 shadow-md">

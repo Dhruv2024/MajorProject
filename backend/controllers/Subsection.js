@@ -89,7 +89,8 @@ exports.createSubSection = async (req, res) => {
         if (includeSubtitles) {
             let transcriptionStatus = 'pending';
             let retryCount = 0;
-            const maxRetries = 10;
+            const maxRetries = process.env.MAX_RETRIES || 10;
+            console.log("Number of retries allowed are: ", maxRetries);
             const delay = 5000; // 5 seconds
 
             while (transcriptionStatus === 'pending' && retryCount < maxRetries) {

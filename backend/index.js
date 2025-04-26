@@ -17,9 +17,11 @@ const SubSection = require("./models/SubSection");
 const Quiz = require("./models/Quiz");
 const User = require("./models/User");
 const QuizSubmission = require("./models/QuizSubmission");
+const CourseExpiry = require("./models/CourseExpiry");
 
 const { quizReminderEmail } = require("./mail/templates/quizRemainderEmail");
 const { quizScoreEmail } = require("./mail/templates/quizScoreEmail");
+const { courseExpiryReminderEmail } = require("./mail/templates/courseExpiryReminderEmail");
 
 const { dbConnect } = require('./config/dbConnect');
 const cookieParser = require('cookie-parser');
@@ -276,12 +278,27 @@ const checkAndSendQuizReminder = async () => {
 };
 
 
-const sendQuizResultEmail = async (user, quiz) => {
+const sendQuizResultEmail = async (user, quiz, score, totalQuestions, websiteUrl) => {
     try {
         const mailResponse = await mailSender(
             user.email,
             "Quiz Result",
-            quizScoreEmail(quiz.title, user.firstName),
+            quizScoreEmail(quiz.title, user.firstName, score, totalQuestions, websiteUrl),
+        )
+        console.log('Email sent successfully to:', user.email);
+    }
+    catch (error) {
+        console.log(error);
+        // return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const sendCourseExpiryEmail = async (user, userCourseList) => {
+    try {
+        const mailResponse = await mailSender(
+            user.email,
+            "⏳ Course Expiry in 15 Days",
+            courseExpiryReminderEmail(user.firstName, userCourseList)
         )
         console.log('Email sent successfully to:', user.email);
     }
@@ -320,6 +337,7 @@ const checkAndSendQuizResultReport = async () => {
             for (const user of eligibleUsers) {
                 const userSubmission = await QuizSubmission.findOne({ quizId: quiz._id, userId: user._id });
                 if (userSubmission) {
+                    // console.log(userSubmission);
                     // User has submitted the quiz, so send the email
                     sendQuizResultEmail(user, quiz, userSubmission.score, userSubmission.totalQuestions, `${process.env.FRONTEND_URL}`);
                 }
@@ -336,6 +354,58 @@ const checkAndSendQuizResultReport = async () => {
 // Set up the cron job to run every minute
 cron.schedule('*/15 * * * *', checkAndSendQuizReminder);  // Every 15 minute
 cron.schedule('*/15 * * * *', checkAndSendQuizResultReport);  // Every 15 minute
+cron.schedule("0 8 * * *", async () => {
+    try {
+        console.log("📬 Running Course Expiry Email Reminder...");
+
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 15);
+        targetDate.setHours(0, 0, 0, 0);
+
+        const nextDay = new Date(targetDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+
+        const expiringCourses = await CourseExpiry.find({
+            expiryDate: {
+                $gte: targetDate,
+                $lt: nextDay,
+            },
+        }).populate("userId").populate("courseId");
+
+        const userCourseMap = {};
+
+        expiringCourses.forEach(entry => {
+            const userId = entry.userId._id.toString();
+            if (!userCourseMap[userId]) {
+                userCourseMap[userId] = {
+                    user: entry.userId,
+                    courses: [],
+                };
+            }
+            userCourseMap[userId].courses.push(entry.courseId.courseName);
+        });
+
+        for (const userId in userCourseMap) {
+            const { user, courses } = userCourseMap[userId];
+            const courseList = courses.map((c, i) => `${i + 1}. ${c}`).join("\n");
+
+            // const mailOptions = {
+            //     to: user.email,
+            //     subject: "⏰ Reminder: Your courses will expire in 15 days",
+            //     body: `Hi ${user.firstName},\n\nThese courses will expire in 15 days:\n\n${courseList}\n\nFinish them soon!\n\nBest,\nYour Learning Platform Team`
+            // };
+
+            // await mailSender(mailOptions.to, mailOptions.subject, mailOptions.body);
+            // console.log(courseList);
+            sendCourseExpiryEmail(user, courses);
+
+            console.log(`📨 Reminder sent to ${user.email}`);
+        }
+
+    } catch (error) {
+        console.error("⚠️ Error sending course expiry reminders:", error);
+    }
+});
 
 
 app.get("/", (req, res) => {

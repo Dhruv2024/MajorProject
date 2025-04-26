@@ -50,7 +50,7 @@ export const submitQuiz = async (data, token) => {
 }
 
 export const getQuizResult = async (quizId, token) => {
-    const toastId = toast.loading("Submitting...");
+    const toastId = toast.loading("Loading...");
     let result;
     try {
         const response = await apiConnector("POST", GET_QUIZ_RESULT, { quizId }, {

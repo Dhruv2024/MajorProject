@@ -495,7 +495,7 @@ exports.getQuizResultByUserAndQuiz = async (req, res) => {
         const detailedAnswers = await Promise.all(submission.answers.map(async (userAnswer) => {
             const question = await QuizQuestion.findById(userAnswer.questionId).populate('options');
             const correctAnswerIndex = question ? question.correctAnswer : null;
-            console.log(correctAnswerIndex)
+            // console.log(correctAnswerIndex)
             // const correctAnswer = question && correctAnswerIndex !== null
             //     ? (await Option.findById(question.options[correctAnswerIndex])).option
             //     : null;
