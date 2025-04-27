@@ -45,6 +45,7 @@ const Answers = require('./models/Answers');
 const Questions = require('./models/Questions');
 const { uploadImageToCloudinary } = require('./utils/imageUploader');
 const mailSender = require('./utils/mailSender');
+const { sendProgressEmails } = require('./controllers/courseProgress');
 io.on('connection', (socket) => {
     console.log("user connected");
     // Join Room
@@ -406,7 +407,11 @@ cron.schedule("0 8 * * *", async () => {
         console.error("⚠️ Error sending course expiry reminders:", error);
     }
 });
-
+// Runs every Monday at 9 AM
+cron.schedule("0 9 * * 0", async () => {
+    console.log("Sending progress reports")
+    await sendProgressEmails();
+});
 
 app.get("/", (req, res) => {
     res.json({

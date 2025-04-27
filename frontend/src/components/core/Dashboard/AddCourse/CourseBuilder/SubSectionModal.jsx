@@ -40,6 +40,8 @@ export default function SubSectionModal({
     const { token } = useSelector((state) => state.auth)
     const { course } = useSelector((state) => state.course)
     const [subSectionType, setSubSectionType] = useState(initialType);
+    const [pdfPreview, setPdfPreview] = useState(null);
+
     console.log("subsection type is ", subSectionType);
     useEffect(() => {
         if (view || edit) {
@@ -50,6 +52,11 @@ export default function SubSectionModal({
                 setValue("lectureDesc", modalData.description)
                 setValue("lectureVideo", modalData.videoUrl)
                 setValue("lectureResource", modalData.resource)
+                setValue("lectureNotes", modalData.lectureNotes);
+                if (modalData.lectureNotes && modalData.lectureNotes.endsWith(".pdf")) {
+                    setPdfPreview(modalData.lectureNotes);
+                }
+
             }
             else if (modalData.type === 'videoCall') {
                 setValue("lectureTitle", modalData.title)
@@ -74,14 +81,16 @@ export default function SubSectionModal({
 
     // detect whether form is updated or not
     const isFormUpdated = () => {
-        const currentValues = getValues()
+        const currentValues = getValues();
+        console.log(currentValues.lectureNotes !== modalData.lectureNotes);
         if (
             currentValues.lectureTitle !== modalData.title ||
             currentValues.lectureDesc !== modalData.description ||
             currentValues.lectureVideo !== modalData.videoUrl ||
             currentValues.lectureResource !== modalData.resource ||
             (subSectionType === 'videoCall' && currentValues.startTime !== modalData.startTime) ||
-            subSectionType !== (modalData.subSectionType || 'recorded')
+            subSectionType !== (modalData.subSectionType || 'recorded') ||
+            currentValues.lectureNotes !== modalData.lectureNotes
         ) {
             return true
         }
@@ -107,6 +116,9 @@ export default function SubSectionModal({
         }
         if (currentValues.lectureResource !== modalData.resource && subSectionType === 'recorded') {
             formData.append("resource", currentValues.lectureResource)
+        }
+        if (currentValues.lectureNotes !== modalData.lectureNotes && subSectionType === 'recorded') {
+            formData.append("lectureNotes", currentValues.lectureNotes)
         }
         if (subSectionType === 'videoCall' && currentValues.startTime !== modalData.meetStartTime) {
             formData.append("startTime", currentValues.startTime)
@@ -153,6 +165,9 @@ export default function SubSectionModal({
             formData.append("video", data.lectureVideo)
             formData.append("resource", data.lectureResource)
             formData.append("type", "recorded");
+            if (data.lectureNotes && data.lectureNotes instanceof File) {
+                formData.append("lectureNotes", data.lectureNotes);
+            }
         } else if (subSectionType === 'videoCall') {
             formData.append("video", data.lectureVideo) // Using video for video call link
             const localStart = new Date(data.startTime)
@@ -290,6 +305,35 @@ export default function SubSectionModal({
                                     {...register("lectureResource")}
                                     className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
                                 />
+                            </div>
+                            {/* Upload Lecture Notes PDF (lectureNotes) */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`}>
+                                    Upload Lecture Notes (PDF)
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="application/pdf"
+                                    disabled={view || loading}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file && file.type === "application/pdf") {
+                                            setValue("lectureNotes", file);
+                                            setPdfPreview(URL.createObjectURL(file));
+                                        }
+                                    }}
+                                    className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                />
+                                {pdfPreview && (
+                                    <div className="mt-2 w-full h-[400px] border rounded">
+                                        <iframe
+                                            src={pdfPreview}
+                                            title="Lecture Notes Preview"
+                                            className="w-full h-full"
+                                            frameBorder="0"
+                                        />
+                                    </div>
+                                )}
                             </div>
                             {!view && (
                                 <div className="flex justify-end">

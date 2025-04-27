@@ -22,6 +22,7 @@ export default function Upload({
     const [previewSource, setPreviewSource] = useState(
         viewData ? viewData : editData ? editData : ""
     );
+    const [fileRemoved, setFileRemoved] = useState(false); // Track if file is removed
     const inputRef = useRef(null);
     const { darkTheme } = useContext(ThemeContext);
 
@@ -31,6 +32,7 @@ export default function Upload({
         if (file) {
             previewFile(file);
             setSelectedFile(file);
+            setFileRemoved(false); // File is being added, so reset removed state
         }
     };
 
@@ -49,20 +51,46 @@ export default function Upload({
         };
     };
 
-    // Register with form
+    // Register with form (using conditional required validation)
     useEffect(() => {
-        register(name, { required: !disable });
-    }, [register]);
+        if (!editData && !viewData) {
+            register(name, { required: !disable }); // creation mode
+        } else {
+            register(name, { required: false });    // edit mode default
+        }
+    }, [register, name, editData, viewData, disable]);
+
+
+    // Handle file removal logic
+    const handleFileRemoval = () => {
+        setPreviewSource("");  // Clear preview
+        setSelectedFile(null);  // Clear file state
+        setValue(name, null);   // Clear the form value
+        setFileRemoved(true);   // Mark that the file was removed
+        // In edit mode, if file is removed, make it required
+        register(name, { required: true });
+    };
 
     // Set value for form state when file is selected
     useEffect(() => {
+        // Only set the value if file is selected (or removed)
         setValue(name, selectedFile);
     }, [selectedFile, setValue]);
+
+    // Check if file is removed and conditionally apply validation
+    useEffect(() => {
+        // If file is removed, we should not validate it as required anymore
+        if (fileRemoved) {
+            register(name, { required: false });
+        } else if (!editData && !viewData) {
+            register(name, { required: !disable });
+        }
+    }, [fileRemoved, register, name, editData, viewData, disable]);
 
     return (
         <div className="flex flex-col space-y-2">
             <label
-                className={`text-sm  ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`}
+                className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`}
                 htmlFor={name}
             >
                 {label} {!viewData && <sup className="text-pink-200">*</sup>}
@@ -88,11 +116,7 @@ export default function Upload({
                         {!viewData && (
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setPreviewSource("");
-                                    setSelectedFile(null);
-                                    setValue(name, null);
-                                }}
+                                onClick={handleFileRemoval}
                                 className="mt-3 text-richblack-400 underline"
                             >
                                 Cancel
@@ -101,7 +125,9 @@ export default function Upload({
                     </div>
                 ) : (
                     <div className="flex w-full flex-col items-center p-6">
-                        <div className={`grid aspect-square w-14 place-items-center rounded-full ${darkTheme ? "bg-pure-greys-800" : "bg-blue-50"}`}>
+                        <div
+                            className={`grid aspect-square w-14 place-items-center rounded-full ${darkTheme ? "bg-pure-greys-800" : "bg-blue-50"}`}
+                        >
                             <FiUploadCloud className={`text-2xl ${darkTheme ? "text-yellow-50" : "text-blue-500"}`} />
                         </div>
                         <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
@@ -115,7 +141,7 @@ export default function Upload({
                     </div>
                 )}
                 {/* Ensures that input is correctly passed from useDropzone */}
-                <input {...getInputProps()} ref={inputRef} style={{ display: 'none' }} />
+                <input {...getInputProps()} ref={inputRef} style={{ display: "none" }} />
             </div>
             {errors[name] && (
                 <span className="ml-2 text-xs tracking-wide text-pink-200">

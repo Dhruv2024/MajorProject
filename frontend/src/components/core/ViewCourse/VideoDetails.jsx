@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { useNavigate, useParams } from "react-router-dom"
+import { href, useNavigate, useParams } from "react-router-dom"
 import "video-react/dist/video-react.css"
 import { useLocation } from "react-router-dom"
 import { BigPlayButton, Player } from "video-react"
@@ -451,31 +451,51 @@ const VideoDetails = () => {
                         )}
                         {
                             !courseExpired && (
-                                <div className="flex justify-between items-center">
-                                    <h1 className={`mt-4 text-3xl font-semibold ${!darkTheme && "text-richblack-800"}`}>{videoData?.title}</h1>
-                                    {
-                                        !summary && (
-                                            <button
-                                                className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`}
-                                                onClick={handleGenerateSummary}
+                                <div className="mt-4 flex flex-col gap-4">
+                                    <div className="flex justify-between items-start flex-wrap gap-4">
+                                        <h1 className={`text-3xl font-bold ${!darkTheme ? "text-richblack-800" : "text-pure-greys-5"}`}>
+                                            {videoData?.title}
+                                        </h1>
+
+                                        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                                            {!summary && (
+                                                <button
+                                                    className={`px-4 py-2 rounded-md transition duration-300 
+                                        hover:bg-blue-300 hover:text-white 
+                                        ${!darkTheme ? "text-blue-200 bg-blue-5" : "text-blue-100 bg-blue-800"}`}
+                                                    onClick={handleGenerateSummary}
+                                                >
+                                                    Generate Summary
+                                                </button>
+                                            )}
+
+                                            {summary && (
+                                                <button
+                                                    className={`px-4 py-2 rounded-md transition duration-300 
+                                        hover:bg-blue-300 hover:text-white 
+                                        ${!darkTheme ? "text-blue-200 bg-blue-5" : "text-blue-100 bg-blue-800"}`}
+                                                    onClick={handleShowSummary}
+                                                >
+                                                    Show Summary
+                                                </button>
+                                            )}
+
+                                            {videoData?.lectureNotes && <a
+                                                className={`cursor-pointer px-4 py-2 rounded-md transition duration-300 
+                                    hover:bg-richblack-700 hover:text-white 
+                                    ${!darkTheme ? "text-richblack-700 bg-richblack-25" : "text-pure-greys-25 bg-richblack-800"}`}
+                                                href={videoData?.lectureNotes}
+                                                download
                                             >
-                                                Generate Summary
-                                            </button>
-                                        )
-                                    }
-                                    {
-                                        summary && (
-                                            <button
-                                                className={`pr-20 ${!darkTheme && "text-blue-200 font-semibold"}`}
-                                                onClick={handleShowSummary}
-                                            >
-                                                Show Summary
-                                            </button>
-                                        )
-                                    }
+                                                Show Notes
+                                            </a>}
+                                        </div>
+                                    </div>
                                 </div>
                             )
                         }
+
+
                         {
                             !courseExpired && (
                                 <p className={`pt-1 pb-3 font-inter ${!darkTheme && "text-richblack-400"}`}>{videoData?.description}</p>
@@ -495,7 +515,7 @@ const VideoDetails = () => {
                                     <h1>Video Resources</h1>
                                 </div>
                                 {open && (
-                                    <ul className="list-disc">
+                                    <ul className={`${darkTheme ? "text-white" : "text-black"} list-disc`}>
                                         {videoResourceItems.map((ele, index) => (
                                             <li key={index} className="ml-10 font-normal">{ele}</li>
                                         ))}

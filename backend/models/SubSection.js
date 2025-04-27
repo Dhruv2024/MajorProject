@@ -13,7 +13,8 @@ const SubSectionSchema = new mongoose.Schema({
     meetStartTime: { type: Date },
     vttFileUrl: { type: String },
     resource: { type: String },
-    quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" }
+    quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
+    lectureNotes: { type: String, default: null }
 });
 
 module.exports = mongoose.model("SubSection", SubSectionSchema);

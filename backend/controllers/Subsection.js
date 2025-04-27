@@ -1,6 +1,7 @@
 // Import necessary modules
 const Section = require("../models/Section");
 const SubSection = require("../models/SubSection");
+const courseProgress = require("../models/CourseProgress")
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const cloudinary = require('cloudinary').v2
 
@@ -69,7 +70,7 @@ exports.createSubSection = async (req, res) => {
         const { sectionId, title, description } = req.body;
         let { resource } = req.body;
         const video = req.files.video;
-
+        const notes = req.files?.lectureNotes;
         if (!sectionId || !title || !description || !video) {
             return res.status(404).json({ success: false, message: "All Fields are Required" });
         }
@@ -143,7 +144,21 @@ exports.createSubSection = async (req, res) => {
                 });
             }
         }
-
+        // Upload Lecture Notes PDF (optional)
+        let lectureNotesUrl = null;
+        if (notes) {
+            try {
+                const uploadedNotes = await uploadImageToCloudinary(notes, process.env.FOLDER_NAME);
+                lectureNotesUrl = uploadedNotes.secure_url;
+            } catch (err) {
+                console.error("Error uploading lecture notes PDF:", err);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error uploading lecture notes",
+                    error: err.message,
+                });
+            }
+        }
         // Create a new SubSection
         const SubSectionDetails = await SubSection.create({
             type,
@@ -153,6 +168,7 @@ exports.createSubSection = async (req, res) => {
             videoUrl: uploadResult.secure_url,
             resource,
             vttFileUrl: transcriptUrl,  // Include the VTT URL if available
+            lectureNotes: lectureNotesUrl,
         });
 
         // Update the section with the new sub-section
@@ -207,6 +223,15 @@ exports.updateSubSection = async (req, res) => {
             }
             if (resource !== undefined) {
                 subSection.resource = resource;
+            }
+            // If lecture notes PDF is uploaded
+            if (req.files && req.files.lectureNotes !== undefined) {
+                const lectureNotesFile = req.files.lectureNotes;
+                const pdfUpload = await uploadImageToCloudinary(
+                    lectureNotesFile,
+                    process.env.FOLDER_NAME,
+                );
+                subSection.lectureNotes = pdfUpload.secure_url;
             }
         }
         if (subSectionType === 'videoCall') {
