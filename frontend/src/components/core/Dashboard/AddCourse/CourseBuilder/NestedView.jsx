@@ -16,6 +16,7 @@ import { setCourse } from "../../../../../slices/courseSlice"
 import SubSectionModal from "./SubSectionModal"
 import { ConfirmationModal } from "../../../../common/ConfirmationModal"
 import { ThemeContext } from "../../../../../provider/themeContext"
+import QuizPopup from "./QuizPopup"
 
 export default function NestedView({ handleChangeEditSectionName }) {
     const { course } = useSelector((state) => state.course);
@@ -30,6 +31,7 @@ export default function NestedView({ handleChangeEditSectionName }) {
     // to keep track of confirmation modal
     const [confirmationModal, setConfirmationModal] = useState(null);
     const [type, setType] = useState(null);
+    const [data, setData] = useState(null);
     const handleDeleleSection = async (sectionId) => {
         const result = await deleteSection({
             sectionId,
@@ -60,6 +62,15 @@ export default function NestedView({ handleChangeEditSectionName }) {
         }
         setConfirmationModal(null)
     }
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
 
     return (
         <>
@@ -120,7 +131,10 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                     key={data?._id}
                                     onClick={() => {
                                         if (section.sectionName === "Course Quizzes") {
-                                            return;
+                                            setData(data);
+                                            openModal();
+                                            console.log(data);
+                                            // return;
                                         }
                                         else {
                                             setViewSubSection(data);
@@ -231,6 +245,7 @@ export default function NestedView({ handleChangeEditSectionName }) {
             ) : (
                 <></>
             )}
+            <QuizPopup data={data} isOpen={isModalOpen} onClose={closeModal} />
         </>
     )
 }

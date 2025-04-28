@@ -18,6 +18,7 @@ const Quiz = require("./models/Quiz");
 const User = require("./models/User");
 const QuizSubmission = require("./models/QuizSubmission");
 const CourseExpiry = require("./models/CourseExpiry");
+const UserMessageLog = require("./models/UserMessageLog");
 
 const { quizReminderEmail } = require("./mail/templates/quizRemainderEmail");
 const { quizScoreEmail } = require("./mail/templates/quizScoreEmail");
@@ -28,6 +29,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { cloudinaryConnect } = require('./config/cloudinary');
 const fileUpload = require("express-fileupload");
+const { startOfDay, endOfDay } = require("date-fns");
 const dotenv = require("dotenv");
 dotenv.config();
 const { Server } = require('socket.io')
@@ -47,6 +49,9 @@ const { uploadImageToCloudinary } = require('./utils/imageUploader');
 const mailSender = require('./utils/mailSender');
 const { sendProgressEmails } = require('./controllers/courseProgress');
 const { videoCallRemainderEmail, youtubeRemainderEmail } = require('./controllers/Subsection');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+require("dotenv").config();
+
 io.on('connection', (socket) => {
     console.log("user connected");
     // Join Room
@@ -130,6 +135,50 @@ io.on('connection', (socket) => {
         // console.log(populatedMessage);
         io.emit("trial", "");
         io.to(room).emit("received-message", populatedMessage);
+    })
+
+    socket.on("user-message", async ({ userId, data }) => {
+        const todayStart = startOfDay(new Date());
+        const todayEnd = endOfDay(new Date());
+        const messageCount = await UserMessageLog.countDocuments({
+            userId,
+            timestamp: { $gte: todayStart, $lte: todayEnd }
+        });
+        if (messageCount >= 5) {
+            socket.emit("bot-message", "⚠️ You have reached your daily limit of 5 messages. Try again tomorrow.");
+            return;
+        }
+        await UserMessageLog.create({ userId });
+        const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const courses = await Course.find()
+            .select('-instructor -price -room -questionsList -enrollmentOpenAt -enrollmentCloseAt');
+
+        const prompt = `You are a chatbot designed to provide information about courses in a MERN stack application.  The user query is: ${data}.  Your task is to generate a helpful and informative response based on the course data.  The response should be concise.
+        You have access to the following course data:
+        \`\`\`json
+        ${JSON.stringify(courses)}
+        \`\`\`
+
+        Use the following guidelines to formulate your response:
+
+        1.  If the user asks for courses related to a specific technology (e.g., "python"),  suggest courses only from the \`courses\`  data provided.
+            * If courses for the specified technology are found, respond with a list of courses, including courseName, instructor, and a link if enrollment is open (using BASE_URL/courses/{courseId}).  Prioritize courses with  \`enrollmentOpen\` = true.
+            * If no courses for the specified technology are found in the  \`courses\`  data, respond with: "Currently, no courses are available for {technology}." (Replace {technology} with the technology name).
+        2.  If the user asks about a specific course name:
+            * If the course is found and \`enrollmentOpen\` is true, respond with: "Course Name: {courseName}. Instructor: {instructor}. Enroll here: BASE_URL/courses/{courseId}".
+            * If the course is found and \`enrollmentOpen\` is false, respond with: "The course {courseName} is currently not open for enrollment."
+            * If the course is not found, respond with: "No course is available for this query."
+        3.  If the user asks a general question about technologies (e.g., "What is React?"), answer them accurately and concisely.
+        4.  {Current Date} should be used to compare with the course dates like enrollmentOpenAt and enrollmentCloseAt
+        5.  Only mention the ${process.env.FRONTEND_URL}/courses/{courseId} if the enrollmentOpen is true.
+        6.  If the user asks for any external resources, documentation, tutorials, or third-party links, respond with: "I'm sorry, but I cannot provide external sources or links. Please refer to the available course information."
+        `;
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text()
+        // console.log(result.response.text());
+        // ✅ Send response back to client
+        socket.emit("bot-message", responseText);
     })
     socket.on("disconnect", () => {
         console.log("user disconnected");

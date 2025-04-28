@@ -38,6 +38,7 @@ import { ThemeContext } from "./provider/themeContext";
 import AskQuestion from "./pages/AskQuestion";
 import QuizCreateForm from "./pages/Quiz";
 import StartQuiz from "./pages/StartQuiz";
+import ChatBot from "./components/common/ChatBot";
 
 
 function App() {
@@ -112,22 +113,23 @@ function App() {
   return (
     <div className={`w-screen min-h-screen ${darkTheme ? "bg-richblack-900 text-white" : "bg-white text-black"} flex flex-col font-inter `}>
       {showNavbar && <Navbar darkTheme={darkTheme} />}
-      {
-        darkTheme ? (
-          <IoSunnyOutline className=' text-blue-50 text-4xl fixed bottom-2 right-2 cursor-pointer z-20' onClick={
-            () => {
-              toggleTheme();
-            }
-          } />
-        ) : (
-          <IoMoonOutline className=' text-blue-50 text-4xl fixed bottom-2 right-2 cursor-pointer z-20' onClick={
-            () => {
-              toggleTheme();
-            }
-          } />
-        )
-      }
+      <div className="fixed bottom-24 right-5 z-50">
+        {
+          darkTheme ? (
+            <IoSunnyOutline
+              className="text-yellow-400 text-3xl cursor-pointer hover:scale-110 transition-transform duration-200"
+              onClick={toggleTheme}
+            />
+          ) : (
+            <IoMoonOutline
+              className="text-gray-800 text-3xl cursor-pointer hover:scale-110 transition-transform duration-200"
+              onClick={toggleTheme}
+            />
+          )
+        }
+      </div>
 
+      <ChatBot />
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path="/catalog/:catalogName" element={<Catalog />} />

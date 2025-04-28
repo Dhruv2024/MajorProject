@@ -594,3 +594,53 @@ exports.addRemainderMailSentField = async (req, res) => {
         });
     }
 };
+
+exports.fetchQuizForInstructor = async (req, res) => {
+    try {
+        const { courseId, quizId } = req.body;
+        const userId = req.user.id;
+
+        // Step 1: Verify user is enrolled in the course
+        const course = await Course.findById(courseId).populate({
+            path: 'courseContent',
+            populate: {
+                path: 'subSection',
+                model: 'SubSection',
+            },
+        });
+
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Course not found' });
+        }
+        console.log(course.instructor.toString());
+        console.log(userId);
+        if (course.instructor.toString() !== userId) {
+            return res.status(404).json({ success: false, message: 'You are not instructor of this course' });
+        }
+        const quiz = await Quiz.findById(quizId)
+            .populate({
+                path: 'questions',
+                model: 'QuizQuestion',
+                populate: {
+                    path: 'options',
+                    model: 'Option',
+                },
+            });
+
+        if (!quiz) {
+            return res.status(404).json({ success: false, message: 'Quiz not found' });
+        }
+        return res.status(200).json({
+            success: true,
+            message: 'Quiz fetched successfully',
+            data: quiz,
+        });
+    }
+    catch (err) {
+        console.error('Error fetching quiz for instructor:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+}

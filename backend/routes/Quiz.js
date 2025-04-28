@@ -2,7 +2,7 @@ const express = require('express');
 const Quiz = require('../models/Quiz');
 const axios = require('axios');
 const { auth, isInstructor, isStudent } = require('../middlewares/auth');
-const { createQuiz, editQuiz, deleteQuiz, fetchQuiz, submitQuiz, getQuizResultByUserAndQuiz, unsubmitQuiz, addRemainderMailSentField } = require("../controllers/Quiz")
+const { createQuiz, editQuiz, deleteQuiz, fetchQuiz, submitQuiz, getQuizResultByUserAndQuiz, unsubmitQuiz, addRemainderMailSentField, fetchQuizForInstructor } = require("../controllers/Quiz")
 const router = express.Router();
 // Instructor uploads quiz
 router.post('/upload-quiz', auth, isInstructor, async (req, res) => {
@@ -24,4 +24,5 @@ router.post("/submitQuiz", auth, submitQuiz);
 router.post("/getResult", auth, getQuizResultByUserAndQuiz);
 router.post("/addField", addRemainderMailSentField)
 router.post("/unsubmitQuiz", auth, unsubmitQuiz);
+router.post("/fetchQuizForInstructor", auth, isInstructor, fetchQuizForInstructor)
 module.exports = router;
