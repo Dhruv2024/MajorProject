@@ -317,7 +317,7 @@ exports.getCourseDetails = async (req, res) => {
         let totalDurationInSeconds = 0
         courseDetails.courseContent.forEach((content) => {
             content.subSection.forEach((subSection) => {
-                if (subSection.type === 'quiz') {
+                if (subSection.type === 'quiz' || subSection.type === 'youtube' || subSection.type === 'videoCall') {
                     return;
                 }
                 const timeDurationInSeconds = parseInt(subSection.timeDuration)
@@ -491,7 +491,7 @@ exports.getInstructorCourses = async (req, res) => {
             courseDetails.courseContent.forEach((content) => {
                 content.subSection.forEach((subSection) => {
                     // console.log(subSection);
-                    if (subSection.type === "quiz" || subSection.type === "videoCall") {
+                    if (subSection.type === "quiz" || subSection.type === "videoCall" || subSection.type === "youtube") {
                         return;
                     }
                     // console.log(subSection);

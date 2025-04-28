@@ -6,6 +6,7 @@ import { RiDeleteBin6Line } from "react-icons/ri"
 import { RxDropdownMenu } from "react-icons/rx"
 import { useDispatch, useSelector } from "react-redux"
 import { SiGooglemeet } from "react-icons/si";
+import { FaYoutube } from "react-icons/fa";
 
 import {
     deleteSection,
@@ -134,9 +135,8 @@ export default function NestedView({ handleChangeEditSectionName }) {
                                 >
                                     <div className="flex items-center gap-x-3 py-2 ">
                                         {
-                                            data.type === 'videoCall' ? <SiGooglemeet className="text-xl text-richblack-50" /> : <RxDropdownMenu className="text-2xl text-richblack-50" />
+                                            data.type === 'videoCall' ? <SiGooglemeet className="text-xl text-richblack-50" /> : data.type === 'youtube' ? <FaYoutube className=" text-richblack-50" /> : <RxDropdownMenu className="text-2xl text-richblack-50" />
                                         }
-
                                         <p className={`font-semibold ${darkTheme ? "text-richblack-50" : "text-richblack-400"}`}>
                                             {data.title}
                                         </p>

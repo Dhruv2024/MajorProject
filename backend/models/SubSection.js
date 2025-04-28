@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const SubSectionSchema = new mongoose.Schema({
     type: {
         type: String,
-        enum: ['recorded', 'quiz', 'videoCall']
+        enum: ['recorded', 'quiz', 'videoCall', 'youtube']
     },
     title: { type: String },
     timeDuration: { type: String },
@@ -14,7 +14,8 @@ const SubSectionSchema = new mongoose.Schema({
     vttFileUrl: { type: String },
     resource: { type: String },
     quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
-    lectureNotes: { type: String, default: null }
+    lectureNotes: { type: String, default: null },
+    youtubeLink: { type: String }
 });
 
 module.exports = mongoose.model("SubSection", SubSectionSchema);

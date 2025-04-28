@@ -1,8 +1,12 @@
 // Import necessary modules
+const Course = require("../models/Course");
 const Section = require("../models/Section");
 const SubSection = require("../models/SubSection");
 const courseProgress = require("../models/CourseProgress")
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
+const { videoCallReminderEmail } = require("../mail/templates/videoCallReminderEmail");
+const { youtubeReminderEmail } = require("../mail/templates/youtubeReminderEmail")
+const mailSender = require("../utils/mailSender");
 const cloudinary = require('cloudinary').v2
 
 // Create a new sub-section for a given section
@@ -67,6 +71,33 @@ exports.createSubSection = async (req, res) => {
             // --- END DEBUGGING 2 ---
             return res.status(200).json({ success: true, data: updatedSection });
         }
+        if (type === 'youtube') {
+            const { sectionId, title, youtubeLink, startTime, description } = req.body;
+
+            // Validate required fields
+            if (!sectionId || !title || !youtubeLink || !startTime || !description) {
+                return res.status(400).json({ success: false, message: "All Fields are Required" });
+            }
+
+            // Create a new SubSection for YouTube
+            const newSubSection = await SubSection.create({
+                type,
+                title,
+                description,
+                youtubeLink,
+                meetStartTime: startTime,
+            });
+
+            // Update the section with the new sub-section
+            const updatedSection = await Section.findByIdAndUpdate(
+                sectionId,
+                { $push: { subSection: newSubSection._id } },
+                { new: true }
+            ).populate("subSection");
+
+            return res.status(200).json({ success: true, data: updatedSection });
+        }
+
         const { sectionId, title, description } = req.body;
         let { resource } = req.body;
         const video = req.files.video;
@@ -193,7 +224,7 @@ exports.createSubSection = async (req, res) => {
 
 exports.updateSubSection = async (req, res) => {
     try {
-        console.log(req.body);
+        // console.log(req.body);
         const { subSectionType, sectionId, subSectionId } = req.body
         const subSection = await SubSection.findById(subSectionId)
 
@@ -250,6 +281,27 @@ exports.updateSubSection = async (req, res) => {
                 subSection.meetStartTime = startTime
             }
         }
+        if (subSectionType === 'youtube') {
+            const { title, description, video, startTime } = req.body;
+            console.log(req.body);
+            // Update fields if provided
+            if (title !== undefined) subSection.title = title;
+            if (description !== undefined) subSection.description = description;
+            if (video !== undefined) subSection.youtubeLink = video;
+            if (startTime !== undefined) subSection.meetStartTime = new Date(startTime);
+
+            // Save the updated sub-section
+            await subSection.save();
+
+            // Return the updated section
+            const updatedSection = await Section.findById(sectionId).populate("subSection");
+            return res.json({
+                success: true,
+                data: updatedSection,
+                message: "SubSection updated successfully",
+            });
+        }
+
         await subSection.save()
         const updatedSection = await Section.findById(sectionId).populate("subSection");
         return res.json({
@@ -304,5 +356,144 @@ exports.deleteSubSection = async (req, res) => {
             success: false,
             message: "An error occurred while deleting the SubSection",
         })
+    }
+}
+
+exports.videoCallRemainderEmail = async (req, res) => {
+    try {
+        const now = new Date();
+        const reminderTime = new Date(now.getTime() + 30 * 60000); // 30 minutes from now
+
+        // 1. Fetch all courses and populate the sections and subsections
+        const allCourses = await Course.find()
+            .populate({
+                path: 'courseContent',  // Populate the sections within the course
+                populate: {
+                    path: 'subSection',  // Populate subsections within each section
+                    match: {
+                        type: 'videoCall',
+                        meetStartTime: {  // Only select video calls within the next 30 minutes
+                            $gte: now,
+                            $lt: reminderTime,
+                        },
+                    },
+                },
+            })
+            .populate('studentsEnrolled'); // Assuming studentsEnrolled is populated here
+
+        if (allCourses.length === 0) {
+            console.log("No courses found.");
+            return;
+        }
+
+        // 2. Loop through each course and its sections to find matching subsections (video calls)
+        for (const course of allCourses) {
+            if (!course.courseContent || course.courseContent.length === 0) {
+                continue; // Skip if no sections are available in this course
+            }
+
+            // 3. Loop through sections and subsections within each course
+            for (const section of course.courseContent) {
+                if (!section.subSection || section.subSection.length === 0) {
+                    continue; // Skip if no subsections are available in this section
+                }
+
+                // 4. Loop through the populated subsections and send reminders for video call type
+                for (const subSection of section.subSection) {
+                    if (!subSection.meetStartTime || !subSection.meetUrl) {
+                        continue; // Skip if no meet start time or URL
+                    }
+
+                    const { meetStartTime, meetUrl, title } = subSection;
+
+                    // 5. Send reminder emails to all enrolled students in this course
+                    for (const student of course.studentsEnrolled) {
+                        try {
+                            console.log(student);
+                            await mailSender(
+                                student.email,
+                                "⏳ Live upcoming Video Call in 30 minutes",
+                                videoCallReminderEmail(course.courseName, section.sectionName, title, meetStartTime, meetUrl, student.firstName)
+                            )
+                            console.log(`Reminder email sent to ${student.email}`);
+                        } catch (err) {
+                            console.error(`Error sending email to ${student.email}:`, err);
+                        }
+                    }
+                }
+            }
+        }
+
+    } catch (err) {
+        console.error('Error fetching courses or sending reminders:', err);
+    }
+}
+
+
+exports.youtubeRemainderEmail = async (req, res) => {
+    try {
+        const now = new Date();
+        const reminderTime = new Date(now.getTime() + 30 * 60000); // 30 minutes from now
+
+        // 1. Fetch all courses and populate the sections and subsections
+        const allCourses = await Course.find()
+            .populate({
+                path: 'courseContent',  // Populate the sections within the course
+                populate: {
+                    path: 'subSection',  // Populate subsections within each section
+                    match: {
+                        type: 'youtube',
+                        meetStartTime: {  // Only select video calls within the next 30 minutes
+                            $gte: now,
+                            $lt: reminderTime,
+                        },
+                    },
+                },
+            })
+            .populate('studentsEnrolled'); // Assuming studentsEnrolled is populated here
+
+        if (allCourses.length === 0) {
+            console.log("No courses found.");
+            return;
+        }
+        // 2. Loop through each course and its sections to find matching subsections (video calls)
+        for (const course of allCourses) {
+            if (!course.courseContent || course.courseContent.length === 0) {
+                continue; // Skip if no sections are available in this course
+            }
+
+            // 3. Loop through sections and subsections within each course
+            for (const section of course.courseContent) {
+                if (!section.subSection || section.subSection.length === 0) {
+                    continue; // Skip if no subsections are available in this section
+                }
+
+                // 4. Loop through the populated subsections and send reminders for video call type
+                for (const subSection of section.subSection) {
+                    if (!subSection.meetStartTime || !subSection.youtubeLink) {
+                        continue; // Skip if no meet start time or URL
+                    }
+
+                    const { meetStartTime, meetUrl, title } = subSection;
+
+                    // 5. Send reminder emails to all enrolled students in this course
+                    for (const student of course.studentsEnrolled) {
+                        try {
+                            await mailSender(
+                                student.email,
+                                "⏳ Live upcoming Youtube Live Class in 30 minutes",
+                                youtubeReminderEmail(course.courseName, section.sectionName, title, meetStartTime, meetUrl, student.firstName)
+                            )
+                            console.log(`Reminder email sent to ${student.email} for remainder of youtube live class`);
+                        } catch (err) {
+                            console.error(`Error sending email to ${student.email}:`, err);
+                        }
+                    }
+                }
+            }
+        }
+
+    } catch (err) {
+        console.error('Error fetching courses or sending reminders:', err);
     }
 }

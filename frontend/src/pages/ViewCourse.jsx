@@ -28,7 +28,6 @@ export default function ViewCourse() {
         async function getDetails() {
             const courseData = await getFullDetailsOfCourse(courseId, token);
             courseData.courseDetails.courseExpiryDate = courseData.courseExpiryDate;
-            // console.log("Course Data here... ", courseData.courseDetails)
             dispatch(setCourseSectionData(courseData.courseDetails.courseContent));
             dispatch(setEntireCourseData(courseData.courseDetails));
             dispatch(setCompletedLectures(courseData.completedVideos));
@@ -61,11 +60,20 @@ export default function ViewCourse() {
     const closeIconClass = darkTheme ? "text-yellow-300 hover:text-yellow-400" : "text-blue-700 hover:text-blue-900"; // Changed to a blue
 
     return (
-        <div className={`relative flex flex-col lg:flex-row lg:min-h-[calc(100vh-3.5rem)] ${backgroundColorClass} ${textColorClass}`}>
-            <VideoDetailsSidebar setReviewModal={setReviewModal} />
+        <div
+            className={`relative flex flex-col lg:flex-row lg:min-h-[calc(100vh-3.5rem)] ${backgroundColorClass} ${textColorClass}`}
+        >
+            {/* Adjusted Sidebar for Mobile */}
+            <div className="lg:w-[320px] w-full max-w-full flex-none bg-white shadow-md lg:border-r lg:h-full z-10">
+                <VideoDetailsSidebar setReviewModal={setReviewModal} />
+            </div>
+
             <div className="flex-1 overflow-auto p-6">
+                {/* Expiry Banner */}
                 {showExpiry && expiryDateFormatted && (
-                    <div className={`relative ${expiryBgClass} border-l-4 ${expiryBorderClass} ${expiryTextClass} p-4 mb-6 rounded-md shadow-md`}>
+                    <div
+                        className={`relative ${expiryBgClass} border-l-4 ${expiryBorderClass} ${expiryTextClass} p-4 mb-6 rounded-md shadow-md`}
+                    >
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="font-semibold text-lg">Course Access Ends On:</p>
@@ -80,10 +88,14 @@ export default function ViewCourse() {
                         </div>
                     </div>
                 )}
+
                 <div className="mx-auto max-w-7xl">
+                    {/* Outlet for dynamic content */}
                     <Outlet />
                 </div>
             </div>
+
+            {/* Course Review Modal */}
             {reviewModal && <CourseReviewModal setReviewModal={setReviewModal} />}
         </div>
     );

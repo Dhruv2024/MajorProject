@@ -70,6 +70,17 @@ export default function SubSectionModal({
                 setValue("startTime", localISOTime)
 
             }
+            else if (modalData.type === 'youtube') {
+                setValue("lectureVideo", modalData.youtubeLink);
+                setValue("lectureTitle", modalData.title);
+                setValue("lectureDesc", modalData.description);
+                // Convert UTC time to local datetime-local format (YYYY-MM-DDTHH:MM)
+                const localStartTime = new Date(modalData.meetStartTime)
+                const tzOffset = localStartTime.getTimezoneOffset() * 60000
+                const localISOTime = new Date(localStartTime - tzOffset).toISOString().slice(0, 16)
+
+                setValue("startTime", localISOTime)
+            }
             setSubSectionType(modalData.type);
         } else if (initialType === 'quiz') {
             setSubSectionType('quiz');
@@ -90,7 +101,9 @@ export default function SubSectionModal({
             currentValues.lectureResource !== modalData.resource ||
             (subSectionType === 'videoCall' && currentValues.startTime !== modalData.startTime) ||
             subSectionType !== (modalData.subSectionType || 'recorded') ||
-            currentValues.lectureNotes !== modalData.lectureNotes
+            currentValues.lectureNotes !== modalData.lectureNotes ||
+            (subSectionType === 'youtube' && currentValues.lectureVideo !== modalData.youtubeLink) ||
+            (subSectionType === 'youtube' && currentValues.startTime !== modalData.meetStartTime)
         ) {
             return true
         }
@@ -131,6 +144,29 @@ export default function SubSectionModal({
         } if (subSectionType === 'videoCall' && currentValues.lectureVideo !== modalData.meetUrl) {
             formData.append("meetUrl", currentValues.lectureVideo)
         }
+        if (subSectionType === 'youtube') {
+            if (currentValues.lectureVideo !== modalData.youtubeLink) {
+                formData.append("video", currentValues.lectureVideo);
+                toast((t) => (
+                    <div className="flex justify-between items-center space-x-4">
+                        <span>
+                            If you are doing a live class, then update link for recording after ending class
+                        </span>
+                        <button
+                            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                            onClick={() => toast.dismiss(t.id)}
+                        >
+                            Dismiss
+                        </button>
+                    </div>
+                ));
+
+            }
+            if (currentValues.startTime !== modalData.startTime) {
+                formData.append("startTime", currentValues.startTime)
+            }
+        }
+
         setLoading(true)
         const result = await updateSubSection(formData, token)
         if (result) {
@@ -168,7 +204,8 @@ export default function SubSectionModal({
             if (data.lectureNotes && data.lectureNotes instanceof File) {
                 formData.append("lectureNotes", data.lectureNotes);
             }
-        } else if (subSectionType === 'videoCall') {
+        }
+        else if (subSectionType === 'videoCall') {
             formData.append("video", data.lectureVideo) // Using video for video call link
             const localStart = new Date(data.startTime)
             const utcStart = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000)
@@ -176,6 +213,14 @@ export default function SubSectionModal({
             formData.append("type", "videoCall");
 
         }
+        else if (subSectionType === 'youtube') {
+            formData.append("youtubeLink", data.lectureVideo)
+            const localStart = new Date(data.startTime)
+            const utcStart = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000)
+            formData.append("startTime", utcStart.toISOString())
+            formData.append("type", "youtube")
+        }
+
         setLoading(true)
         const result = await createSubSection(formData, token)
         if (result) {
@@ -192,7 +237,7 @@ export default function SubSectionModal({
     const handleSubSectionTypeChange = (event) => {
         setSubSectionType(event.target.value);
     };
-
+    // console.log(modalData);
     return (
         <div className={`fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-opacity-10 backdrop-blur-sm ${darkTheme ? "bg-white" : "bg-black"}`}>
             <div className={`my-10 w-11/12 max-w-[700px] rounded-lg border ${darkTheme ? "border-richblack-400 bg-richblack-800" : "border-richblack-25 bg-white"}`}>
@@ -216,6 +261,12 @@ export default function SubSectionModal({
                             {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Video Call
                         </p>
                     }
+                    {
+                        subSectionType === 'youtube' &&
+                        <p className={`text-xl font-semibold ${darkTheme ? "text-richblack-5" : "text-richblack-700"}`}>
+                            {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Youtube Lecture
+                        </p>
+                    }
                     <button onClick={() => (!loading ? setModalData(null) : {})}>
                         <RxCross2 className={`text-2xl ${darkTheme ? "text-richblack-5" : "text-black"}`} />
                     </button>
@@ -236,6 +287,7 @@ export default function SubSectionModal({
                             >
                                 <option value="recorded">Recorded Lecture</option>
                                 <option value="videoCall">Video Call</option>
+                                <option value="youtube">YouTube</option>
                             </select>
                         </div>
                     )}
@@ -435,15 +487,20 @@ export default function SubSectionModal({
                             {/* Description */}
                             <div className="flex flex-col space-y-2">
                                 <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
-                                    Description
+                                    Description{!view && <sup className="text-pink-200">*</sup>}
                                 </label>
                                 <textarea
                                     disabled={view || loading}
                                     id="lectureDesc"
-                                    placeholder="Enter Description for the Video Call (Optional)"
-                                    {...register("lectureDesc")}
+                                    placeholder="Enter Description for the Video Call"
+                                    {...register("lectureDesc", { required: true })}
                                     className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
                                 />
+                                {errors.lectureDesc && (
+                                    <span className="ml-2 text-xs tracking-wide text-pink-200">
+                                        Description is required
+                                    </span>
+                                )}
                             </div>
                             {!view && (
                                 <div className="flex justify-end">
@@ -455,6 +512,92 @@ export default function SubSectionModal({
                             )}
                         </form>
                     )}
+
+                    {subSectionType === 'youtube' && (
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                            {/* YouTube Link */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureVideo">
+                                    YouTube Video Link {!view && <sup className="text-pink-200">*</sup>}
+                                </label>
+                                <input
+                                    disabled={view || loading}
+                                    id="lectureVideo"
+                                    placeholder="Enter YouTube Video Link"
+                                    {...register("lectureVideo", { required: true })}
+                                    className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                />
+                                {errors.lectureVideo && (
+                                    <span className="ml-2 text-xs tracking-wide text-pink-200">
+                                        YouTube link is required
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Start Time */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="startTime">
+                                    Start Time {!view && <sup className="text-pink-200">*</sup>}
+                                </label>
+                                {view ? (
+                                    <div className="w-full px-2 py-2 border rounded text-sm">
+                                        {modalData?.meetStartTime ? new Date(modalData.meetStartTime).toLocaleString() : "N/A"}
+                                    </div>
+                                ) : (
+                                    <input
+                                        id="startTime"
+                                        type="datetime-local"
+                                        disabled={loading}
+                                        {...register("startTime", { required: true })}
+                                        className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                    />
+                                )}
+                                {errors.startTime && (
+                                    <span className="ml-2 text-xs tracking-wide text-pink-200">
+                                        Start Time is required
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Title */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureTitle">
+                                    Title {!view && <sup className="text-pink-200">*</sup>}
+                                </label>
+                                <input
+                                    disabled={view || loading}
+                                    id="lectureTitle"
+                                    placeholder="Enter Title"
+                                    {...register("lectureTitle", { required: true })}
+                                    className={`w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div className="flex flex-col space-y-2">
+                                <label className={`text-sm ${darkTheme ? "text-richblack-5" : "text-richblack-400"}`} htmlFor="lectureDesc">
+                                    Description {!view && <sup className="text-pink-200">*</sup>}
+                                </label>
+                                <textarea
+                                    disabled={view || loading}
+                                    id="lectureDesc"
+                                    placeholder="Enter Description"
+                                    {...register("lectureDesc", { required: true })}
+                                    className={`resize-x-none min-h-[130px] w-full ${darkTheme ? "form-style" : "light-form-style"}`}
+                                />
+                            </div>
+
+                            {!view && (
+                                <div className="flex justify-end">
+                                    <IconBtn
+                                        disabled={loading}
+                                        text={loading ? "Loading.." : edit ? "Save Changes" : "Save"}
+                                    />
+                                </div>
+                            )}
+                        </form>
+                    )}
+
                 </div>
             </div>
         </div>

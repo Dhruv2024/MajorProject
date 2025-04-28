@@ -18,6 +18,7 @@ import VideoCallLink from "./VideoCallLink"
 import { formatDateTime } from "../../../utils/formatDateTime"
 import { buyCourse } from "../../../services/operations/studentFeaturesAPI"
 import { ConfirmationModal } from "../../common/ConfirmationModal"
+import ExpiredAccessCards from "./ExpiredAccessCards"
 
 const VideoDetails = () => {
     const { courseId, sectionId, subSectionId } = useParams();
@@ -70,6 +71,7 @@ const VideoDetails = () => {
     const [quizId, setQuizId] = useState(null);
     const [meetDetails, setMeetDetails] = useState(null);
     const [completed, setCompleted] = useState(completedLectures.includes(subSectionId));
+    const [youtubeDetails, setYouTubeDetails] = useState(null);
     useEffect(() => {
         const subSectionCompleted = completedLectures.includes(subSectionId);
         // console.log(subSectionCompleted);
@@ -139,6 +141,10 @@ const VideoDetails = () => {
                 else if (filteredVideoData[0]?.type === "videoCall") {
                     setType("videoCall");
                     setMeetDetails(filteredVideoData[0]);
+                }
+                else if (filteredVideoData[0]?.type === "youtube") {
+                    setType("youtube");
+                    setYouTubeDetails(filteredVideoData[0]);
                 }
             }
         }
@@ -302,10 +308,46 @@ const VideoDetails = () => {
         })
     }
 
+    // *** New code for videoCall "Mark as Completed" ***
+    const showMarkAsCompletedButton = () => {
+        if (type === "videoCall" && meetDetails) {
+            const startTime = new Date(meetDetails.startTime);
+            const durationInMinutes = meetDetails.duration; // Assuming duration is in minutes
+            const endTime = new Date(startTime.getTime() + durationInMinutes * 60000); // Convert minutes to milliseconds
+            const now = new Date();
+            return now > endTime;
+        }
+        return false;
+    };
+
+    function getYouTubeEmbedUrl(link) {
+        try {
+            const url = new URL(link);
+            let videoId = null;
+
+            if (url.hostname === "youtu.be") {
+                // Handle short YouTube links
+                videoId = url.pathname.slice(1);
+            } else if (url.hostname.includes("youtube.com")) {
+                // Handle live and regular YouTube links
+                if (url.pathname.includes("/live/")) {
+                    videoId = url.pathname.split("/live/")[1];
+                } else {
+                    videoId = url.searchParams.get("v");
+                }
+            }
+
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+        } catch (err) {
+            return null;
+        }
+    }
+
+
     return (
         <div className="flex flex-col gap-5 text-white">
             {
-                type === "recorded" ? (
+                type === "recorded" && (
                     <div>
                         {!videoData ? (
                             <img
@@ -543,266 +585,314 @@ const VideoDetails = () => {
                             </div>
                         )}
                     </div>
-                ) : (
-                    type === "videoCall" ? (
-                        <div>
-                            !courseExpired?(
-                            <div>
-                                <VideoCallLink data={meetDetails} handleLectureCompletion={handleLectureCompletion} completed={completed} />
-                            </div>
-                            ):(
-                            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                                <div className="flex justify-center items-center mb-6">
-                                    <svg
-                                        className="w-10 h-10 text-red mr-3"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                )
+            }
+            {
+                type === "videoCall" && (
+
+                    <div>
+
+                        {
+                            !courseExpired ? (
+                                <div>
+                                    <VideoCallLink data={meetDetails} handleLectureCompletion={handleLectureCompletion} completed={completed} />
+                                    {showMarkAsCompletedButton() && !completed && (
+                                        <IconBtn
+                                            disabled={loading}
+                                            onclick={() => handleLectureCompletion()}
+                                            text={!loading ? "Mark As Completed" : "Loading..."}
+                                            customClasses="text-xl max-w-max px-4 mx-auto"
                                         />
-                                    </svg>
-                                    <h2 className="text-xl font-semibold text-pure-greys-800">
-                                        Course Access Expired
-                                    </h2>
+                                    )}
                                 </div>
-                                <p className="text-pure-greys-600 mb-4">
-                                    Your enrollment period for this course has ended. To regain access to:
-                                </p>
-                                <ul className="list-disc list-inside text-pure-greys-600 mb-4">
-                                    <li>Lectures</li>
-                                    <li>Unattempted Quizzes</li>
-                                    <li>Live Meetings</li>
-                                </ul>
-                                {
-                                    isEnrollmentOpen ? (
-                                        <button
-                                            onClick={handleEnrollAgain} // Assuming handleEnrollAgain is defined in your component
-                                            className="bg-caribbeangreen-500 hover:bg-caribbeangreen-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
-                                        >
-                                            Re-enroll Now
-                                        </button>
-                                    ) : (
-                                        <div>Enrollement will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
-                                    )
-                                }
-                                <p className="mt-4 text-sm text-pure-greys-500">
-                                    Have questions? <a href="#" className="text-blue-500 hover:underline">Contact Support</a>
-                                </p>
-                            </div>
                             )
-                        </div>
-                    ) : (
-                        <div className="text-red space-y-4">
+                                :
+                                (
+                                    <ExpiredAccessCards />
+                                )
+                        }
+                    </div>
+                )
+            }
+            {
+                type === "quiz" && (
+                    <div className="text-red space-y-4">
 
-                            {
-                                quizStartTime && quizEndTime && currentTime ? (
-                                    courseExpired ? (
-                                        type === 'quiz' && completed ? (
-                                            <div className="bg-white border border-green-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm mx-auto">
-                                                <div className="text-2xl font-semibold text-green-600 flex items-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
-                                                        <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
+                        {
+                            quizStartTime && quizEndTime && currentTime ? (
+                                courseExpired ? (
+                                    type === 'quiz' && completed ? (
+                                        <div className="bg-white border border-green-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm mx-auto">
+                                            <div className="text-2xl font-semibold text-green-600 flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
+                                                    <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
+                                                </svg>
+                                                Quiz Attempted
+                                            </div>
+                                            <button
+                                                className="mt-4 px-6 py-3 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600 transition duration-200"
+                                                onClick={() => handleShowResult()}
+                                            >
+                                                Check Result
+                                            </button>
+                                        </div>
+                                    ) :
+                                        (
+                                            <div className="bg-white p-8 rounded-lg shadow-md text-center">
+                                                <div className="flex justify-center items-center mb-6">
+                                                    <svg
+                                                        className="w-10 h-10 text-red mr-3"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        />
                                                     </svg>
-                                                    Quiz Attempted
+                                                    <h2 className="text-xl font-semibold text-pure-greys-800">
+                                                        Course Access Expired
+                                                    </h2>
                                                 </div>
-                                                <button
-                                                    className="mt-4 px-6 py-3 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600 transition duration-200"
-                                                    onClick={() => handleShowResult()}
-                                                >
-                                                    Check Result
-                                                </button>
-                                            </div>
-                                        ) :
-                                            (
-                                                <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                                                    <div className="flex justify-center items-center mb-6">
-                                                        <svg
-                                                            className="w-10 h-10 text-red mr-3"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                            />
-                                                        </svg>
-                                                        <h2 className="text-xl font-semibold text-pure-greys-800">
-                                                            Course Access Expired
-                                                        </h2>
-                                                    </div>
-                                                    <p className="text-pure-greys-600 mb-4">
-                                                        Your enrollment period for this course has ended. To regain access to:
-                                                    </p>
-                                                    <ul className="list-disc list-inside text-pure-greys-600 mb-4">
-                                                        <li>Lectures</li>
-                                                        <li>Unattempted Quizzes</li>
-                                                        <li>Live Meetings</li>
-                                                    </ul>
-                                                    {
-                                                        isEnrollmentOpen ? (
-                                                            <button
-                                                                onClick={handleEnrollAgain} // Assuming handleEnrollAgain is defined in your component
-                                                                className="bg-caribbeangreen-500 hover:bg-caribbeangreen-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
-                                                            >
-                                                                Re-enroll Now
-                                                            </button>
-                                                        ) : (
-                                                            <div>Enrollement will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
-                                                        )
-                                                    }
-                                                    <p className="mt-4 text-sm text-pure-greys-500">
-                                                        Have questions? <a href="#" className="text-blue-500 hover:underline">Contact Support</a>
-                                                    </p>
-                                                </div>
-                                            )
-
-                                    ) : (
-                                        quizStartTime.getTime() <= currentTime.getTime() && currentTime.getTime() <= quizEndTime.getTime() ? (
-                                            <div className="text-caribbeangreen-400 rounded-lg p-4 shadow-md">
-                                                <div className="text-xl font-semibold">📢 Quiz is <span className="text-green-600">LIVE</span></div>
-                                                <div className="flex items-center gap-2 mt-2 text-sm">
-                                                    <MdDateRange className="text-green-600" />
-                                                    <span>Ends at: {quizEndTime.toLocaleString('en-US', {
-                                                        weekday: 'long',
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        hour: 'numeric',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                    })}</span>
-                                                </div>
-                                                <div className="mt-4 flex justify-center">
-                                                    {type === 'quiz' && !completed && (
+                                                <p className="text-pure-greys-600 mb-4">
+                                                    Your enrollment period for this course has ended. To regain access to:
+                                                </p>
+                                                <ul className="list-disc list-inside text-pure-greys-600 mb-4">
+                                                    <li>Lectures</li>
+                                                    <li>Unattempted Quizzes</li>
+                                                    <li>Live Meetings</li>
+                                                </ul>
+                                                {
+                                                    isEnrollmentOpen ? (
                                                         <button
-                                                            onClick={() => navigate(`/startQuiz/${courseId}/${subSectionId}/${quizId}`)}
-                                                            className=" hover:bg-richblack-5 hover:text-black text-caribbeangreen-600 font-semibold py-2 px-4 transition duration-200 text-3xl border-2 border-richblack-25 rounded-full"
+                                                            onClick={handleEnrollAgain} // Assuming handleEnrollAgain is defined in your component
+                                                            className="bg-caribbeangreen-500 hover:bg-caribbeangreen-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
                                                         >
-                                                            Start Test
+                                                            Re-enroll Now
                                                         </button>
-                                                    )}
-                                                    {type === 'quiz' && completed && (
-                                                        <div className="flex flex-col items-center justify-center gap-4 p-6 rounded-md shadow-md bg-white">
-                                                            <div className="text-2xl font-semibold text-caribbeangreen-600">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
-                                                                    <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
-                                                                </svg>
-                                                                Quiz Attempted
-                                                            </div>
-                                                            <div className="text-center text-gray-600 text-lg">
-                                                                Result will be announced when the quiz is over. Please check back later.
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                    ) : (
+                                                        <div>Enrollement will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
+                                                    )
+                                                }
+                                                <p className="mt-4 text-sm text-pure-greys-500">
+                                                    Have questions? <a href="#" className="text-blue-500 hover:underline">Contact Support</a>
+                                                </p>
                                             </div>
-                                        ) : quizStartTime.getTime() > currentTime.getTime() ? (
-                                            <div className="bg-yellow-100 text-yellow-800 rounded-lg p-4 shadow-md">
-                                                <div className="text-xl font-semibold">🕒 Quiz is <span className="text-yellow-600">Scheduled</span></div>
-                                                <div className="flex items-center gap-2 mt-2 text-sm">
-                                                    <MdDateRange className="text-yellow-600" />
-                                                    <span>Starts at: {quizStartTime.toLocaleString('en-US', {
-                                                        weekday: 'long',
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        hour: 'numeric',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                    })}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 mt-1 text-sm">
-                                                    <MdDateRange className="text-yellow-600" />
-                                                    <span>Ends at: {quizEndTime.toLocaleString('en-US', {
-                                                        weekday: 'long',
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        hour: 'numeric',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                    })}</span>
-                                                </div>
+                                        )
+
+                                ) : (
+                                    quizStartTime.getTime() <= currentTime.getTime() && currentTime.getTime() <= quizEndTime.getTime() ? (
+                                        <div className="text-caribbeangreen-400 rounded-lg p-4 shadow-md">
+                                            <div className="text-xl font-semibold">📢 Quiz is <span className="text-green-600">LIVE</span></div>
+                                            <div className="flex items-center gap-2 mt-2 text-sm">
+                                                <MdDateRange className="text-green-600" />
+                                                <span>Ends at: {quizEndTime.toLocaleString('en-US', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                })}</span>
                                             </div>
-                                        ) : (
-                                            <div className="bg-gray-100 text-gray-700 rounded-lg p-6 shadow-md flex flex-col items-center justify-center gap-4">
+                                            <div className="mt-4 flex justify-center">
                                                 {type === 'quiz' && !completed && (
-                                                    <div className="bg-white border border-red-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm">
-                                                        <div className="text-2xl font-semibold text-red-600 flex items-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
-                                                                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.707 8.293a1 1 0 00-1.414-1.414L12 10.586l-2.293-2.293a1 1 0 00-1.414 1.414L10.586 12l-2.293 2.293z" clipRule="evenodd" />
-                                                            </svg>
-                                                            Quiz Ended
-                                                        </div>
-                                                        <div className="text-center text-gray-700 font-medium">
-                                                            You have not attempted this quiz.
-                                                        </div>
-                                                    </div>
+                                                    <button
+                                                        onClick={() => navigate(`/startQuiz/${courseId}/${subSectionId}/${quizId}`)}
+                                                        className=" hover:bg-richblack-5 hover:text-black text-caribbeangreen-600 font-semibold py-2 px-4 transition duration-200 text-3xl border-2 border-richblack-25 rounded-full"
+                                                    >
+                                                        Start Test
+                                                    </button>
                                                 )}
                                                 {type === 'quiz' && completed && (
-                                                    <div className="bg-white border border-green-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm">
-                                                        <div className="text-2xl font-semibold text-green-600 flex items-center">
+                                                    <div className="flex flex-col items-center justify-center gap-4 p-6 rounded-md shadow-md bg-white">
+                                                        <div className="text-2xl font-semibold text-caribbeangreen-600">
                                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
                                                                 <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
                                                             </svg>
                                                             Quiz Attempted
                                                         </div>
-                                                        <button
-                                                            className="mt-4 px-6 py-3 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600 transition duration-200"
-                                                            onClick={() => handleShowResult()}
-                                                        >
-                                                            Check Result
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                {type === 'quiz' && (
-                                                    <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
-                                                        <MdDateRange className="text-red-600" />
-                                                        <span>
-                                                            Ended at:{' '}
-                                                            {quizEndTime?.toLocaleString('en-US', {
-                                                                weekday: 'long',
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric',
-                                                                hour: 'numeric',
-                                                                minute: '2-digit',
-                                                                hour12: true,
-                                                            })}
-                                                        </span>
+                                                        <div className="text-center text-gray-600 text-lg">
+                                                            Result will be announced when the quiz is over. Please check back later.
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
-                                        )
+                                        </div>
+                                    ) : quizStartTime.getTime() > currentTime.getTime() ? (
+                                        <div className="bg-yellow-100 text-yellow-800 rounded-lg p-4 shadow-md">
+                                            <div className="text-xl font-semibold">🕒 Quiz is <span className="text-yellow-600">Scheduled</span></div>
+                                            <div className="flex items-center gap-2 mt-2 text-sm">
+                                                <MdDateRange className="text-yellow-600" />
+                                                <span>Starts at: {quizStartTime.toLocaleString('en-US', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                })}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-1 text-sm">
+                                                <MdDateRange className="text-yellow-600" />
+                                                <span>Ends at: {quizEndTime.toLocaleString('en-US', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                })}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-gray-100 text-gray-700 rounded-lg p-6 shadow-md flex flex-col items-center justify-center gap-4">
+                                            {type === 'quiz' && !completed && (
+                                                <div className="bg-white border border-red-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm">
+                                                    <div className="text-2xl font-semibold text-red-600 flex items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
+                                                            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.707 8.293a1 1 0 00-1.414-1.414L12 10.586l-2.293-2.293a1 1 0 00-1.414 1.414L10.586 12l-2.293 2.293z" clipRule="evenodd" />
+                                                        </svg>
+                                                        Quiz Ended
+                                                    </div>
+                                                    <div className="text-center text-gray-700 font-medium">
+                                                        You have not attempted this quiz.
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {type === 'quiz' && completed && (
+                                                <div className="bg-white border border-green-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm">
+                                                    <div className="text-2xl font-semibold text-green-600 flex items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
+                                                            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
+                                                        </svg>
+                                                        Quiz Attempted
+                                                    </div>
+                                                    <button
+                                                        className="mt-4 px-6 py-3 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600 transition duration-200"
+                                                        onClick={() => handleShowResult()}
+                                                    >
+                                                        Check Result
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {type === 'quiz' && (
+                                                <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
+                                                    <MdDateRange className="text-red-600" />
+                                                    <span>
+                                                        Ended at:{' '}
+                                                        {quizEndTime?.toLocaleString('en-US', {
+                                                            weekday: 'long',
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                            hour: 'numeric',
+                                                            minute: '2-digit',
+                                                            hour12: true,
+                                                        })}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                     )
-                                ) : (
-                                    <div className="text-gray-500 text-lg animate-pulse">⏳ Loading quiz info...</div>
                                 )
-                            }
+                            ) : (
+                                <div className="text-gray-500 text-lg animate-pulse">⏳ Loading quiz info...</div>
+                            )
+                        }
 
 
-                            {showQuizResult && (
-                                <QuizResultPopup result={showQuizResult} onClose={handleCloseResult} />
-                            )}
+                        {showQuizResult && (
+                            <QuizResultPopup result={showQuizResult} onClose={handleCloseResult} />
+                        )}
 
-                            {/* Button to trigger the popup (for testing) */}
-                            {/* <button onClick={() => handleShowResult(yourQuizResultData)}>Show Quiz Result</button> */}
-                        </div>
-                    )
-
-
+                        {/* Button to trigger the popup (for testing) */}
+                        {/* <button onClick={() => handleShowResult(yourQuizResultData)}>Show Quiz Result</button> */}
+                    </div>
                 )
             }
+            {type === "youtube" && (
+                !courseExpired ? (
+                    (() => {
+                        const now = Date.now();
+                        const videoStartTime = new Date(youtubeDetails?.meetStartTime).getTime(); // Ensure startTime is in ISO format
+                        const videoAvailable = now >= videoStartTime;
+
+                        if (videoAvailable) {
+                            return (
+                                <div className="w-full flex flex-col gap-4">
+                                    <div className="aspect-video w-full">
+                                        <iframe
+                                            src={getYouTubeEmbedUrl(youtubeDetails?.youtubeLink.replace("watch?v=", "embed/"))}
+                                            title={youtubeDetails?.title}
+                                            className="w-full h-full rounded-lg"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    </div>
+
+                                    <div>
+                                        <div className="flex flex-row justify-between items-center">
+                                            <h1 className={`text-3xl font-bold ${!darkTheme ? "text-richblack-800" : "text-pure-greys-5"}`}>
+                                                {youtubeDetails?.title}
+                                            </h1>
+                                            <button
+                                                className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                                                onClick={handleLectureCompletion} // You need to define this function
+                                            >
+                                                Mark as Complete
+                                            </button>
+                                        </div>
+                                        <p className={`pt-1 pb-3 font-inter ${!darkTheme && "text-richblack-400"}`}>
+                                            {youtubeDetails?.description}
+                                        </p>
+
+
+                                    </div>
+                                </div>
+                            );
+                        } else {
+                            return (
+                                <div className={`flex flex-col items-center justify-center p-6 rounded-lg border shadow-md 
+                                    ${!darkTheme ? "bg-richblack-5 border-richblack-100 text-richblack-700" : "bg-richblack-700 border-richblack-600 text-pure-greys-5"}`}>
+
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-10 w-10 mb-4 text-yellow-500"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m0-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                    </svg>
+
+                                    <h2 className="text-xl font-semibold mb-2">This video isn't available yet</h2>
+
+                                    <p className="text-md text-center">
+                                        It will be available on:{" "}
+                                        <span className="font-medium text-yellow-500">
+                                            {new Date(videoStartTime).toLocaleString()}
+                                        </span>
+                                    </p>
+                                </div>
+
+                            );
+                        }
+                    })()
+                ) : (
+                    <ExpiredAccessCards />
+                )
+            )}
+
+
             {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
         </div>
     )

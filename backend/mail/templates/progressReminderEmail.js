@@ -1,11 +1,17 @@
 exports.progressReminderEmail = (userName, progressSummaries, websiteUrl) => {
+  const capitalizeWords = (str) => {
+    return str
+      .split(" ") // Split the string into words
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize the first letter of each word
+      .join(" "); // Join the words back together
+  };
   const progressBlocks = progressSummaries
     .map((item) => {
       const percentage = item.percentage;
       return `
         <tr>
           <td style="padding: 10px 0;">
-            <strong>${item.courseName}</strong>
+            <strong>${capitalizeWords(item.courseName)}</strong>
             <div class="progress-bar-container" style="background-color: #e0e0e0; border-radius: 10px; overflow: hidden; width: 100%; height: 20px; margin-top: 5px;">
               <div style="background-color: #4CAF50; width: ${percentage}%; height: 100%;">
                 <div style="color: white; font-size: 12px; line-height: 20px; text-align: center;">${percentage}%</div>

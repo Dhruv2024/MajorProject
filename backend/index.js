@@ -46,6 +46,7 @@ const Questions = require('./models/Questions');
 const { uploadImageToCloudinary } = require('./utils/imageUploader');
 const mailSender = require('./utils/mailSender');
 const { sendProgressEmails } = require('./controllers/courseProgress');
+const { videoCallRemainderEmail, youtubeRemainderEmail } = require('./controllers/Subsection');
 io.on('connection', (socket) => {
     console.log("user connected");
     // Join Room
@@ -355,6 +356,11 @@ const checkAndSendQuizResultReport = async () => {
 // Set up the cron job to run every minute
 cron.schedule('*/15 * * * *', checkAndSendQuizReminder);  // Every 15 minute
 cron.schedule('*/15 * * * *', checkAndSendQuizResultReport);  // Every 15 minute
+cron.schedule('*/30 * * * *', async () => {
+    console.log("checking");
+    videoCallRemainderEmail();
+    youtubeRemainderEmail();
+});
 cron.schedule("0 8 * * *", async () => {
     try {
         console.log("📬 Running Course Expiry Email Reminder...");
@@ -408,7 +414,7 @@ cron.schedule("0 8 * * *", async () => {
     }
 });
 // Runs every Monday at 9 AM
-cron.schedule("0 9 * * 0", async () => {
+cron.schedule("17 13 * * 1", async () => {
     console.log("Sending progress reports")
     await sendProgressEmails();
 });
