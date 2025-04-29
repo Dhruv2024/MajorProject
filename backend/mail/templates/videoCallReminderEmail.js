@@ -7,7 +7,18 @@ exports.videoCallReminderEmail = (
   name
 ) => {
   // Convert meetStartTime (in UTC) to IST
-  const start = new Date(meetStartTime).toLocaleString();
+  const start = new Date(
+    new Date(meetStartTime).getTime() + 5.5 * 60 * 60 * 1000
+  ).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour12: true,
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   // Format the IST start time as a readable string
   const capitalizeWords = (str) => {
