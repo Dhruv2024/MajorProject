@@ -109,7 +109,10 @@ export default function SubSectionModal({
         }
         return false
     }
-
+    const toISOStringLocal = (datetimeString) => {
+        const date = new Date(datetimeString);
+        return date.toISOString(); // Always UTC
+    };
     // handle the editing of subsection
     const handleEditSubsection = async () => {
         const currentValues = getValues();
@@ -134,7 +137,7 @@ export default function SubSectionModal({
             formData.append("lectureNotes", currentValues.lectureNotes)
         }
         if (subSectionType === 'videoCall' && currentValues.startTime !== modalData.meetStartTime) {
-            formData.append("startTime", currentValues.startTime)
+            formData.append("startTime", toISOStringLocal(currentValues.startTime))
         }
         if (subSectionType === 'videoCall' && currentValues.lectureTitle !== modalData.title) {
             formData.append("tile", currentValues.lectureTitle)
@@ -163,7 +166,7 @@ export default function SubSectionModal({
 
             }
             if (currentValues.startTime !== modalData.startTime) {
-                formData.append("startTime", currentValues.startTime)
+                formData.append("startTime", toISOStringLocal(currentValues.startTime))
             }
         }
 
@@ -179,10 +182,7 @@ export default function SubSectionModal({
         setModalData(null)
         setLoading(false)
     }
-    const toISOStringLocal = (datetimeString) => {
-        const date = new Date(datetimeString);
-        return date.toISOString(); // Always UTC
-    };
+
     const onSubmit = async (data) => {
         if (view) return
 
