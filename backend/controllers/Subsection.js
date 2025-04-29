@@ -64,7 +64,22 @@ exports.createSubSection = async (req, res) => {
                 { _id: sectionId },
                 { $push: { subSection: SubSectionDetails._id } },
                 { new: true }
-            ).populate("subSection");
+            ).populate({
+                path: "subSection",
+                populate: {
+                    path: "quiz",
+                    model: "Quiz",
+                    populate: { // Populate questions and options
+                        path: 'questions',
+                        model: 'QuizQuestion',
+                        populate: {
+                            path: 'options',
+                            model: 'Option'
+                        }
+                    }
+                    // match: { type: 'quiz' }
+                }
+            });
 
             // --- DEBUGGING 2: Log updatedSection ---
             console.log("Updated Section:", updatedSection);

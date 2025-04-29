@@ -25,13 +25,13 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
             { text: '', isImage: false, image: null, imagePreview: null },
             { text: '', isImage: false, image: null, imagePreview: null },
         ],
-        correctAnswer: '',
+        correctAnswer: '1',
         topic: '',
     }]);
     const [confirmationModal, setConfirmationModal] = useState(null);
     const { course } = useSelector((state) => state.course);
     const courseId = course._id || "temp";
-    console.log(courseId);
+    // console.log(courseId);
     const BASE_URL = import.meta.env.VITE_BASE_URL;
     const { token } = useSelector((state) => state.auth);
     const handleInputChange = useCallback((event, questionIndex, field) => {
@@ -90,7 +90,7 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
                 { text: '', isImage: false, image: null, imagePreview: null },
                 { text: '', isImage: false, image: null, imagePreview: null },
             ],
-            correctAnswer: '',
+            correctAnswer: '1',
             topic: '',
         }]);
     }, [setQuestions]);
@@ -175,10 +175,10 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
 
     const handleSubmit = useCallback(async (event) => {
         event.preventDefault();
-        if (questions.length < 10) {
-            toast.error("Minimum 10 questions are required for a quiz");
-            return;
-        }
+        // if (questions.length < 10) {
+        //     toast.error("Minimum 10 questions are required for a quiz");
+        //     return;
+        // }
         const confirmation = window.confirm("Are you sure??(once submitted quiz can not be edited)");
         if (!confirmation) {
             return;

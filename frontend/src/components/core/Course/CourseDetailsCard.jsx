@@ -84,7 +84,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse, isEn
                             )
                         }
                         {
-                            <p className="text-sm text-red mt-2">
+                            <p className="text-sm text-red">
                                 Enrollment ends at: {formatDateTime(enrollmentEndDate)}
                             </p>
                         }
