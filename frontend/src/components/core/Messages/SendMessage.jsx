@@ -2,12 +2,14 @@ import React, { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../../../provider/socketContext';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { ThemeContext } from '../../../provider/themeContext';
 
 const SendMessage = ({ setMessages, messages }) => {
     const { socket } = useContext(SocketContext);
     const [messageFromUser, setMessageFromUser] = useState("");
     const { roomId } = useParams();
     const { user } = useSelector((state) => state.profile);
+    const { darkTheme } = useContext(ThemeContext);
 
     useEffect(() => {
         if (socket) {
@@ -57,12 +59,16 @@ const SendMessage = ({ setMessages, messages }) => {
                 type="text"
                 value={messageFromUser}
                 onChange={(e) => setMessageFromUser(e.target.value)}
-                className="w-full p-3 rounded-lg bg-gray-700 text-richblack-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
+                    ${darkTheme ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-900"}`}
                 placeholder="Type a message..."
             />
             <button
                 onClick={sendMessage}
-                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+                className={`px-6 py-3 rounded-lg focus:outline-none 
+                    ${darkTheme
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-blue-500 text-white hover:bg-blue-600"}`}
             >
                 Send
             </button>

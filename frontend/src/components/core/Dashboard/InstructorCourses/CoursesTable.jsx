@@ -19,6 +19,9 @@ import {
 import { COURSE_STATUS } from "../../../../utils/constants"
 import { ConfirmationModal } from "../../../common/ConfirmationModal"
 import { ThemeContext } from "../../../../provider/themeContext"
+import { BiQuestionMark } from "react-icons/bi";
+import { BsFillQuestionOctagonFill } from "react-icons/bs";
+
 
 export default function CoursesTable({ courses, setCourses, courseLoading }) {
     console.log("Current Courses are .................");
@@ -121,43 +124,65 @@ export default function CoursesTable({ courses, setCourses, courseLoading }) {
                                         <Td className={`text-sm font-medium ${darkTheme ? "text-richblack-100 " : "text-black"}`}>
                                             ₹{course.price}
                                         </Td>
-                                        <Td className="text-sm font-medium text-richblack-100 ">
-                                            <button
-                                                disabled={loading}
-                                                onClick={() => {
-                                                    navigate(`/dashboard/edit-course/${course._id}`)
-                                                }}
-                                                title="Edit"
-                                                className="px-2 transition-all duration-200 hover:scale-110 hover:text-caribbeangreen-300"
-                                            >
-                                                <FiEdit2 size={20} />
-                                            </button>
-                                            <button
-                                                disabled={loading}
-                                                onClick={() => {
-                                                    setConfirmationModal({
-                                                        text1: "Do you want to delete this course?",
-                                                        text2:
-                                                            "All the data related to this course will be deleted",
-                                                        btn1Text: !loading ? "Delete" : "Loading...  ",
-                                                        btn2Text: "Cancel",
-                                                        btn1Handler: !loading
-                                                            ? () => handleCourseDelete(course._id)
-                                                            : () => { },
-                                                        btn2Handler: !loading
-                                                            ? () => setConfirmationModal(null)
-                                                            : () => { },
-                                                    })
-                                                }}
-                                                title="Delete"
-                                                className="px-1 transition-all duration-200 hover:scale-110 hover:text-[#ff0000]"
-                                            >
-                                                <RiDeleteBin6Line size={20} />
-                                            </button>
-                                            <CiChat1 size={30} className=" hover:text-caribbeangreen-100 outline-2 cursor-pointer" onClick={() => {
-                                                navigate(`/dashboard/chat/${course.room}`)
-                                            }} />
+                                        <Td className="text-sm font-medium text-richblack-100">
+                                            <div className="flex flex-col items-start h-full gap-4">
+                                                {/* Top Group: Edit & Delete */}
+                                                <div className="flex items-start gap-3">
+                                                    <button
+                                                        disabled={loading}
+                                                        onClick={() => navigate(`/dashboard/edit-course/${course._id}`)}
+                                                        title="Edit Course"
+                                                        className={`transition-all duration-200 hover:scale-110 ${darkTheme ? "hover:text-caribbeangreen-200" : "hover:text-caribbeangreen-600"
+                                                            }`}
+                                                    >
+                                                        <FiEdit2 size={20} />
+                                                    </button>
+                                                    <button
+                                                        disabled={loading}
+                                                        onClick={() =>
+                                                            setConfirmationModal({
+                                                                text1: "Do you want to delete this course?",
+                                                                text2: "All the data related to this course will be deleted",
+                                                                btn1Text: !loading ? "Delete" : "Loading...",
+                                                                btn2Text: "Cancel",
+                                                                btn1Handler: !loading ? () => handleCourseDelete(course._id) : () => { },
+                                                                btn2Handler: !loading ? () => setConfirmationModal(null) : () => { },
+                                                            })
+                                                        }
+                                                        title="Delete Course"
+                                                        className={`transition-all duration-200 hover:scale-110 ${darkTheme ? "hover:text-[#ff4d4f]" : "hover:text-[#e60000]"
+                                                            }`}
+                                                    >
+                                                        <RiDeleteBin6Line size={20} />
+                                                    </button>
+                                                </div>
+
+                                                {/* Bottom Group: Chat & Questions */}
+                                                <div className="flex items-start gap-3 mt-4">
+                                                    <button
+                                                        title="Go to Chat"
+                                                        onClick={() => navigate(`/dashboard/chat/${course.room}`)}
+                                                        className={`transition-all duration-200 hover:scale-110 ${darkTheme ? "hover:text-caribbeangreen-100" : "hover:text-blue-500"
+                                                            }`}
+                                                    >
+                                                        <CiChat1 size={22} />
+                                                    </button>
+                                                    <button
+                                                        title="Answer Doubts"
+                                                        onClick={() => navigate(`/dashboard/question/${course._id}`)}
+                                                        className={`transition-all duration-200 hover:scale-110 ${darkTheme ? "hover:text-yellow-200" : "hover:text-yellow-500"
+                                                            }`}
+                                                    >
+                                                        <BsFillQuestionOctagonFill size={22} />
+                                                    </button>
+
+
+                                                </div>
+                                            </div>
                                         </Td>
+
+
+
                                     </Tr>
                                 ))
                             )}
