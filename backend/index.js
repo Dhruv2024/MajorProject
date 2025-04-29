@@ -38,7 +38,7 @@ const http = require("http");
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app/"],
+        origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app"],
     },
 });
 const Message = require("./models/Message");
@@ -198,7 +198,7 @@ app.use(cookieParser());
 
 
 app.use(cors({
-    origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app/"],
+    origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app"],
     credentials: true
 }))
 app.use(
