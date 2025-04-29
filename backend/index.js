@@ -375,13 +375,14 @@ const checkAndSendQuizResultReport = async () => {
 
     // Convert `now` to IST (UTC + 5.5 hours)
     const nowIST = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
-
+    console.log("Current time is : ", nowIST);
     quizzes.forEach(async (quiz) => {
         // Convert quiz end time (ISO format) to Date object
         const quizEndTime = new Date(quiz.endTime);
 
         // Convert quiz end time to IST (UTC + 5.5 hours)
         const quizEndTimeIST = new Date(quizEndTime.getTime() + 5.5 * 60 * 60 * 1000);
+        console.log("Quiz end time is : ", quizEndTimeIST)
 
         // Check if the quiz has already ended
         if (quizEndTimeIST <= nowIST) {
