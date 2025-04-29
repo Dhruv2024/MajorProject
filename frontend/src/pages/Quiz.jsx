@@ -179,10 +179,10 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
 
     const handleSubmit = useCallback(async (event) => {
         event.preventDefault();
-        // if (questions.length < 10) {
-        //     toast.error("Minimum 10 questions are required for a quiz");
-        //     return;
-        // }
+        if (questions.length < 10) {
+            toast.error("Minimum 10 questions are required for a quiz");
+            return;
+        }
         const confirmation = window.confirm("Are you sure??(once submitted quiz can not be edited)");
         if (!confirmation) {
             return;

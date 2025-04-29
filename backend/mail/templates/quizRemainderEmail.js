@@ -1,7 +1,28 @@
 exports.quizReminderEmail = (quizTitle, startTime, endTime, name) => {
   // Format start and end time as readable strings
-  const start = new Date(startTime).toLocaleString();
-  const end = new Date(endTime).toLocaleString();
+  // Convert start and end time from UTC to IST (UTC + 5:30)
+  const start = new Date(
+    new Date(startTime).getTime() + 5.5 * 60 * 60 * 1000
+  ).toLocaleString("en-IN", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  const end = new Date(
+    new Date(endTime).getTime() + 5.5 * 60 * 60 * 1000
+  ).toLocaleString("en-IN", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 
   return `<!DOCTYPE html>
     <html>
