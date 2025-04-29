@@ -39,6 +39,7 @@ import AskQuestion from "./pages/AskQuestion";
 import QuizCreateForm from "./pages/Quiz";
 import StartQuiz from "./pages/StartQuiz";
 import ChatBot from "./components/common/ChatBot";
+import QuizReportPage from "./pages/QuizReportPage";
 
 
 function App() {
@@ -169,6 +170,11 @@ function App() {
         <Route path="startQuiz/:courseId/:subSectionId/:quizId" element={
           <PrivateRoute>
             <StartQuiz />
+          </PrivateRoute>
+        } />
+        <Route path="quizResult/:courseId/:quizId" element={
+          <PrivateRoute >
+            <QuizReportPage />
           </PrivateRoute>
         } />
         <Route

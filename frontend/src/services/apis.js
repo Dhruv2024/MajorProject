@@ -88,4 +88,5 @@ export const quizEndpoints = {
     FETCH_QUIZ: BASE_URL + "/quiz/fetchQuiz",
     SUBMIT_QUIZ: BASE_URL + "/quiz/submitQuiz",
     GET_QUIZ_RESULT: BASE_URL + "/quiz/getResult",
+    GET_QUIZ_REPORT_FOR_INSTRUCTOR: BASE_URL + "/quiz/fetchQuizForInstructor",
 }

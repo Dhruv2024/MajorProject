@@ -23,6 +23,7 @@ const UserMessageLog = require("./models/UserMessageLog");
 const { quizReminderEmail } = require("./mail/templates/quizRemainderEmail");
 const { quizScoreEmail } = require("./mail/templates/quizScoreEmail");
 const { courseExpiryReminderEmail } = require("./mail/templates/courseExpiryReminderEmail");
+const { quizReportEmailForInstructor } = require("./mail/templates/quizReportEmailForInstructor");
 
 const { dbConnect } = require('./config/dbConnect');
 const cookieParser = require('cookie-parser');
@@ -343,7 +344,20 @@ const sendQuizResultEmail = async (user, quiz, score, totalQuestions, websiteUrl
         // return res.status(500).json({ success: false, message: error.message });
     }
 };
-
+const sendQuizResultEmailToInstructor = async (instructorName, quizTitle, courseTitle, courseId, quizId, websiteUrl, instructorEmail) => {
+    try {
+        const mailResponse = await mailSender(
+            instructorEmail,
+            "Quiz Result",
+            quizReportEmailForInstructor(instructorName, quizTitle, courseTitle, courseId, quizId, websiteUrl),
+        )
+        console.log('Email sent successfully to Instructor :', instructorEmail);
+    }
+    catch (error) {
+        console.log(error);
+        // return res.status(500).json({ success: false, message: error.message });
+    }
+};
 const sendCourseExpiryEmail = async (user, userCourseList) => {
     try {
         const mailResponse = await mailSender(
@@ -373,7 +387,7 @@ const checkAndSendQuizResultReport = async () => {
         // Check if the quiz has already ended
         if (quizEndTime <= now) {
             // Find all the eligible users for this quiz (those enrolled in the course)
-            const course = await Course.findById(quiz.course);
+            const course = await Course.findById(quiz.course).populate("instructor", "firstName email");
             const eligibleUsers = await User.find({
                 _id: { $in: course.studentsEnrolled },
                 active: true,  // Only send to active users
@@ -394,6 +408,11 @@ const checkAndSendQuizResultReport = async () => {
                 }
             }
 
+            //send Mail to instructor
+            const courseId = course._id;
+            const quizId = quiz._id;
+            const instructorEmail = course.instructor.email;
+            sendQuizResultEmailToInstructor(course.instructor.firstName, quiz.title, course.courseName, courseId, quizId, `${process.env.FRONTEND_URL}`, instructorEmail);
             // Update the quiz document to mark the report as sent
             quiz.reportMailSent = true;
             await quiz.save();

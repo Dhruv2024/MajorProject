@@ -7,6 +7,7 @@ const QuizSubmission = require('../models/QuizSubmission');
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const SubSection = require('../models/SubSection');
 const CourseProgress = require('../models/CourseProgress');
+const User = require('../models/User');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 
@@ -612,10 +613,10 @@ exports.fetchQuizForInstructor = async (req, res) => {
         if (!course) {
             return res.status(404).json({ success: false, message: 'Course not found' });
         }
-        console.log(course.instructor.toString());
-        console.log(userId);
+        // console.log(course.instructor.toString());
+        // console.log(userId);
         if (course.instructor.toString() !== userId) {
-            return res.status(404).json({ success: false, message: 'You are not instructor of this course' });
+            return res.status(404).json({ success: false, message: 'You are not instructor of this course', isInstructor: false });
         }
         const quiz = await Quiz.findById(quizId)
             .populate({
@@ -630,13 +631,63 @@ exports.fetchQuizForInstructor = async (req, res) => {
         if (!quiz) {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
         }
+        // Step 3: Fetch all quiz submissions
+        const submissions = await QuizSubmission.find({ quizId }).populate('userId', 'firstName email');
+
+        // Step 4: Top 10 performers
+        const topPerformers = submissions
+            .sort((a, b) => b.score - a.score || new Date(a.submittedAt) - new Date(b.submittedAt))
+            .slice(0, 10);
+
+        // Step 5: Generate question-wise report
+        const questionStats = {};
+        // console.log(quiz);
+        for (const question of quiz.questions) {
+            const qid = (question._id).toString();
+            console.log("********************");
+            // console.log(qid);
+            // console.log(question);
+            questionStats[qid] = {
+                question: question.question,
+                correct: 0,
+                wrong: 0,
+                unattempted: 0
+            };
+            console.log(submissions);
+            for (const submission of submissions) {
+                const answerObj = submission.answers.find(ans => ans.questionId.toString() === qid);
+                // console.log(qid);
+                // console.log(answerObj.answer);
+                // console.log(question.correctAnswer);
+                if (!answerObj || answerObj.answer === null || answerObj.answer === undefined) {
+                    questionStats[qid].unattempted += 1;
+                } else if (answerObj.answer === question.correctAnswer) {
+                    questionStats[qid].correct += 1;
+                } else {
+                    questionStats[qid].wrong += 1;
+                }
+            }
+
+        }
+
+        // Convert stats into array for frontend-friendliness
+        const detailedReport = Object.entries(questionStats).map(([qid, data]) => ({
+            questionId: qid,
+            questionText: data.question,
+            correct: data.correct,
+            wrong: data.wrong,
+            unattempted: data.unattempted
+        }));
+
         return res.status(200).json({
             success: true,
             message: 'Quiz fetched successfully',
             data: quiz,
+            topPerformers,
+            detailedReport,
         });
     }
-    catch (err) {
+    catch (error) {
         console.error('Error fetching quiz for instructor:', error);
         return res.status(500).json({
             success: false,

@@ -21,11 +21,11 @@ export default function ChatBot() {
     const { token } = useSelector((state) => state.auth);
     const isAuthenticated = token ? true : false;
     const { user } = useSelector((state) => state.profile);
-    const userId = user._id;
+    const userId = user?._id;
 
     const sendMessage = () => {
         if (!text.trim()) return;
-        if (socket) {
+        if (socket && userId) {
             socket.emit("user-message", { userId, data: text });
             setMessages(prev => [...prev, { from: "user", text }]);
             setIsTyping(true);
