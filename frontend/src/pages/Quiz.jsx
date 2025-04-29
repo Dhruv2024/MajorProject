@@ -94,6 +94,10 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
             topic: '',
         }]);
     }, [setQuestions]);
+    const toISOStringLocal = (datetimeString) => {
+        const date = new Date(datetimeString);
+        return date.toISOString(); // Always UTC
+    };
 
     const removeQuestion = useCallback((index) => {
         setQuestions(prevQuestions => {
@@ -109,8 +113,8 @@ const QuizCreateForm = ({ modalData, setModalData }) => {
         formData.append('title', title);
         formData.append('timeLimit', timeLimit);
         formData.append('createdBy', 'user_placeholder'); // Replace with actual user ID
-        formData.append('startTime', startTime);
-        formData.append('endTime', endTime);
+        formData.append('startTime', toISOStringLocal(startTime));
+        formData.append('endTime', toISOStringLocal(endTime));
         formData.append('courseId', courseId);
         questions.forEach((questionData, index) => {
             formData.append(`questionsData[${index}][questionText]`, questionData.questionText);
