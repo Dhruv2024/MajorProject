@@ -179,7 +179,10 @@ export default function SubSectionModal({
         setModalData(null)
         setLoading(false)
     }
-
+    const toISOStringLocal = (datetimeString) => {
+        const date = new Date(datetimeString);
+        return date.toISOString(); // Always UTC
+    };
     const onSubmit = async (data) => {
         if (view) return
 
@@ -209,7 +212,7 @@ export default function SubSectionModal({
             formData.append("video", data.lectureVideo) // Using video for video call link
             const localStart = new Date(data.startTime)
             const utcStart = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000)
-            formData.append("startTime", utcStart.toISOString())
+            formData.append("startTime", toISOStringLocal(data.startTime))
             formData.append("type", "videoCall");
 
         }
@@ -217,7 +220,7 @@ export default function SubSectionModal({
             formData.append("youtubeLink", data.lectureVideo)
             const localStart = new Date(data.startTime)
             const utcStart = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000)
-            formData.append("startTime", utcStart.toISOString())
+            formData.append("startTime", toISOStringLocal(data.startTime))
             formData.append("type", "youtube")
         }
 
