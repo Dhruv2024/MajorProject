@@ -7,9 +7,7 @@ exports.videoCallReminderEmail = (
   name
 ) => {
   // Convert meetStartTime (in UTC) to IST
-  const start = new Date(
-    new Date(meetStartTime).getTime() + 5.5 * 60 * 60 * 1000
-  ).toLocaleString("en-IN", {
+  const start = new Date(meetStartTime).toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata",
     hour12: true,
     weekday: "short",
