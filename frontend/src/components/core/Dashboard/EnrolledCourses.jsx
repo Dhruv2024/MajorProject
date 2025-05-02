@@ -7,6 +7,7 @@ import { CiChat1 } from 'react-icons/ci';
 import { ThemeContext } from '../../../provider/themeContext';
 import { FaQuestion } from 'react-icons/fa';
 import './EnrolledCourses.css'; // Import the CSS file for styling
+import Course from "../../../assets/Logo/course.png"
 
 export const EnrolledCourses = () => {
     const { token } = useSelector((state) => state.auth);
@@ -37,13 +38,32 @@ export const EnrolledCourses = () => {
                     <div className={`spinner ${darkTheme ? 'spinner-dark' : ''}`}></div>
                 </div>
             ) : !enrolledCourses.length ? (
-                <p
-                    className={`empty-courses-message ${darkTheme ? 'text-richblack-5' : 'text-richblack-400'
-                        }`}
-                >
-                    You have not enrolled in any course yet.
-                    {/* TODO: Modify this Empty State */}
-                </p>
+                <div className="flex flex-col items-center justify-center text-center mt-12 px-4">
+                    <img
+                        src={Course}
+                        alt="No Courses"
+                        className="w-24 h-24 mb-6 opacity-80"
+                    />
+                    <h3 className={`text-2xl font-semibold mb-2 ${darkTheme ? 'text-richblack-5' : 'text-gray-800'}`}>
+                        You're not enrolled in any courses yet
+                    </h3>
+                    <p className={`mb-6 text-base max-w-md ${darkTheme ? 'text-richblack-200' : 'text-gray-600'}`}>
+                        Start your learning journey now by exploring our wide range of courses!
+                    </p>
+                    <button
+                        onClick={() => navigate('/catalog/dsa')}
+                        className={`font-semibold py-2.5 px-7 rounded-md shadow-md transition-transform duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2
+    ${darkTheme
+                                ? 'bg-gradient-to-r from-yellow-400 to-yellow-300 text-black hover:scale-105 focus:ring-yellow-500 focus:ring-offset-richblack-900'
+                                : 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white hover:scale-105 focus:ring-blue-500 focus:ring-offset-white'}`}
+                    >
+                        Browse Courses
+                    </button>
+
+
+
+                </div>
+
             ) : (
                 <div className={`enrolled-courses-table-container my-8 ${darkTheme ? 'text-richblack-5' : 'text-richblack-600'}`}>
                     <table className="enrolled-courses-table">

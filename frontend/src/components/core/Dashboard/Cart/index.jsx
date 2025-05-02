@@ -1,12 +1,15 @@
 import { useSelector } from "react-redux";
 import RenderCartCourses from "./RenderCartCourses";
 import RenderTotalAmount from "./RenderTotalAmount";
+import { useContext } from "react";
+import { ThemeContext } from "../../../../provider/themeContext";
 
 export default function Cart() {
     const { total, totalItems } = useSelector((state) => state.cart);
+    const { darkTheme } = useContext(ThemeContext);
     return (
         <>
-            <h1 className="mb-14 text-3xl font-medium text-richblack-5">Cart</h1>
+            <h1 className={`mb-14 text-3xl font-medium ${darkTheme ? "text-richblack-5" : "text-richblack-700"}`}>Cart</h1>
             <p className="border-b border-b-richblack-400 pb-2 font-semibold text-richblack-400">
                 {totalItems} Courses in Cart
             </p>
