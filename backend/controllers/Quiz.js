@@ -510,6 +510,7 @@ exports.getQuizResultByUserAndQuiz = async (req, res) => {
                 // selectedAnswer: selectedAnswer,
                 correctOption: correctAnswerIndex,
                 // correctAnswer: correctAnswer,
+                attempted: userAnswer?.answer ? true : false,
                 isCorrect: userAnswer.answer === correctAnswerIndex,
                 questionText: question ? question.question : 'Question not found',
                 options: question ? question.options.map(opt => ({

@@ -90,14 +90,28 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse, isEn
                         }
                     </>
                 ) : (
-                    !course?.studentsEnrolled.includes(user?._id) && (
-                        <div className="text-pink-200 text-center text-lg font-semibold pb-10">
-                            Enrollments Closed
-                            <p className="text-sm text-caribbeangreen-200 mt-2">
-                                Next enrollment opens at: {formatDateTime(enrollmentStartDate)}
-                            </p>
-                        </div>
-                    )
+                    <div className="flex flex-col gap-y-6">
+                        {
+                            user && course?.studentsEnrolled.includes(user?._id) && (
+                                <button
+                                    className='yellowButton'
+                                    onClick={() => navigate("/dashboard/enrolled-courses")}
+                                >
+                                    Go to Course
+                                </button>
+                            )
+                        }
+                        {
+                            !course?.studentsEnrolled.includes(user?._id) && (
+                                <div className="text-pink-200 text-center text-lg font-semibold pb-10">
+                                    Enrollments Closed
+                                    <p className="text-sm text-caribbeangreen-200 mt-2">
+                                        Next enrollment opens at: {formatDateTime(enrollmentStartDate)}
+                                    </p>
+                                </div>
+                            )
+                        }
+                    </div>
 
                 )}
             </div>
@@ -105,7 +119,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse, isEn
 
             <div>
                 <div>
-                    <p className={`pb-3 pt-6 text-center text-sm ${darkTheme ? "text-richblack-25" : "text-richblack-700"}`}>
+                    <p className={`pb-3 pt-6 text-center text-sm ${darkTheme ? "text-richblack-25" : "text-rose-500 mb-4"}`}>
                         30-Day Money-Back Guarantee
                     </p>
                 </div>

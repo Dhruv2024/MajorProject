@@ -8,19 +8,26 @@ import { useSelector } from 'react-redux';
 
 const QuizResultPopup = ({ result, onClose }) => {
     if (!result) return null;
-    // console.log(result);
-    const correctPercentage = (result.score / result.totalQuestions) * 100;
-    const incorrectPercentage = 100 - correctPercentage;
+
     const [loading, setLoading] = useState(false);
     const [quizSummary, setQuizSummary] = useState('');
     const { token } = useSelector((state) => state.auth);
-    // console.log(loading);
-    // console.log(quizSummary);
+
+    const totalQuestions = result.totalQuestions;
+    const correctCount = result.score;
+    const unattemptedCount = result.detailedAnswers.filter(ans => !ans.attempted).length;
+    const incorrectCount = totalQuestions - correctCount - unattemptedCount;
+
+    const correctPercentage = (correctCount / totalQuestions) * 100;
+    const incorrectPercentage = (incorrectCount / totalQuestions) * 100;
+    const unattemptedPercentage = (unattemptedCount / totalQuestions) * 100;
+
     const topicStats = result.detailedAnswers.reduce((acc, answer) => {
         const topic = answer.topic || 'Unknown';
-        acc[topic] = acc[topic] || { correct: 0, total: 0 };
+        acc[topic] = acc[topic] || { correct: 0, total: 0, unattempted: 0 };
         acc[topic].total += 1;
-        if (answer.isCorrect) acc[topic].correct += 1;
+        if (!answer.attempted) acc[topic].unattempted += 1;
+        else if (answer.isCorrect) acc[topic].correct += 1;
         return acc;
     }, {});
 
@@ -29,11 +36,16 @@ const QuizResultPopup = ({ result, onClose }) => {
         acc[topic] = acc[topic] || {
             correct: 0,
             total: 0,
+            unattempted: 0,
             correctQuestions: [],
             incorrectQuestions: [],
+            unattemptedQuestions: []
         };
         acc[topic].total += 1;
-        if (answer.isCorrect) {
+        if (!answer.attempted) {
+            acc[topic].unattempted += 1;
+            acc[topic].unattemptedQuestions.push(answer.questionText);
+        } else if (answer.isCorrect) {
             acc[topic].correct += 1;
             acc[topic].correctQuestions.push(answer.questionText);
         } else {
@@ -46,31 +58,18 @@ const QuizResultPopup = ({ result, onClose }) => {
         async function fetchQuizSummary() {
             setLoading(true);
             if (result.report) {
-                console.log("auto generated");
-
                 let summaryResult = result.report;
-                if (summaryResult) {
-                    // Handle escaped newlines (\r\n and \n)
-                    summaryResult = summaryResult.replace(/\\r\\n/g, "\r\n")  // Handle escaped \r\n
-                        .replace(/\\n/g, "\n")      // Handle escaped \n
-                        .trim();                    // Remove unnecessary leading/trailing whitespace
-
-                    // Replace text wrapped in ** ** with bold HTML tags
-                    summaryResult = summaryResult.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-                    // Add line breaks after bold sections so the following text starts on a new line
-                    summaryResult = summaryResult.replace(/(\*\*.*?\*\*)/g, "$1<br>");
-
-                    // Ensure that each section (Problem, Solution, Market) starts on a new line
-                    summaryResult = summaryResult.replace(/\n/g, "<br>"); // Replace newlines with <br> to ensure proper formatting in HTML
-                }
-                // console.log(summaryResult);
+                summaryResult = summaryResult
+                    .replace(/\\r\\n/g, "\r\n")
+                    .replace(/\\n/g, "\n")
+                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                    .replace(/(\*\*.*?\*\*)/g, "$1<br>")
+                    .replace(/\n/g, "<br>")
+                    .trim();
                 setQuizSummary(summaryResult);
                 setLoading(false);
-            }
-            else {
+            } else {
                 try {
-                    console.log("generating");
                     const summary = await generateQuizResultSummary(detailedTopicStats, token);
                     setQuizSummary(summary);
                 } catch (error) {
@@ -86,12 +85,13 @@ const QuizResultPopup = ({ result, onClose }) => {
     }, [result]);
 
     const overallChartData = {
-        labels: ['Correct', 'Incorrect'],
+        labels: ['Correct', 'Incorrect', 'Unattempted'],
         datasets: [
             {
-                data: [correctPercentage, incorrectPercentage],
-                backgroundColor: ['#4CAF50', '#F44336'],
-                hoverBackgroundColor: ['#66BB6A', '#EF5350'],
+                data: [correctPercentage, incorrectPercentage, unattemptedPercentage],
+                backgroundColor: ['#34D399', '#F87171', '#A5B4FC'],
+                hoverBackgroundColor: ['#6EE7B7', '#FCA5A5', '#C7D2FE'],
+
             },
         ],
     };
@@ -118,14 +118,17 @@ const QuizResultPopup = ({ result, onClose }) => {
 
     const getTopicChart = (topic, stats) => {
         const correct = stats.correct;
-        const incorrect = stats.total - stats.correct;
+        const unattempted = stats.unattempted;
+        const incorrect = stats.total - correct - unattempted;
+
         const data = {
-            labels: ['Correct', 'Incorrect'],
+            labels: ['Correct', 'Incorrect', 'Unattempted'],
             datasets: [
                 {
-                    data: [correct, incorrect],
-                    backgroundColor: ['#2196F3', '#FF9800'],
-                    hoverBackgroundColor: ['#64B5F6', '#FFB74D'],
+                    data: [correct, incorrect, unattempted],
+                    backgroundColor: ['#34D399', '#F87171', '#A5B4FC'],
+                    hoverBackgroundColor: ['#6EE7B7', '#FCA5A5', '#C7D2FE'],
+
                 },
             ],
         };
@@ -174,7 +177,7 @@ const QuizResultPopup = ({ result, onClose }) => {
                 <div className="flex flex-col md:flex-row items-center justify-around mb-10">
                     <div className="text-center mb-6 md:mb-0">
                         <div className="text-5xl font-bold text-green-600">
-                            {result.score} / {result.totalQuestions}
+                            {result.score} / {totalQuestions}
                         </div>
                         <p className="text-gray-600 mt-2 text-lg">Your Score</p>
                     </div>
