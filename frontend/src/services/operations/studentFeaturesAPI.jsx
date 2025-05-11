@@ -1,6 +1,8 @@
 import { toast } from "react-hot-toast";
 import { studentEndpoints } from "../apis";
 import rzpLogo from "../../assets/Logo/rzp_logo.png"
+import edusphere from "../../assets/Logo/edusphereLight.png"
+
 import { setPaymentLoading } from "../../slices/courseSlice";
 import { resetCart } from "../../slices/cartSlice";
 import { apiConnector } from "../apiConnector";
@@ -54,7 +56,7 @@ export async function buyCourse(token, courses, userDetails, navigate, dispatch,
             order_id: orderResponse.data.message.id,
             name: "EduSphere",
             description: "Thank You for Purchasing the Course",
-            image: rzpLogo,
+            image: edusphere,
             prefill: {
                 name: `${userDetails.firstName}`,
                 email: userDetails.email
