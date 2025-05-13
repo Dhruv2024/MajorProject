@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Pie } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 import { format } from 'date-fns';
 import { MdCheckCircle, MdCancel } from 'react-icons/md';
 import { generateQuizResultSummary } from '../../../services/operations/summaryAPI';
 import { useSelector } from 'react-redux';
+import { ThemeContext } from '../../../provider/themeContext';
 
 const QuizResultPopup = ({ result, onClose }) => {
     if (!result) return null;
+    const { darkTheme } = useContext(ThemeContext);
 
     const [loading, setLoading] = useState(false);
     const [quizSummary, setQuizSummary] = useState('');
@@ -82,7 +84,7 @@ const QuizResultPopup = ({ result, onClose }) => {
         }
 
         fetchQuizSummary();
-    }, [result]);
+    }, [result, token, detailedTopicStats]);
 
     const overallChartData = {
         labels: ['Correct', 'Incorrect', 'Unattempted'],
@@ -91,7 +93,6 @@ const QuizResultPopup = ({ result, onClose }) => {
                 data: [correctPercentage, incorrectPercentage, unattemptedPercentage],
                 backgroundColor: ['#34D399', '#F87171', '#A5B4FC'],
                 hoverBackgroundColor: ['#6EE7B7', '#FCA5A5', '#C7D2FE'],
-
             },
         ],
     };
@@ -106,11 +107,12 @@ const QuizResultPopup = ({ result, onClose }) => {
                             : context.label,
                 },
             },
-            legend: { position: 'bottom' },
+            legend: { position: 'bottom', labels: { color: darkTheme ? '#D1D5DB' : '#4B5563' } },
             title: {
                 display: true,
                 text: 'Overall Quiz Performance',
                 font: { size: 18 },
+                color: darkTheme ? '#D1D5DB' : '#4B5563',
             },
         },
         maintainAspectRatio: false,
@@ -128,18 +130,18 @@ const QuizResultPopup = ({ result, onClose }) => {
                     data: [correct, incorrect, unattempted],
                     backgroundColor: ['#34D399', '#F87171', '#A5B4FC'],
                     hoverBackgroundColor: ['#6EE7B7', '#FCA5A5', '#C7D2FE'],
-
                 },
             ],
         };
 
         const options = {
             plugins: {
-                legend: { position: 'bottom' },
+                legend: { position: 'bottom', labels: { color: darkTheme ? '#D1D5DB' : '#4B5563' } },
                 title: {
                     display: true,
                     text: `Topic: ${topic}`,
                     font: { size: 16 },
+                    color: darkTheme ? '#D1D5DB' : '#4B5563',
                 },
             },
             maintainAspectRatio: false,
@@ -148,7 +150,8 @@ const QuizResultPopup = ({ result, onClose }) => {
         return (
             <div
                 key={topic}
-                className="w-44 h-64 m-4 bg-white rounded-xl shadow-md p-3 transition hover:scale-105 duration-300"
+                className={`w-44 h-64 m-4 rounded-xl shadow-md p-3 transition hover:scale-105 duration-300 ${darkTheme ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-700'
+                    }`}
             >
                 <Pie data={data} options={options} />
             </div>
@@ -157,45 +160,70 @@ const QuizResultPopup = ({ result, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-auto px-2">
-            <div className="bg-white text-black p-6 rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto relative shadow-2xl">
+            <div
+                className={`p-6 rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto relative shadow-2xl ${darkTheme ? 'bg-gray-900 text-gray-300' : 'bg-white text-gray-700'
+                    }`}
+            >
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+                    className={`absolute top-4 right-4 text-xl ${darkTheme ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-800'
+                        }`}
                 >
                     ✕
                 </button>
 
                 <div className="mb-6">
-                    <h2 className="text-3xl font-bold text-center text-gray-800">
+                    <h2 className={`text-3xl font-bold text-center ${darkTheme ? 'text-gray-200' : 'text-gray-800'}`}>
                         {result.quizTitle} - Quiz Result
                     </h2>
-                    <p className="text-center text-gray-500 text-sm mt-1">
+                    <p className={`text-center text-sm mt-1 ${darkTheme ? 'text-gray-400' : 'text-gray-500'}`}>
                         Submitted at: {format(new Date(result.submittedAt), 'PPP hh:mm a zzzz')}
                     </p>
                 </div>
 
                 <div className="flex flex-col md:flex-row items-center justify-around mb-10">
                     <div className="text-center mb-6 md:mb-0">
-                        <div className="text-5xl font-bold text-green-600">
+                        <div className={`text-5xl font-bold ${darkTheme ? 'text-green-400' : 'text-green-600'}`}>
                             {result.score} / {totalQuestions}
                         </div>
-                        <p className="text-gray-600 mt-2 text-lg">Your Score</p>
+                        <p className={`mt-2 text-lg ${darkTheme ? 'text-gray-400' : 'text-gray-600'}`}>Your Score</p>
                     </div>
                     <div className="w-64 h-64 relative">
-                        <Pie data={overallChartData} options={overallChartOptions} />
+                        <Pie data={overallChartData} options={{
+                            ...overallChartOptions,
+                            plugins: {
+                                ...overallChartOptions.plugins,
+                                legend: {
+                                    ...overallChartOptions.plugins.legend,
+                                    labels: { color: darkTheme ? '#D1D5DB' : '#4B5563' }
+                                },
+                                title: {
+                                    ...overallChartOptions.plugins.title,
+                                    color: darkTheme ? '#D1D5DB' : '#4B5563'
+                                }
+                            }
+                        }} />
                     </div>
                 </div>
 
-                <h3 className="text-2xl font-semibold mb-4 text-gray-800">Performance by Topic</h3>
+                <h3 className={`text-2xl font-semibold mb-4 ${darkTheme ? 'text-gray-200' : 'text-gray-800'}`}>
+                    Performance by Topic
+                </h3>
                 <div className="flex flex-wrap justify-center gap-4 mb-10">
                     {Object.entries(topicStats).map(([topic, stats]) => getTopicChart(topic, stats))}
                 </div>
 
-                <h3 className="text-2xl font-semibold mb-4 text-gray-800">Detailed Answers</h3>
+                <h3 className={`text-2xl font-semibold mb-4 ${darkTheme ? 'text-gray-200' : 'text-gray-800'}`}>
+                    Detailed Answers
+                </h3>
                 <ul className="space-y-6 mb-10">
                     {result.detailedAnswers.map((answer, index) => (
-                        <li key={answer.questionId} className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
-                            <p className="font-semibold text-lg mb-2 text-gray-900">
+                        <li
+                            key={answer.questionId}
+                            className={`p-5 rounded-xl border shadow-sm ${darkTheme ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
+                                }`}
+                        >
+                            <p className={`font-semibold text-lg mb-2 ${darkTheme ? 'text-gray-300' : 'text-gray-900'}`}>
                                 Question {index + 1}: {answer.questionText}
                             </p>
 
@@ -216,13 +244,21 @@ const QuizResultPopup = ({ result, onClose }) => {
                                     const isUserSelected = i === selectedIndex;
 
                                     let optionClass = 'p-3 rounded-md border text-sm flex items-center gap-2';
+                                    let textColor = darkTheme ? 'text-gray-400' : 'text-gray-700';
 
                                     if (isCorrect) {
-                                        optionClass += ' bg-green-50 border-green-400 text-green-700 font-medium';
+                                        optionClass += darkTheme
+                                            ? ' bg-green-900 border-green-700 text-green-400 font-medium'
+                                            : ' bg-green-50 border-green-400 text-green-700 font-medium';
                                     } else if (isUserSelected && !isCorrect) {
-                                        optionClass += ' bg-red-50 border-red-400 text-red-700 font-medium';
+                                        optionClass += darkTheme
+                                            ? ' bg-red-900 border-red-700 text-red-400 font-medium'
+                                            : ' bg-red-50 border-red-400 text-red-700 font-medium';
                                     } else {
-                                        optionClass += ' bg-white border-gray-300 text-gray-700';
+                                        optionClass += darkTheme
+                                            ? ' bg-gray-700 border-gray-600'
+                                            : ' bg-white border-gray-300';
+                                        textColor = darkTheme ? 'text-gray-400' : 'text-gray-700';
                                     }
 
                                     return (
@@ -230,7 +266,7 @@ const QuizResultPopup = ({ result, onClose }) => {
                                             {opt.isImage ? (
                                                 <img src={opt.option} alt={`Option ${i + 1}`} className="h-12 w-auto" />
                                             ) : (
-                                                <span>{opt.option}</span>
+                                                <span className={textColor}>{opt.option}</span>
                                             )}
                                             {isCorrect && <MdCheckCircle className="text-green-600" />}
                                             {isUserSelected && !isCorrect && <MdCancel className="text-red-600" />}
@@ -239,7 +275,7 @@ const QuizResultPopup = ({ result, onClose }) => {
                                 })}
                             </div>
 
-                            <div className="mt-2 text-sm italic text-gray-600">
+                            <div className={`mt-2 text-sm italic ${darkTheme ? 'text-gray-500' : 'text-gray-600'}`}>
                                 {answer.selectedAnswer === null ? (
                                     <span className="text-gray-500">Not Answered</span>
                                 ) : parseInt(answer.selectedAnswer, 10) === parseInt(answer.correctOption, 10) ? (
@@ -252,12 +288,15 @@ const QuizResultPopup = ({ result, onClose }) => {
                     ))}
                 </ul>
 
-                <h3 className="text-2xl font-semibold mb-4 text-gray-800">Summary</h3>
+                <h3 className={`text-2xl font-semibold mb-4 ${darkTheme ? 'text-gray-200' : 'text-gray-800'}`}>Summary</h3>
                 {loading ? (
-                    <div className="text-center text-gray-500">Generating summary...</div>
+                    <div className={`text-center ${darkTheme ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Generating summary...
+                    </div>
                 ) : (
                     <div
-                        className="prose prose-sm max-w-full text-gray-700 text-base"
+                        className={`prose prose-sm max-w-full text-base ${darkTheme ? 'text-gray-400' : 'text-gray-700'
+                            }`}
                         dangerouslySetInnerHTML={{ __html: quizSummary }}
                     />
                 )}

@@ -622,10 +622,26 @@ const VideoDetails = () => {
                             quizStartTime && quizEndTime && currentTime ? (
                                 courseExpired ? (
                                     type === 'quiz' && completed ? (
-                                        <div className="bg-white border border-green-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm mx-auto">
-                                            <div className="text-2xl font-semibold text-green-600 flex items-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
-                                                    <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
+                                        <div
+                                            className={`border rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm mx-auto ${darkTheme ? 'bg-gray-800 border-gray-600' : 'bg-white border-green-300'
+                                                }`}
+                                        >
+                                            <div
+                                                className={`text-2xl font-semibold flex items-center ${darkTheme ? 'text-gray-200' : 'text-green-600'
+                                                    }`}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    className={`w-8 h-8 inline-block mr-2 ${darkTheme ? 'fill-gray-200' : 'fill-green-600'
+                                                        }`}
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z"
+                                                        clipRule="evenodd"
+                                                    />
                                                 </svg>
                                                 Quiz Attempted
                                             </div>
@@ -753,25 +769,57 @@ const VideoDetails = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="bg-gray-100 text-gray-700 rounded-lg p-6 shadow-md flex flex-col items-center justify-center gap-4">
+                                        <div className={`  rounded-lg p-6 shadow-md flex flex-col items-center justify-center gap-4 ${darkTheme ? "bg-richblack-800" : "bg-gray-100 text-gray-700"}`}>
                                             {type === 'quiz' && !completed && (
-                                                <div className="bg-white border border-red-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm">
-                                                    <div className="text-2xl font-semibold text-red-600 flex items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
-                                                            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.707 8.293a1 1 0 00-1.414-1.414L12 10.586l-2.293-2.293a1 1 0 00-1.414 1.414L10.586 12l-2.293 2.293z" clipRule="evenodd" />
+                                                <div
+                                                    className={`rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm ${darkTheme ? 'bg-gray-800 border-gray-600' : 'bg-white border-red-300'
+                                                        }`}
+                                                >
+                                                    <div
+                                                        className={`text-2xl font-semibold flex items-center ${darkTheme ? 'text-gray-200' : 'text-red-600'
+                                                            }`}
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                            className={`w-8 h-8 inline-block mr-2 ${darkTheme ? 'fill-gray-200' : 'fill-red-600'
+                                                                }`}
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.707 8.293a1 1 0 00-1.414-1.414L12 10.586l-2.293-2.293a1 1 0 00-1.414 1.414L10.586 12l-2.293 2.293a1 1 0 001.414 1.414L12 13.414l2.293 2.293a1 1 0 001.414-1.414L13.414 12l2.293-2.293z"
+                                                                clipRule="evenodd"
+                                                            />
                                                         </svg>
                                                         Quiz Ended
                                                     </div>
-                                                    <div className="text-center text-gray-700 font-medium">
+                                                    <div className={`text-center font-medium ${darkTheme ? 'text-gray-400' : 'text-gray-700'}`}>
                                                         You have not attempted this quiz.
                                                     </div>
                                                 </div>
                                             )}
                                             {type === 'quiz' && completed && (
-                                                <div className="bg-white border border-green-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm">
-                                                    <div className="text-2xl font-semibold text-green-600 flex items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 inline-block mr-2">
-                                                            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z" clipRule="evenodd" />
+                                                <div
+                                                    className={`border rounded-md p-6 flex flex-col items-center justify-center gap-4 w-full max-w-sm mx-auto ${darkTheme ? 'bg-gray-800 border-gray-600' : 'bg-white border-green-300'
+                                                        }`}
+                                                >
+                                                    <div
+                                                        className={`text-2xl font-semibold flex items-center ${darkTheme ? 'text-gray-200' : 'text-green-600'
+                                                            }`}
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                            className={`w-8 h-8 inline-block mr-2 ${darkTheme ? 'fill-gray-200' : 'fill-green-600'
+                                                                }`}
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 15l-5-5 1.414-1.414L10 13.172l7.586-7.586L19 7l-9 9-3 3z"
+                                                                clipRule="evenodd"
+                                                            />
                                                         </svg>
                                                         Quiz Attempted
                                                     </div>
@@ -784,7 +832,7 @@ const VideoDetails = () => {
                                                 </div>
                                             )}
                                             {type === 'quiz' && (
-                                                <div className="flex items-center gap-2 mt-4 text-sm text-gray-600">
+                                                <div className={`flex items-center gap-2 mt-4 text-sm ${darkTheme ? "text-gray-400" : "text-gray-600"}`}>
                                                     <MdDateRange className="text-red-600" />
                                                     <span>
                                                         Ended at:{' '}
