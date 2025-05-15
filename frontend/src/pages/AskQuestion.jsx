@@ -9,6 +9,7 @@ import { ThemeContext } from "../provider/themeContext";
 import { IoCloseSharp } from "react-icons/io5";
 import { FaPaperclip, FaTimes } from "react-icons/fa";
 import { Oval } from "react-loader-spinner";
+import { toast } from "react-hot-toast"
 
 const AskQuestion = () => {
     const [text, setText] = useState("");
@@ -86,6 +87,7 @@ const AskQuestion = () => {
                 setText("");
                 setImage(null);
                 setPreview(null);
+                toast.success("Question asked successfully!");
             }
         } catch (err) {
             console.error("Error asking question:", err);
@@ -114,6 +116,7 @@ const AskQuestion = () => {
             setImage(null);
             setPreview(null);
             setMessage("Question asked successfully!");
+            toast.success("Question asked successfully!");
             async function fetchAllQuestions() {
                 try {
                     const res = await axios.post(
