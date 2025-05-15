@@ -47,7 +47,7 @@ const AskQuestion = () => {
                 setQuestions({ all: allQuestions, user: userQuestions });
             } catch (error) {
                 console.error("Error fetching questions:", error);
-                setMessage("Failed to fetch questions.");
+                setMessage("No Question available");
             }
         }
         fetchAllQuestions();
