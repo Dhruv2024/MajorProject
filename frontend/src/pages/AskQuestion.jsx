@@ -9,7 +9,7 @@ import { ThemeContext } from "../provider/themeContext";
 import { IoCloseSharp } from "react-icons/io5";
 import { FaPaperclip, FaTimes } from "react-icons/fa";
 import { Oval } from "react-loader-spinner";
-import { toast } from "react-hot-toast"
+import { toast } from "react-hot-toast";
 
 const AskQuestion = () => {
     const [text, setText] = useState("");
@@ -167,13 +167,39 @@ const AskQuestion = () => {
         return filteredQuestions;
     };
 
+    const containerClass = `max-w-screen-md mx-auto p-6 rounded-lg mt-10 ${darkTheme ? "bg-gray-900 text-white shadow-md" : "bg-white text-gray-800 shadow-md"}`;
+    const headingClass = `text-2xl font-semibold text-center mb-6 ${darkTheme ? "text-gray-300" : "text-gray-800"}`;
+    const textareaClass = `w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 ${darkTheme ? "border-gray-700 bg-gray-800 text-white" : "border-gray-300 bg-white text-gray-800"}`;
+    const uploadLabelClass = `inline-flex items-center px-4 py-2 rounded-md cursor-pointer hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ${darkTheme ? "bg-blue-700 text-gray-100" : "bg-blue-500 text-white"}`;
+    const previewOverlayClass = `absolute top-0 right-0 -mt-1 -mr-1 rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 ${darkTheme ? "bg-gray-600 text-gray-300" : "bg-gray-300 text-gray-700"}`;
+    const submitButtonClass = `w-full py-2.5 rounded-md font-semibold ${darkTheme ? "text-white bg-green-700 hover:bg-green-800 focus:ring-green-900" : "text-black bg-green-500 hover:bg-green-600 focus:ring-green-400"} transition-colors ${loading ? "cursor-not-allowed bg-green-400" : ""}`;
+    const similarQuestionsContainerClass = `mt-6 p-4 border rounded-md ${darkTheme ? "border-gray-700 bg-gray-800 text-white" : "border-gray-200 bg-gray-50 text-gray-700"}`;
+    const similarQuestionsHeadingClass = `font-semibold text-lg mb-3 ${darkTheme ? "text-gray-300" : "text-gray-700"}`;
+    const similarQuestionItemClass = `cursor-pointer hover:underline ${darkTheme ? "text-blue-400" : "text-blue-600"}`;
+    const askAnywayButtonClass = `mt-4 w-full py-2 rounded-md font-semibold ${darkTheme ? "text-gray-100 bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400" : "text-gray-800 bg-yellow-400 hover:bg-yellow-500 focus:ring-yellow-300"} transition-colors ${loading ? "cursor-not-allowed bg-yellow-300" : ""}`;
+    const tabButtonActiveClass = `px-4 py-2 rounded-t-md font-medium ${darkTheme ? "bg-blue-700 text-gray-100" : "bg-blue-500 text-white"}`;
+    const tabButtonInactiveClass = `px-4 py-2 rounded-t-md font-medium ${darkTheme ? "bg-gray-800 text-gray-400 hover:bg-gray-700" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`;
+    const filterButtonActiveClass = `px-4 py-2 rounded-md font-medium ${darkTheme ? "bg-caribbeangreen-300 text-white" : "bg-caribbeangreen-100 text-white"}`;
+    const filterButtonInactiveClass = `px-4 py-2 rounded-md font-medium ${darkTheme ? "bg-gray-700 text-gray-400 hover:bg-gray-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`;
+    const allQuestionsContainerClass = `p-4 rounded-md ${darkTheme ? "bg-gray-800" : "bg-gray-50"}`;
+    const yourQuestionsContainerClass = `p-4 rounded-md ${darkTheme ? "bg-gray-800" : "bg-gray-50"}`;
+    const questionItemClass = `py-3 px-4 mb-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between ${darkTheme ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-white text-gray-800"}`;
+    const questionTextClass = `font-medium ${darkTheme ? "text-gray-300" : "text-gray-800"}`;
+    const questionMetaClass = `text-sm ${darkTheme ? "text-gray-400" : "text-gray-500"}`;
+    const expandedViewOverlayClass = `fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm z-50`;
+    const expandedViewContainerClass = `relative rounded-lg w-[80vw] max-h-[90vh] overflow-y-auto ${darkTheme ? "bg-gray-800 text-white" : "bg-white text-gray-800"} shadow-lg`;
+    const closeButtonClass = `absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none`;
+    const messageContainerClass = `mt-4 p-3 rounded-md text-center`;
+    const successMessageClass = `text-green-600 font-semibold`;
+    const errorMessageClass = `text-red-600 font-semibold`;
+
     return (
-        <div className="max-w-screen-md mx-auto p-6 bg-white shadow-md rounded-lg mt-10">
-            <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">Ask a Question</h2>
+        <div className={containerClass}>
+            <h2 className={headingClass}>Ask a Question</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <textarea
-                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+                    className={textareaClass}
                     placeholder="Type your question here..."
                     value={text}
                     onChange={(e) => setText(e.target.value)}
@@ -191,7 +217,7 @@ const AskQuestion = () => {
                     />
                     <label
                         htmlFor="upload"
-                        className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md cursor-pointer hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className={uploadLabelClass}
                     >
                         <FaPaperclip className="mr-2" />
                         Upload Image
@@ -202,7 +228,7 @@ const AskQuestion = () => {
                             <button
                                 type="button"
                                 onClick={() => { setImage(null); setPreview(null); }}
-                                className="absolute top-0 right-0 -mt-1 -mr-1 bg-gray-300 text-gray-700 rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                className={previewOverlayClass}
                             >
                                 <FaTimes size={10} />
                             </button>
@@ -214,8 +240,7 @@ const AskQuestion = () => {
                     similarQuestions.length === 0 &&
                     <button
                         type="submit"
-                        className={`w-full py-2.5 rounded-md font-semibold ${darkTheme ? "text-white" : "text-black"} ${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
-                            }`}
+                        className={submitButtonClass}
                         disabled={loading}
                     >
                         {loading ? (
@@ -231,19 +256,18 @@ const AskQuestion = () => {
             </form>
 
             {similarQuestions.length > 0 && (
-                <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-                    <h3 className="font-semibold text-lg text-gray-700 mb-3">Similar Questions Found:</h3>
-                    <ul className="list-disc pl-5 text-blue-600">
+                <div className={similarQuestionsContainerClass}>
+                    <h3 className={similarQuestionsHeadingClass}>Similar Questions Found:</h3>
+                    <ul className="list-disc pl-5">
                         {similarQuestions.map((q, index) => (
-                            <li key={index} className="cursor-pointer hover:underline" onClick={() => handleQuestionClick(q.questionDetails)}>
+                            <li key={index} className={similarQuestionItemClass} onClick={() => handleQuestionClick(q.questionDetails)}>
                                 {q.text}
                             </li>
                         ))}
                     </ul>
                     <button
                         onClick={confirmAskQuestion}
-                        className={`mt-4 w-full py-2 rounded-md font-semibold text-gray-800 ${loading ? "bg-yellow-300 cursor-not-allowed" : "bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-colors"
-                            }`}
+                        className={askAnywayButtonClass}
                         disabled={loading}
                     >
                         {loading ? "Submitting..." : "Ask Anyway"}
@@ -251,18 +275,16 @@ const AskQuestion = () => {
                 </div>
             )}
 
-            <div className="mt-8 flex justify-start gap-2 border-b border-gray-200">
+            <div className="mt-8 flex justify-start gap-2 border-b">
                 <button
                     onClick={() => setActiveTab('all')}
-                    className={`px-4 py-2 rounded-t-md font-medium ${activeTab === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                    className={activeTab === 'all' ? tabButtonActiveClass : tabButtonInactiveClass}
                 >
                     All Questions
                 </button>
                 <button
                     onClick={() => setActiveTab('user')}
-                    className={`px-4 py-2 rounded-t-md font-medium ${activeTab === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                    className={activeTab === 'user' ? tabButtonActiveClass : tabButtonInactiveClass}
                 >
                     Your Questions
                 </button>
@@ -270,34 +292,34 @@ const AskQuestion = () => {
 
             <div className="mt-4">
                 {activeTab === 'all' && (
-                    <div className="p-4 bg-gray-50 rounded-md">
+                    <div className={allQuestionsContainerClass}>
                         <div className="flex justify-start gap-2 mb-4">
                             <button
                                 onClick={() => setAllQuestionFilter('all')}
-                                className={`px-4 py-2 rounded-md font-medium ${allQuestionFilter === 'all' ? 'bg-caribbeangreen-100 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                className={allQuestionFilter === 'all' ? filterButtonActiveClass : filterButtonInactiveClass}
                             >
                                 All
                             </button>
                             <button
                                 onClick={() => setAllQuestionFilter('unsolved')}
-                                className={`px-4 py-2 rounded-md font-medium ${allQuestionFilter === 'unsolved' ? 'bg-caribbeangreen-100 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                className={allQuestionFilter === 'unsolved' ? filterButtonActiveClass : filterButtonInactiveClass}
                             >
                                 Unsolved
                             </button>
                             <button
                                 onClick={() => setAllQuestionFilter('solved')}
-                                className={`px-4 py-2 rounded-md font-medium ${allQuestionFilter === 'solved' ? 'bg-caribbeangreen-100 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                className={allQuestionFilter === 'solved' ? filterButtonActiveClass : filterButtonInactiveClass}
                             >
                                 Solved
                             </button>
                         </div>
 
-                        <h3 className="font-semibold text-lg text-gray-700 mb-3">All Questions:</h3>
+                        <h3 className={similarQuestionsHeadingClass}>All Questions:</h3>
                         <ul className="list-none pl-0">
                             {filterAllQuestions().map((q, index) => (
                                 <li
                                     key={index}
-                                    className="py-3 px-4 mb-2 rounded-md bg-white shadow-sm cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between"
+                                    className={questionItemClass}
                                     onClick={() => handleQuestionClick(q)}
                                 >
                                     <div className="flex items-center">
@@ -308,9 +330,9 @@ const AskQuestion = () => {
                                                 className="w-16 h-16 rounded-md object-cover mr-3"
                                             />
                                         )}
-                                        <p className="font-medium text-gray-800">{q.text}</p>
+                                        <p className={questionTextClass}>{q.text}</p>
                                     </div>
-                                    <div className="text-gray-500 text-sm">
+                                    <div className={questionMetaClass}>
                                         <div>Asked By: {q.askedBy?.firstName}</div>
                                         <div>{formatDate(q.createdAt)}</div>
                                     </div>
@@ -321,13 +343,13 @@ const AskQuestion = () => {
                 )}
 
                 {activeTab === 'user' && (
-                    <div className="p-4 bg-gray-50 rounded-md">
-                        <h3 className="font-semibold text-lg text-gray-700 mb-3">Your Questions:</h3>
+                    <div className={yourQuestionsContainerClass}>
+                        <h3 className={similarQuestionsHeadingClass}>Your Questions:</h3>
                         <ul className="list-none pl-0">
                             {questions.user?.map((q, index) => (
                                 <li
                                     key={index}
-                                    className="py-3 px-4 mb-2 rounded-md bg-white shadow-sm cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between"
+                                    className={questionItemClass}
                                     onClick={() => handleQuestionClick(q)}
                                 >
                                     <div className="flex items-center">
@@ -338,9 +360,9 @@ const AskQuestion = () => {
                                                 className="w-16 h-16 rounded-md object-cover mr-3"
                                             />
                                         )}
-                                        <p className="font-medium text-gray-800">{q.text}</p>
+                                        <p className={questionTextClass}>{q.text}</p>
                                     </div>
-                                    <div className="text-gray-500 text-sm">
+                                    <div className={questionMetaClass}>
                                         <div>Asked By: {q.askedBy?.firstName}</div>
                                         <div>{formatDate(q.createdAt)}</div>
                                     </div>
@@ -352,18 +374,18 @@ const AskQuestion = () => {
             </div>
 
             {expandedQuestion && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm z-50">
-                    <div className={`relative rounded-lg w-[80vw] max-h-[90vh] overflow-y-auto ${darkTheme ? "bg-gray-800 text-white" : "bg-white text-gray-800"} shadow-lg`}>
+                <div className={expandedViewOverlayClass}>
+                    <div className={expandedViewContainerClass}>
                         <button
                             onClick={closeExpandedView}
-                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                            className={closeButtonClass}
                         >
                             <IoCloseSharp className="text-2xl" />
                         </button>
                         <div className="p-6">
                             <QuestionBar expandedQuestion={expandedQuestion} answers={answers} />
                         </div>
-                        <div className="p-6 border-t border-gray-200">
+                        <div className="p-6 border-t">
                             <AnswerInput expandedQuestion={expandedQuestion} setAnswers={setAnswers} />
                         </div>
                     </div>
@@ -371,11 +393,11 @@ const AskQuestion = () => {
             )}
 
             {message && (
-                <div className="mt-4 p-3 rounded-md text-center">
+                <div className={messageContainerClass}>
                     {message.includes("successfully") ? (
-                        <p className="text-green-600 font-semibold">{message}</p>
+                        <p className={successMessageClass}>{message}</p>
                     ) : (
-                        <p className="text-red-600 font-semibold">{message}</p>
+                        <p className={errorMessageClass}>{message}</p>
                     )}
                 </div>
             )}
