@@ -1,6 +1,22 @@
 import React from 'react'
 
 const ExpiredAccessCards = () => {
+    const handleEnrollAgain = async () => {
+            // alert("to be handled");
+            if (token) {
+                const reEnroll = true
+                buyCourse(token, [courseId], user, navigate, dispatch, reEnroll);
+                return
+            }
+            setConfirmationModal({
+                text1: "You are not logged in!",
+                text2: "Please login to Purchase Course.",
+                btn1Text: "Login",
+                btn2Text: "Cancel",
+                btn1Handler: () => navigate("/login"),
+                btn2Handler: () => setConfirmationModal(null),
+            })
+        }
     return (
         <div className="bg-white p-8 rounded-lg shadow-md text-center">
             <div className="flex justify-center items-center mb-6">
@@ -39,7 +55,7 @@ const ExpiredAccessCards = () => {
                         Re-enroll Now
                     </button>
                 ) : (
-                    <div>Enrollement will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
+                    <div className='text-green-600'>Enrollment will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
                 )
             }
             <p className="mt-4 text-sm text-pure-greys-500">

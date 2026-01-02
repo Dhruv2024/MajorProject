@@ -53,7 +53,7 @@ const transcription = async (transcriptId) => {
 const summarize = async (transcripts) => {
     try {
         const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         // const { transcript } = req.body;
 
         const prompt = `You are an AI that summarizes educational content into concise revision notes. Summarize this lecture into key points for revision: ${transcripts}`;

@@ -394,7 +394,7 @@ const VideoDetails = () => {
                                                 Re-enroll Now
                                             </button>
                                         ) : (
-                                            <div>Enrollement will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
+                                            <div className=" text-green-600">Enrollment will open on :{formatDateTime(courseEntireData.enrollmentOpenAt)}</div>
                                         )
                                     }
                                     <p className="mt-4 text-sm text-pure-greys-500">

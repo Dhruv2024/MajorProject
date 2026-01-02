@@ -329,7 +329,7 @@ const updateCourseProgress = async (courseId, subSectionId, userId) => {
 const summarizeQuizResult = async (quizResultTopicWise) => {
     try {
         const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         // const { transcript } = req.body;
         // const { quizResultTopicWise } = req.body;
         console.log(quizResultTopicWise);

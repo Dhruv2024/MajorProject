@@ -151,9 +151,9 @@ io.on('connection', (socket) => {
         }
         await UserMessageLog.create({ userId });
         const genAI = new GoogleGenerativeAI(process.env.AI_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const courses = await Course.find()
-            .select('-instructor -price -room -questionsList -enrollmentOpenAt -enrollmentCloseAt');
+            .select('-instructor -price -room -questionsList -enrollmentCloseAt');
 
         const prompt = `You are a chatbot designed to provide information about courses in a MERN stack application.  The user query is: ${data}.  Your task is to generate a helpful and informative response based on the course data.  The response should be concise.
         You have access to the following course data:
@@ -193,14 +193,14 @@ dbConnect();
 //connect cloudinary
 cloudinaryConnect();
 
-app.use(express.json());
-app.use(cookieParser());
-
-
 app.use(cors({
     origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app"],
     credentials: true
 }))
+
+app.use(express.json());
+app.use(cookieParser());
+
 app.use(
     fileUpload({
         useTempFiles: true,
