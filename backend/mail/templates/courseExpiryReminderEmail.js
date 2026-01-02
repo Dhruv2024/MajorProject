@@ -87,7 +87,7 @@ exports.courseExpiryReminderEmail = (name, courseList) => {
     
     <body>
         <div class="container">
-            <img class="logo" src="https://i.ibb.co/b5D7Dwd3/Untitled-design.png" alt="EduSphere Logo">
+            <img class="logo" src="https://i.ibb.co/DPKd2Qns/Untitled-design.png" alt="EduSphere Logo">
             <div class="header">Course Expiry Notice</div>
             <div class="content">
                 <p>Hi ${name},</p>

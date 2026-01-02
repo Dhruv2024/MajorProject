@@ -75,7 +75,7 @@ exports.quizReportEmailForInstructor = (
     <body>
         <div class="container">
             <a href="#"><img class="logo"
-                src="https://i.ibb.co/b5D7Dwd3/Untitled-design.png" alt="EduSphere Logo"></a>
+                src="https://i.ibb.co/DPKd2Qns/Untitled-design.png" alt="EduSphere Logo"></a>
 
             <div class="heading">Quiz Completed: ${quizTitle}</div>
 

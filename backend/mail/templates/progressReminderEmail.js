@@ -52,7 +52,7 @@ exports.progressReminderEmail = (userName, progressSummaries, websiteUrl) => {
         <table class="email-container" width="600" cellpadding="0" cellspacing="0" style="width: 100%; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;">
           <tr>
             <td align="center">
-              <img src="https://i.ibb.co/b5D7Dwd3/Untitled-design.png" alt="EduSphere Logo" width="200" style="margin-bottom: 20px; max-width: 100%;">
+              <img src="https://i.ibb.co/DPKd2Qns/Untitled-design.png" alt="EduSphere Logo" width="200" style="margin-bottom: 20px; max-width: 100%;">
             </td>
           </tr>
           <tr>

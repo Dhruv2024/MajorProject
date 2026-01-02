@@ -80,7 +80,7 @@ exports.quizScoreEmail = (
       <body>
           <div class="container">
               <a href="#"><img class="logo"
-                  src="https://i.ibb.co/b5D7Dwd3/Untitled-design.png" alt="EduSphere Logo"></a>
+                  src="https://i.ibb.co/DPKd2Qns/Untitled-design.png" alt="EduSphere Logo"></a>
               <div class="message">Your Quiz Results</div>
               <div class="body">
                   <p>Dear ${userName},</p>

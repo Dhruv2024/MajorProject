@@ -104,7 +104,7 @@ exports.youtubeReminderEmail = (
       
       <body>
           <div class="container">
-              <a href="#"><img class="logo" src="https://i.ibb.co/b5D7Dwd3/Untitled-design.png" alt="EduSphere Logo"></a>
+              <a href="#"><img class="logo" src="https://i.ibb.co/DPKd2Qns/Untitled-design.png" alt="EduSphere Logo"></a>
               <div class="message">Video Call Reminder: "${videoCallTitle}"</div>
               <div class="body">
                   <p>Dear ${name},</p>
