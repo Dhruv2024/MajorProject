@@ -5,7 +5,9 @@ const mailSender = async (email, title, body) => {
         console.log("CREATING TRANSPORTER.... ")
         let transporter = nodemailer.createTransport({
             // host: process.env.MAIL_HOST,
-            service:"gmail",
+            service: "gmail",
+            port: 587,
+            secure: false,
             auth: {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASS,
@@ -13,7 +15,6 @@ const mailSender = async (email, title, body) => {
         })
 
         console.log("Transporter created.... ")
-        console.log(transporter)
         let info = await transporter.sendMail({
             from: 'EduSphere',
             to: `${email}`,
