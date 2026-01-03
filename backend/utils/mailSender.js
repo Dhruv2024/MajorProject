@@ -13,10 +13,7 @@ const mailSender = async (email, title, body) => {
         })
 
         console.log("Transporter created.... ")
-        console.log("printing body statements.....")
-        console.log(email)
-        console.log(title)
-        console.log(body)
+        console.log(transporter)
         let info = await transporter.sendMail({
             from: 'EduSphere',
             to: `${email}`,
