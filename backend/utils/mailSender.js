@@ -2,14 +2,17 @@ const nodemailer = require("nodemailer");
 
 const mailSender = async (email, title, body) => {
     try {
+        console.log("CREATING TRANSPORTER.... ")
         let transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
+            // host: process.env.MAIL_HOST,
+            service:"gmail",
             auth: {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASS,
             }
         })
 
+        console.log("Transporter created.... ")
 
         let info = await transporter.sendMail({
             from: 'EduSphere',
@@ -17,6 +20,7 @@ const mailSender = async (email, title, body) => {
             subject: `${title}`,
             html: `${body}`,
         })
+        console.log('Printing info.... ')
         console.log(info);
         return info;
     }

@@ -25,11 +25,14 @@ async function sendVerificationEmail(email, otp) {
 
     // Send the email
     try {
+        console.log("Calling mailSender for sending mails")
         const mailResponse = await mailSender(
             email,
             "Verification Email",
             emailTemplate(otp)
         );
+        console.log("Mail response is ....")
+        console.log(mailResponse)
         console.log("Email sent successfully: ", mailResponse.response);
     } catch (error) {
         console.log("Error occurred while sending email: ", error);
