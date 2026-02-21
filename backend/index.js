@@ -194,7 +194,7 @@ dbConnect();
 cloudinaryConnect();
 
 app.use(cors({
-    origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app"],
+    origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app","http://localhost:3000"],
     credentials: true
 }))
 
