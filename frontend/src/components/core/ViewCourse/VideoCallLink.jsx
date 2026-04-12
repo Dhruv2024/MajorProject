@@ -70,7 +70,15 @@ const VideoCallLink = ({ data, handleLectureCompletion, completed }) => {
                 {description && <p className="meeting-description cool-description">{description}</p>}
                 <div className="button-container">
                     {meetingEnded ? (
-                        <p className="end-message cool-message">This meeting is no longer active.</p>
+                        <div>
+                            <p className="end-message cool-message">This meeting is no longer active.</p>
+                            <button
+                                className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                                onClick={handleLectureCompletion} // You need to define this function
+                            >
+                                Mark as Complete
+                            </button>
+                        </div>
                     ) : showButton ? (
                         <button
                             className={`join-button cool-button ${pulse ? 'pulse' : ''}`}

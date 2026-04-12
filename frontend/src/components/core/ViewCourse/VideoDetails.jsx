@@ -608,7 +608,7 @@ const VideoDetails = () => {
                             )
                                 :
                                 (
-                                    <ExpiredAccessCards />
+                                    <ExpiredAccessCards isEnrollmentOpen={isEnrollmentOpen} />
                                 )
                         }
                     </div>
@@ -936,7 +936,7 @@ const VideoDetails = () => {
                         }
                     })()
                 ) : (
-                    <ExpiredAccessCards />
+                    <ExpiredAccessCards isEnrollmentOpen={isEnrollmentOpen} />
                 )
             )}
 

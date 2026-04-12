@@ -194,7 +194,7 @@ dbConnect();
 cloudinaryConnect();
 
 app.use(cors({
-    origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app","http://localhost:3000"],
+    origin: ["http://localhost:5173", "https://edusphere-weld.vercel.app", "http://localhost:3000"],
     credentials: true
 }))
 
@@ -225,7 +225,7 @@ app.use("/api/v1/quiz", quizRoutes);
 
 // cron.schedule('0 * * * *', async () => {  // This will run every hour
 cron.schedule('*/2 * * * *', async () => {
-    console.log("hmm")
+    console.log("Checking courses info ")
     const currentDate = new Date();
     currentDate.setMilliseconds(0);
     const coursesToClose = await Course.find({
@@ -416,8 +416,8 @@ const checkAndSendQuizResultReport = async () => {
 
 
 // Set up the cron job to run every minute
-cron.schedule('*/5 * * * *', checkAndSendQuizReminder);  // Every 15 minute
-cron.schedule('*/5 * * * *', checkAndSendQuizResultReport);  // Every 15 minute
+// cron.schedule('*/5 * * * *', checkAndSendQuizReminder);  // Every 15 minute
+// cron.schedule('*/5 * * * *', checkAndSendQuizResultReport);  // Every 15 minute
 
 const sendCourseExpiryEmail = async (user, userCourseList) => {
     try {
@@ -433,63 +433,63 @@ const sendCourseExpiryEmail = async (user, userCourseList) => {
         // return res.status(500).json({ success: false, message: error.message });
     }
 };
-cron.schedule('*/30 * * * *', async () => {
-    console.log("checking");
-    videoCallRemainderEmail();
-    youtubeRemainderEmail();
-});
-cron.schedule("0 8 * * *", async () => {
-    try {
-        console.log("📬 Running Course Expiry Email Reminder...");
+// cron.schedule('*/30 * * * *', async () => {
+//     console.log("checking");
+//     videoCallRemainderEmail();
+//     youtubeRemainderEmail();
+// });
+// cron.schedule("0 8 * * *", async () => {
+//     try {
+//         console.log("📬 Running Course Expiry Email Reminder...");
 
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + 15);
-        targetDate.setHours(0, 0, 0, 0);
+//         const targetDate = new Date();
+//         targetDate.setDate(targetDate.getDate() + 15);
+//         targetDate.setHours(0, 0, 0, 0);
 
-        const nextDay = new Date(targetDate);
-        nextDay.setDate(nextDay.getDate() + 1);
+//         const nextDay = new Date(targetDate);
+//         nextDay.setDate(nextDay.getDate() + 1);
 
-        const expiringCourses = await CourseExpiry.find({
-            expiryDate: {
-                $gte: targetDate,
-                $lt: nextDay,
-            },
-        }).populate("userId").populate("courseId");
+//         const expiringCourses = await CourseExpiry.find({
+//             expiryDate: {
+//                 $gte: targetDate,
+//                 $lt: nextDay,
+//             },
+//         }).populate("userId").populate("courseId");
 
-        const userCourseMap = {};
+//         const userCourseMap = {};
 
-        expiringCourses.forEach(entry => {
-            const userId = entry.userId._id.toString();
-            if (!userCourseMap[userId]) {
-                userCourseMap[userId] = {
-                    user: entry.userId,
-                    courses: [],
-                };
-            }
-            userCourseMap[userId].courses.push(entry.courseId.courseName);
-        });
+//         expiringCourses.forEach(entry => {
+//             const userId = entry.userId._id.toString();
+//             if (!userCourseMap[userId]) {
+//                 userCourseMap[userId] = {
+//                     user: entry.userId,
+//                     courses: [],
+//                 };
+//             }
+//             userCourseMap[userId].courses.push(entry.courseId.courseName);
+//         });
 
-        for (const userId in userCourseMap) {
-            const { user, courses } = userCourseMap[userId];
-            const courseList = courses.map((c, i) => `${i + 1}. ${c}`).join("\n");
+//         for (const userId in userCourseMap) {
+//             const { user, courses } = userCourseMap[userId];
+//             const courseList = courses.map((c, i) => `${i + 1}. ${c}`).join("\n");
 
-            // const mailOptions = {
-            //     to: user.email,
-            //     subject: "⏰ Reminder: Your courses will expire in 15 days",
-            //     body: `Hi ${user.firstName},\n\nThese courses will expire in 15 days:\n\n${courseList}\n\nFinish them soon!\n\nBest,\nYour Learning Platform Team`
-            // };
+//             // const mailOptions = {
+//             //     to: user.email,
+//             //     subject: "⏰ Reminder: Your courses will expire in 15 days",
+//             //     body: `Hi ${user.firstName},\n\nThese courses will expire in 15 days:\n\n${courseList}\n\nFinish them soon!\n\nBest,\nYour Learning Platform Team`
+//             // };
 
-            // await mailSender(mailOptions.to, mailOptions.subject, mailOptions.body);
-            // console.log(courseList);
-            sendCourseExpiryEmail(user, courses);
+//             // await mailSender(mailOptions.to, mailOptions.subject, mailOptions.body);
+//             // console.log(courseList);
+//             sendCourseExpiryEmail(user, courses);
 
-            console.log(`📨 Reminder sent to ${user.email}`);
-        }
+//             console.log(`📨 Reminder sent to ${user.email}`);
+//         }
 
-    } catch (error) {
-        console.error("⚠️ Error sending course expiry reminders:", error);
-    }
-});
+//     } catch (error) {
+//         console.error("⚠️ Error sending course expiry reminders:", error);
+//     }
+// });
 // Runs every Monday at 9 AM
 cron.schedule("17 13 * * 1", async () => {
     console.log("Sending progress reports")
