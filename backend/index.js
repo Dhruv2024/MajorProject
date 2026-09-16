@@ -272,8 +272,8 @@ cron.schedule('*/2 * * * *', async () => {
 
         for (const quiz of quizzes) {
             const durationInMs = (course.courseDurationDays || 30) * 24 * 60 * 60 * 1000;
-            quiz.startTime = new Date(quiz.startTime + durationInMs);
-            quiz.endTime = new Date(quiz.endTime + durationInMs);
+            quiz.startTime = new Date(new Date(quiz.startTime).getTime() + durationInMs);
+            quiz.endTime = new Date(new Date(quiz.endTime).getTime() + durationInMs);
             quiz.reportMailSent = false;
             await quiz.save();
             console.log(`📘 Quiz "${quiz.title}" updated for course "${course.courseName}"`);
