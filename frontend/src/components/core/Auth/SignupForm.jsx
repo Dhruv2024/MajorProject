@@ -10,10 +10,10 @@ import { ACCOUNT_TYPE } from "../../../utils/constants"
 import Tab from "../../common/Tab"
 
 
+// const MODE = import.meta.env.DEV_MODE;
 function SignupForm({ darkTheme }) {
     const navigate = useNavigate()
     const dispatch = useDispatch()
-
     // student or instructor
     const [accountType, setAccountType] = useState(ACCOUNT_TYPE.STUDENT)
 
@@ -53,13 +53,18 @@ function SignupForm({ darkTheme }) {
             ...formData,
             accountType,
         }
-
-        // Setting signup data to state
-        // To be used after otp verification
-        dispatch(setSignupData(signupData))
-        // Send OTP to user for verification
-        dispatch(sendOtp(formData.email, navigate))
-
+        const DEV_MODE = import.meta.env.VITE_MODE
+        // console.log(DEV_MODE)
+        if (DEV_MODE === "local") {
+            // Setting signup data to state
+            // To be used after otp verification
+            dispatch(setSignupData(signupData))
+            // Send OTP to user for verification
+            dispatch(sendOtp(formData.email, navigate))
+        }
+        else if (DEV_MODE === "production") {
+            alert("Render has disabled the ports which are used to send emails.For login to website use following credentials for student mode: \n Email: 1e4ns.test@inbox.testmail.app \n Password: helloEduSphere")
+        }
         // Reset
         setFormData({
             firstName: "",

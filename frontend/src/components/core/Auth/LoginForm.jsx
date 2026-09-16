@@ -29,6 +29,7 @@ function LoginForm({ darkTheme }) {
         dispatch(login(email, password, navigate))
     }
     // console.log(darkTheme)
+    const DEV_MODE = import.meta.env.VITE_MODE
     return (
         <form
             onSubmit={handleOnSubmit}
@@ -77,11 +78,11 @@ function LoginForm({ darkTheme }) {
                         <AiOutlineEye fontSize={24} fill="#AFB2BF" />
                     )}
                 </span>
-                <Link to="/forgot-password">
+                {DEV_MODE === "production" ? "" : <Link to="/forgot-password">
                     <p className="mt-1 ml-auto max-w-max text-xs text-blue-100">
                         Forgot Password
                     </p>
-                </Link>
+                </Link>}
             </label>
             <button
                 type="submit"
